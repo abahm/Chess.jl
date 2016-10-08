@@ -133,4 +133,4 @@ function test_enpassant()
 end
 
 
-play_both_sides(new_game(), 800)
+play_both_sides(new_game(), 16)
