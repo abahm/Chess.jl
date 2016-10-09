@@ -1,5 +1,7 @@
 # chess.jl
 
+module Chess
+
 include("board.jl")
 include("move.jl")
 
@@ -48,9 +50,6 @@ function play_both_sides(b, nmoves)
         white_to_move = !white_to_move
         sleep(0.01)
     end
-    #print("\033[2J")  # clear
-    #print("\033[11A") # up 12 lines
-    #printbd(b)
 end
 
 function test_position_1()
@@ -122,15 +121,55 @@ function test_position_3()
     b
 end
 
+function perft(b::Board, levels::Integer, white_to_move::Bool)
+    moves = generate_moves(b, white_to_move)
+    if levels==1
+        return length(moves)
+    end
+
+    cnt = 0
+    saved_b = deepcopy(b)
+    for m in moves
+        make_move!(b, m)
+        cnt = cnt + perft(b, levels-1, !white_to_move)
+        b = deepcopy(saved_b)
+    end
+    return cnt
+end
+
 function perft()
     # run through all the first 1,2,3,4,5,6,7 moves
     # https://chessprogramming.wikispaces.com/Perft+Results
+    for i in 1:4
+        println("$i   $(perft(new_game(), i, true))")
+    end
 end
 
 
 function test_enpassant()
     # https://github.com/official-stockfish/Stockfish
+    b = Board(0,0,0,0,0,0,0,0,true,true)
+    set!(b, WHITE, PAWN, D, 2)
+    set!(b, BLACK, PAWN, C, 4)
+    set!(b, BLACK, PAWN, E, 4)
+    printbd(b)
+
+    moves = generate_moves(b, true)
+    print_algebraic(moves, b)
+    make_move!(b,moves[2])
+    printbd(b)
+
+    moves = generate_moves(b, false, moves[2].sqr_dest)
+    print_algebraic(moves, b)
+    make_move!(b,moves[2])
+    printbd(b)
+end
+
+#test_enpassant()
+
+perft()
+
 end
 
 
-play_both_sides(new_game(), 16)
+#Chess.play_both_sides(Chess.new_game(), 1600)

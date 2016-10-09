@@ -14,6 +14,12 @@ type Board   # known as "dense Board representation"
     black_castled::Bool
 end
 
+import Base.deepcopy
+Base.deepcopy(b::Board) = Board(b.white_pieces, b.black_pieces,
+                                b.kings, b.queens, b.rooks,
+                                b.bishops, b.knights, b.pawns,
+                                b.white_castled, b.black_castled)
+
 NONE = 0
 KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN = 1,2,3,4,5,6
 WHITE, BLACK = 1,2
@@ -38,8 +44,8 @@ function set!(b::Board, clr, p, c, r)
     if p==PAWN    b.pawns|=mask    end
     if clr==WHITE  b.white_pieces|=mask   end
     if clr==BLACK  b.black_pieces|=mask   end
+    nothing
 end
-
 
 function new_game()
     b = Board(0,0,0,0,0,0,0,0,true,true)
@@ -84,7 +90,6 @@ function new_game()
     b
 end
 
-
 function piece_on_sqr(b::Board, sqr::UInt64)
     if (b.kings   & sqr)>0  return KING  end
     if (b.queens  & sqr)>0  return QUEEN  end
@@ -105,7 +110,7 @@ end
 CHARACTER_KING, CHARACTER_QUEEN, CHARACTER_ROOK, CHARACTER_BISHOP, CHARACTER_KNIGHT, CHARACTER_PAWN = 'k','q','r','b','n','p'
 CHARACTER_KING, CHARACTER_QUEEN, CHARACTER_ROOK, CHARACTER_BISHOP, CHARACTER_KNIGHT, CHARACTER_PAWN = '♔','♕','♖','♗','♘','♙'
 function character_sqr_piece(b::Board, sqr::UInt64)
-    s = SQUARE_EMPTY
+    s = CHARACTER_SQUARE_EMPTY
     p = piece_on_sqr(b, sqr)
     if     p == KING    s = CHARACTER_KING
     elseif p == QUEEN   s = CHARACTER_QUEEN
@@ -122,12 +127,12 @@ function character_sqr_piece(b::Board, sqr::UInt64)
 end
 
 
-SQUARE_EMPTY, SQUARE_ATTACKED, SQUARE_CAPTURE = '⋅', '•', 'x'  #'∘'
-SQUARE_EMPTY = '–'
-SQUARE_EMPTY = '⋯'
-SQUARE_EMPTY = '_'
-SQUARE_EMPTY = '.'
-#SQUARE_EMPTY = ' '
+CHARACTER_SQUARE_EMPTY, CHARACTER_SQUARE_ATTACKED, CHARACTER_SQUARE_CAPTURE = '⋅', '•', 'x'  #'∘'
+CHARACTER_SQUARE_EMPTY = '–'
+CHARACTER_SQUARE_EMPTY = '⋯'
+CHARACTER_SQUARE_EMPTY = '_'
+CHARACTER_SQUARE_EMPTY = '.'
+#CHARACTER_SQUARE_EMPTY = ' '
 function printbd(b::Board, moves=nothing)
     for r in 8:-1:1
         print("  ")
@@ -137,10 +142,10 @@ function printbd(b::Board, moves=nothing)
             if moves!=nothing
                 for m in moves
                     if (m.sqr_dest & sqr)>0
-                        if s != SQUARE_EMPTY && s != SQUARE_ATTACKED
-                            s = SQUARE_CAPTURE
+                        if s != CHARACTER_SQUARE_EMPTY && s != CHARACTER_SQUARE_ATTACKED
+                            s = CHARACTER_SQUARE_CAPTURE
                         else
-                            s = SQUARE_ATTACKED
+                            s = CHARACTER_SQUARE_ATTACKED
                         end
                     end
                 end
@@ -248,7 +253,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                 if new_sqr & FILE_H > 0
                     break
                 end
-                if add_move(b, sqr, new_sqr, my_color, moves)==BLOCKED
+                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
                     break
                 end
             end
@@ -257,19 +262,19 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                 if new_sqr & FILE_A > 0
                     break
                 end
-                if add_move(b, sqr, new_sqr, my_color, moves)==BLOCKED
+                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
                     break
                 end
             end
             for i in 1:7
                 new_sqr = sqr>>(i*8)
-                if add_move(b, sqr, new_sqr, my_color, moves)==BLOCKED
+                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
                     break
                 end
             end
             for i in 1:7
                 new_sqr = sqr<<(i*8)
-                if add_move(b, sqr, new_sqr, my_color, moves)==BLOCKED
+                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
                     break
                 end
             end
@@ -283,7 +288,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                 if new_sqr & FILE_H > 0
                     break
                 end
-                if add_move(b, sqr, new_sqr, my_color, moves)==BLOCKED
+                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
                     break
                 end
             end
@@ -292,7 +297,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                 if new_sqr & FILE_A > 0
                     break
                 end
-                if add_move(b, sqr, new_sqr, my_color, moves)==BLOCKED
+                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
                     break
                 end
             end
@@ -301,7 +306,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                 if new_sqr & FILE_H > 0
                     break
                 end
-                if add_move(b, sqr, new_sqr, my_color, moves)==BLOCKED
+                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
                     break
                 end
             end
@@ -310,7 +315,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                 if new_sqr & FILE_A > 0
                     break
                 end
-                if add_move(b, sqr, new_sqr, my_color, moves)==BLOCKED
+                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
                     break
                 end
             end
@@ -333,50 +338,44 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
         # pawn moves
         pawn = sqr & b.pawns
         if pawn > 0
-            if my_color==WHITE
-                new_sqr = sqr << 8
-                if occupied_by(b, new_sqr)==NONE
-                    add_move(b, sqr, new_sqr, my_color, moves)
-                    if row==2
-                        new_sqr = sqr << 16
-                        if occupied_by(b, new_sqr)==NONE
-                            add_move(b, sqr, new_sqr, my_color, moves)
-                        end
-                    end
-                end
-                new_sqr = sqr << 7
-                if occupied_by(b, new_sqr)==enemy_color
-                    add_move(b, sqr, new_sqr, my_color, moves)
-                end
-                new_sqr = sqr << 9
-                if occupied_by(b, new_sqr)==enemy_color
-                    add_move(b, sqr, new_sqr, my_color, moves)
-                end
-                #TODO add en passant
-            else # BLACK
-                new_sqr = sqr >> 8
-                if occupied_by(b, new_sqr)==NONE
-                    add_move(b, sqr, new_sqr, my_color, moves)
-                    if row==7
-                        new_sqr = sqr >> 16
-                        if occupied_by(b, new_sqr)==NONE
-                            add_move(b, sqr, new_sqr, my_color, moves)
-                        end
-                    end
-                end
-                new_sqr = sqr >> 7
-                if occupied_by(b, new_sqr)==enemy_color
-                    add_move(b, sqr, new_sqr, my_color, moves)
-                end
-                new_sqr = sqr >> 9
-                if occupied_by(b, new_sqr)==enemy_color
-                    add_move(b, sqr, new_sqr, my_color, moves)
-                end
+            ONE_SQUARE_FORWARD = 8
+            TWO_SQUARE_FORWARD = 16
+            TAKE_LEFT = 7
+            TAKE_RIGHT = 9
+            START_ROW = 2
+            if my_color==BLACK
+                ONE_SQUARE_FORWARD *= -1
+                TWO_SQUARE_FORWARD *= -1
+                TAKE_LEFT *= -1
+                TAKE_RIGHT *= -1
+                START_ROW = 7
+            end
 
-                if last_move_pawn_double_push > 0
-                    #TODO add en passant
+            new_sqr = sqr << ONE_SQUARE_FORWARD
+            if occupied_by(b, new_sqr) == NONE
+                add_move(b, sqr, new_sqr, my_color, moves)
+                if row == START_ROW
+                    new_sqr = sqr << TWO_SQUARE_FORWARD
+                    if occupied_by(b, new_sqr) == NONE
+                        add_move(b, sqr, new_sqr, my_color, moves)
+                    end
                 end
             end
+            new_sqr = sqr << TAKE_LEFT
+            if occupied_by(b, new_sqr) == enemy_color
+                add_move(b, sqr, new_sqr, my_color, moves)
+            end
+            new_sqr = sqr << TAKE_RIGHT
+            if occupied_by(b, new_sqr) == enemy_color
+                add_move(b, sqr, new_sqr, my_color, moves)
+            end
+
+            # en passant
+            if last_move_pawn_double_push > 0
+                new_sqr = last_move_pawn_double_push << ONE_SQUARE_FORWARD
+                add_move(b, sqr, new_sqr, my_color, moves)
+            end
+
         end
     end # for square_index in 1:64
 
