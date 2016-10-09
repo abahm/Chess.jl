@@ -173,7 +173,7 @@ end
 
 UNBLOCKED, BLOCKED = 0,1
 # a move could be a Board that is XORed with a current Board
-function add_move(b::Board, src_sqr, dest_sqr, my_color, moves)
+function add_move!(moves, b::Board, src_sqr, dest_sqr, my_color, en_passant_sqr=UInt64(0))
     if dest_sqr==0
         return BLOCKED
     end
@@ -186,11 +186,11 @@ function add_move(b::Board, src_sqr, dest_sqr, my_color, moves)
     end
 
     if o!=NONE
-        push!(moves,Move(src_sqr, dest_sqr))
+        push!(moves, Move(src_sqr, dest_sqr))
         return BLOCKED
     end
 
-    push!(moves,Move(src_sqr, dest_sqr))
+    push!(moves,Move(src_sqr, dest_sqr, en_passant_sqr))
 
     return UNBLOCKED
 end
@@ -234,14 +234,14 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
         # kings moves
         king = sqr & b.kings
         if king > 0
-            add_move(b, sqr, (sqr>>9) & ~FILE_H, my_color, moves)
-            add_move(b, sqr, (sqr>>8),           my_color, moves)
-            add_move(b, sqr, (sqr>>7) & ~FILE_A, my_color, moves)
-            add_move(b, sqr, (sqr>>1) & ~FILE_H, my_color, moves)
-            add_move(b, sqr, (sqr<<1) & ~FILE_A, my_color, moves)
-            add_move(b, sqr, (sqr<<7) & ~FILE_H, my_color, moves)
-            add_move(b, sqr, (sqr<<8),           my_color, moves)
-            add_move(b, sqr, (sqr<<9) & ~FILE_A, my_color, moves)
+            add_move!(moves, b, sqr, (sqr>>9) & ~FILE_H, my_color)
+            add_move!(moves, b, sqr, (sqr>>8),           my_color)
+            add_move!(moves, b, sqr, (sqr>>7) & ~FILE_A, my_color)
+            add_move!(moves, b, sqr, (sqr>>1) & ~FILE_H, my_color)
+            add_move!(moves, b, sqr, (sqr<<1) & ~FILE_A, my_color)
+            add_move!(moves, b, sqr, (sqr<<7) & ~FILE_H, my_color)
+            add_move!(moves, b, sqr, (sqr<<8),           my_color)
+            add_move!(moves, b, sqr, (sqr<<9) & ~FILE_A, my_color)
         end
 
         # rook moves
@@ -253,7 +253,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                 if new_sqr & FILE_H > 0
                     break
                 end
-                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
+                if add_move!(moves, b, sqr, new_sqr, my_color) == BLOCKED
                     break
                 end
             end
@@ -262,19 +262,19 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                 if new_sqr & FILE_A > 0
                     break
                 end
-                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
+                if add_move!(moves, b, sqr, new_sqr, my_color) == BLOCKED
                     break
                 end
             end
             for i in 1:7
                 new_sqr = sqr>>(i*8)
-                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
+                if add_move!(moves, b, sqr, new_sqr, my_color) == BLOCKED
                     break
                 end
             end
             for i in 1:7
                 new_sqr = sqr<<(i*8)
-                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
+                if add_move!(moves, b, sqr, new_sqr, my_color) == BLOCKED
                     break
                 end
             end
@@ -288,7 +288,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                 if new_sqr & FILE_H > 0
                     break
                 end
-                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
+                if add_move!(moves, b, sqr, new_sqr, my_color) == BLOCKED
                     break
                 end
             end
@@ -297,7 +297,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                 if new_sqr & FILE_A > 0
                     break
                 end
-                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
+                if add_move!(moves, b, sqr, new_sqr, my_color) == BLOCKED
                     break
                 end
             end
@@ -306,7 +306,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                 if new_sqr & FILE_H > 0
                     break
                 end
-                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
+                if add_move!(moves, b, sqr, new_sqr, my_color) == BLOCKED
                     break
                 end
             end
@@ -315,7 +315,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                 if new_sqr & FILE_A > 0
                     break
                 end
-                if add_move(b, sqr, new_sqr, my_color, moves) == BLOCKED
+                if add_move!(moves, b, sqr, new_sqr, my_color) == BLOCKED
                     break
                 end
             end
@@ -324,15 +324,15 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
         # knight moves
         knight = sqr & b.knights
         if knight > 0
-            add_move(b, sqr, (sqr & ~FILE_A)>>17, my_color, moves)
-            add_move(b, sqr, (sqr & ~FILE_AB)>>10, my_color, moves)
-            add_move(b, sqr, (sqr & ~FILE_AB)<<6, my_color, moves)
-            add_move(b, sqr, (sqr & ~FILE_A)<<15, my_color, moves)
+            add_move!(moves, b, sqr, (sqr & ~FILE_A)>>17, my_color)
+            add_move!(moves, b, sqr, (sqr & ~FILE_AB)>>10, my_color)
+            add_move!(moves, b, sqr, (sqr & ~FILE_AB)<<6, my_color)
+            add_move!(moves, b, sqr, (sqr & ~FILE_A)<<15, my_color)
 
-            add_move(b, sqr, (sqr & ~FILE_H)>>15, my_color, moves)
-            add_move(b, sqr, (sqr & ~FILE_GH)<<10, my_color, moves)
-            add_move(b, sqr, (sqr & ~FILE_GH)>>6, my_color, moves)
-            add_move(b, sqr, (sqr & ~FILE_H)<<17, my_color, moves)
+            add_move!(moves, b, sqr, (sqr & ~FILE_H)>>15, my_color)
+            add_move!(moves, b, sqr, (sqr & ~FILE_GH)<<10, my_color)
+            add_move!(moves, b, sqr, (sqr & ~FILE_GH)>>6, my_color)
+            add_move!(moves, b, sqr, (sqr & ~FILE_H)<<17, my_color)
         end
 
         # pawn moves
@@ -353,27 +353,27 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
 
             new_sqr = sqr << ONE_SQUARE_FORWARD
             if occupied_by(b, new_sqr) == NONE
-                add_move(b, sqr, new_sqr, my_color, moves)
+                add_move!(moves, b, sqr, new_sqr, my_color)
                 if row == START_ROW
                     new_sqr = sqr << TWO_SQUARE_FORWARD
                     if occupied_by(b, new_sqr) == NONE
-                        add_move(b, sqr, new_sqr, my_color, moves)
+                        add_move!(moves, b, sqr, new_sqr, my_color)
                     end
                 end
             end
             new_sqr = sqr << TAKE_LEFT
             if occupied_by(b, new_sqr) == enemy_color
-                add_move(b, sqr, new_sqr, my_color, moves)
+                add_move!(moves, b, sqr, new_sqr, my_color)
             end
             new_sqr = sqr << TAKE_RIGHT
             if occupied_by(b, new_sqr) == enemy_color
-                add_move(b, sqr, new_sqr, my_color, moves)
+                add_move!(moves, b, sqr, new_sqr, my_color)
             end
 
             # en passant
             if last_move_pawn_double_push > 0
                 new_sqr = last_move_pawn_double_push << ONE_SQUARE_FORWARD
-                add_move(b, sqr, new_sqr, my_color, moves)
+                add_move!(moves, b, sqr, new_sqr, my_color, last_move_pawn_double_push)
             end
 
         end

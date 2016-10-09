@@ -4,6 +4,9 @@
 type Move
     sqr_src::UInt64
     sqr_dest::UInt64
+    sqr_ep::UInt64
+    Move(src,dest) = new(src, dest, UInt64(0))
+    Move(src,dest,ep) = new(src, dest, ep)
 end
 
 function square_name(sqr::UInt64)
@@ -89,8 +92,15 @@ function make_move!(b::Board, m::Move)
         b.black_pieces = (b.black_pieces & sqr_src) | sqr_dest
     end
 
+    # en passant - remove any pawn taken by en passant
+    if m.sqr_ep > 0
+        sqr_to_clear = ~m.sqr_ep
+        b.pawns = b.pawns & sqr_to_clear
+        b.white_pieces = b.white_pieces & sqr_to_clear
+        b.black_pieces = b.black_pieces & sqr_to_clear
+    end
+
     # TODO castling
-    # TODO en passant
     # TODO pawn promotion
 
     nothing

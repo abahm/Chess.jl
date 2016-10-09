@@ -121,7 +121,7 @@ function test_position_3()
     b
 end
 
-function perft(b::Board, levels::Integer, white_to_move::Bool)
+function perft(b::Board, levels::Integer, white_to_move::Bool=true)
     moves = generate_moves(b, white_to_move)
     if levels==1
         return length(moves)
@@ -141,8 +141,16 @@ function perft()
     # run through all the first 1,2,3,4,5,6,7 moves
     # https://chessprogramming.wikispaces.com/Perft+Results
     for i in 1:4
-        println("$i   $(perft(new_game(), i, true))")
+        println("$i   $(perft(new_game(), i))")
     end
+    println("")
+    println("Depth\t Nodes")
+    println("0\t 1")
+    println("1\t 20")
+    println("2\t 400")
+    println("3\t 8,902")
+    println("4\t 197,281")
+    println("4\t 4,865,609 \t 258 ep")
 end
 
 
@@ -167,7 +175,7 @@ end
 
 #test_enpassant()
 
-perft()
+#@time perft()
 
 end
 
