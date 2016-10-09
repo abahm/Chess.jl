@@ -1,6 +1,6 @@
 # Chess.jl
 
-Julia module that plays chess, and chess360.
+Julia module that plays chess, and [chess960](https://en.wikipedia.org/wiki/Chess960).
 
 The goal is to create a reasonably performant chess engine, that can generate legal moves, and play with minimal interface (i.e. in the REPL).   
 
