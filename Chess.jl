@@ -2,11 +2,30 @@
 
 module Chess
 
+export perft, new_game
+
 include("board.jl")
 include("move.jl")
 
 
 
+function perft(b::Board, levels::Integer, white_to_move::Bool=true)
+    moves = generate_moves(b, white_to_move)
+    if levels==1
+        #print_algebraic(moves, b)
+        return length(moves)
+    end
+
+    cnt = 0
+    saved_b = deepcopy(b)
+    for m in moves
+        #print_algebraic(m,b)
+        make_move!(b, m)
+        cnt = cnt + perft(b, levels-1, !white_to_move)
+        b = deepcopy(saved_b)
+    end
+    return cnt
+end
 
 function test_position()
     b = Board(0,0,0,0,0,0,0,0,true,true)
@@ -32,24 +51,32 @@ function test_position()
 end
 
 function play_both_sides(b, nmoves)
-    srand(0)
+    #srand(0)
     white_to_move = true
+    moves_made = Move[]
     for i in 1:nmoves
         print("\033[2J")  # clear
         print("\033[11A") # up 12 lines
         printbd(b)
+        println("")
+        #print_algebraic(moves_made,b)
         moves = generate_moves(b, white_to_move)
         if length(moves)==0
             break
         end
         m = moves[rand(1:length(moves))]
-        mn = ceil(Integer, (i)/2)
-        println("$mn " * (white_to_move?"":"... ") * algebraic_move(m,b) * "  ")
+        #mn = ceil(Integer, (i)/2)
+        #println("$mn " * (white_to_move?"":"... ") * algebraic_move(m,b) * "  ")
         #println("")
         make_move!(b, m)
+        push!(moves_made,m)
         white_to_move = !white_to_move
-        sleep(0.01)
+        sleep(0.1)
     end
+end
+
+function play_self()
+    play_both_sides(new_game(), 1000)
 end
 
 function test_position_1()
@@ -121,20 +148,13 @@ function test_position_3()
     b
 end
 
-function perft(b::Board, levels::Integer, white_to_move::Bool=true)
-    moves = generate_moves(b, white_to_move)
-    if levels==1
-        return length(moves)
-    end
-
-    cnt = 0
-    saved_b = deepcopy(b)
-    for m in moves
-        make_move!(b, m)
-        cnt = cnt + perft(b, levels-1, !white_to_move)
-        b = deepcopy(saved_b)
-    end
-    return cnt
+function test_position_4()
+    b = Board(0,0,0,0,0,0,0,0,true,true)
+    set!(b, WHITE, PAWN, A, 5)
+    set!(b, BLACK, PAWN, H, 5)
+    printbd(b)
+    moves = generate_moves(b,true)
+    print_algebraic(moves, b)
 end
 
 function perft()
@@ -143,16 +163,7 @@ function perft()
     for i in 1:4
         println("$i   $(perft(new_game(), i))")
     end
-    println("")
-    println("Depth\t Nodes")
-    println("0\t 1")
-    println("1\t 20")
-    println("2\t 400")
-    println("3\t 8,902")
-    println("4\t 197,281")
-    println("4\t 4,865,609 \t 258 ep")
 end
-
 
 function test_enpassant()
     # https://github.com/official-stockfish/Stockfish
@@ -173,11 +184,9 @@ function test_enpassant()
     printbd(b)
 end
 
-#test_enpassant()
 
-#@time perft()
+
+play_self()
+
 
 end
-
-
-#Chess.play_both_sides(Chess.new_game(), 1600)

@@ -1,12 +1,15 @@
 # move.jl
 
 
+# allows for move and unmove
 type Move
     sqr_src::UInt64
     sqr_dest::UInt64
     sqr_ep::UInt64
-    Move(src,dest) = new(src, dest, UInt64(0))
-    Move(src,dest,ep) = new(src, dest, ep)
+    promotion_to::Integer
+
+    Move(src, dest) = new(src, dest, UInt64(0), NONE)
+    Move(src, dest, ep, promote) = new(src, dest, ep, promote)
 end
 
 function square_name(sqr::UInt64)
@@ -34,10 +37,17 @@ end
 function algebraic_move(m::Move, b::Board)
     p = character_sqr_piece(b, m.sqr_src)
     if b.pawns & m.sqr_src > 0
-        p = ""
+        #p = ""
     end
     sn = square_name(m.sqr_dest)
-    "$p $sn"
+    s = ' '
+    if     m.promotion_to==QUEEN   s = CHARACTER_QUEEN
+    elseif m.promotion_to==KNIGHT  s = CHARACTER_KNIGHT
+    elseif m.promotion_to==ROOK    s = CHARACTER_ROOK
+    elseif m.promotion_to==BISHOP  s = CHARACTER_BISHOP
+    end
+
+    "$p $sn$s"
 end
 
 function print_algebraic(m::Move, b::Board)
@@ -48,7 +58,6 @@ function print_algebraic(moves::Array{Move,1}, b::Board)
     for m in moves
         print(algebraic_move(m, b) * " ")
     end
-    println("")
     println("")
 end
 
@@ -100,8 +109,22 @@ function make_move!(b::Board, m::Move)
         b.black_pieces = b.black_pieces & sqr_to_clear
     end
 
+    # pawn promotion
+    if m.promotion_to > NONE
+        b.pawns = b.pawns & ~sqr_dest
+        if m.promotion_to == QUEEN
+            b.queens = b.queens | sqr_dest
+        elseif m.promotion_to == KNIGHT
+            b.knights = b.knights | sqr_dest
+        elseif m.promotion_to == ROOK
+            b.rooks = b.rooks | sqr_dest
+        elseif m.promotion_to == BISHOP
+            b.bishops = b.bishops | sqr_dest
+        end
+
+    end
+
     # TODO castling
-    # TODO pawn promotion
 
     nothing
 end
