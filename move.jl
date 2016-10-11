@@ -7,8 +7,10 @@ type Move
     sqr_dest::UInt64
     sqr_ep::UInt64
     promotion_to::Integer
+    castling::UInt8
 
-    Move(src, dest) = new(src, dest, UInt64(0), NONE)
+    Move(src, dest) = new(src, dest, UInt64(0), NONE, UInt8(0))
+    Move(src, dest, cstl) = new(src, dest, UInt64(0), NONE, cstl)
     Move(src, dest, ep, promote) = new(src, dest, ep, promote)
 end
 

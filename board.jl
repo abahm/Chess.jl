@@ -11,20 +11,25 @@ type Board   # known as "dense Board representation"
     bishops::UInt64
     knights::UInt64
     pawns::UInt64
-    white_castled::Bool
-    black_castled::Bool
+    castling_rights::UInt8
+    Board() = new(0,0,0,0,0,0,0,0,0xFF)
 end
 
 import Base.deepcopy
 Base.deepcopy(b::Board) = Board(b.white_pieces, b.black_pieces,
                                 b.kings, b.queens, b.rooks,
                                 b.bishops, b.knights, b.pawns,
-                                b.white_castled, b.black_castled)
+                                b.castling_rights)
 
 NONE = 0
 KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN = 1,2,3,4,5,6
 WHITE, BLACK = 1,2
 A,B,C,D,E,F,G,H = 1,2,3,4,5,6,7,8
+
+CASTLING_RIGHTS_WHITE_KINGSIDE = UInt8(1)
+CASTLING_RIGHTS_WHITE_QUEENSIDE = CASTLING_RIGHTS_WHITE_KINGSIDE << 1
+CASTLING_RIGHTS_BLACK_KINGSIDE = CASTLING_RIGHTS_WHITE_KINGSIDE << 2
+CASTLING_RIGHTS_BLACK_QUEENSIDE = CASTLING_RIGHTS_WHITE_KINGSIDE << 3
 
 
 function square(c, r)
@@ -48,7 +53,7 @@ function set!(b::Board, clr, p, c, r)
 end
 
 function new_game()
-    b = Board(0,0,0,0,0,0,0,0,true,true)
+    b = Board()
 
     set!(b, WHITE, ROOK,   A, 1)
     set!(b, WHITE, KNIGHT, B, 1)
@@ -168,13 +173,14 @@ function occupied_by(b::Board, sqr::UInt64)
 end
 
 UNBLOCKED, BLOCKED = 0,1
-# a move could be a Board that is XORed with a current Board
+
+# handle adding sliding moves of QUEEN, ROOK, BISHOP
+#  which end by being BLOCKED or capturing an enemy piece
 function add_move!(moves, b::Board, src_sqr, dest_sqr, my_color, en_passant_sqr=UInt64(0), promotion_to=NONE)
     if dest_sqr==0
         return BLOCKED
     end
 
-    #@show bin(dest_sqr)
     o = occupied_by(b,dest_sqr)
 
     if o==my_color
@@ -209,6 +215,25 @@ RANK_7 = RANK_1 << (8*6)
 RANK_8 = RANK_1 << (8*7)
 FILE_AB = FILE_A | FILE_B
 FILE_GH = FILE_G | FILE_H
+
+SQUARE_A1 = 0x0000000000000001
+SQUARE_B1 = SQUARE_A1 << 1
+SQUARE_C1 = SQUARE_A1 << 2
+SQUARE_D1 = SQUARE_A1 << 3
+SQUARE_E1 = SQUARE_A1 << 4
+SQUARE_F1 = SQUARE_A1 << 5
+SQUARE_G1 = SQUARE_A1 << 6
+SQUARE_H1 = SQUARE_A1 << 7
+
+SQUARE_A8 = SQUARE_A1 << 56
+SQUARE_B8 = SQUARE_A1 << 57
+SQUARE_C8 = SQUARE_A1 << 58
+SQUARE_D8 = SQUARE_A1 << 59
+SQUARE_E8 = SQUARE_A1 << 60
+SQUARE_F8 = SQUARE_A1 << 61
+SQUARE_G8 = SQUARE_A1 << 62
+SQUARE_H8 = SQUARE_A1 << 63
+
 function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_push::UInt64=UInt64(0))
     my_color = white_to_move ? WHITE : BLACK
     enemy_color = white_to_move ? BLACK : WHITE
@@ -236,8 +261,64 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
             add_move!(moves, b, sqr, (sqr<<8),           my_color)
             add_move!(moves, b, sqr, (sqr<<9) & ~FILE_A, my_color)
 
-            # castling
+            # castling kingside (allows for chess960 castling too)
+            travel_sqrs = []
+            if my_color == WHITE
+                # check for castling rights
+                if b.castling_rights & CASTLING_RIGHTS_WHITE_KINGSIDE > 0
+                    travel_sqrs = [SQUARE_E1, SQUARE_F1, SQUARE_G1]
+                end
+            elseif my_color == BLACK
+                # check for castling rights
+                if b.castling_rights & CASTLING_RIGHTS_BLACK_KINGSIDE > 0
+                    travel_sqrs = [SQUARE_E8, SQUARE_F8, SQUARE_G8]
+                end
+            end
+            # check that the travel squares are empty
+            if reduce(&, Bool[piece_on_sqr(b, s)==NONE for s in travel_sqrs])
+                blocked = false
+                # check that king's traversal squares are not attacked
+                attacking_moves = generate_moves(b, !white_to_move)
+                for m in attacking_moves
+                    if m.sqr_dest in travel_sqrs
+                        blocked = true
+                        break
+                    end
+                end
+                if !blocked
+                    add_move!(moves, b, sqr, travel_sqrs[end], my_color)
+                end
+            end
         end
+        # castling queenside (allows for chess960 castling too)
+        travel_sqrs = []
+        if my_color == WHITE
+            # check for castling rights
+            if b.castling_rights & CASTLING_RIGHTS_WHITE_QUEENSIDE > 0
+                travel_sqrs = [SQUARE_E1, SQUARE_D1, SQUARE_C1]
+            end
+        elseif my_color == BLACK
+            # check for castling rights
+            if b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE > 0
+                travel_sqrs = [SQUARE_E8, SQUARE_D8, SQUARE_C8]
+            end
+        end
+        # check that the travel squares are empty
+        if reduce(&, Bool[piece_on_sqr(b, s)==NONE for s in travel_sqrs])
+            blocked = false
+            # check that king's traversal squares are not attacked
+            attacking_moves = generate_moves(b, !white_to_move)
+            for m in attacking_moves
+                if contains(travel_sqrs, m.sqr_dest)
+                    blocked = true
+                    break
+                end
+            end
+            if !blocked
+                push!(moves, Move(src_sqr, dest_sqr, en_passant_sqr, promotion_to) )
+            end
+        end
+
 
         # rook moves
         queen = sqr & b.queens
@@ -395,8 +476,6 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
             end
         end
     end # for square_index in 1:64
-
-    # TODO add add castling
 
     moves
 end

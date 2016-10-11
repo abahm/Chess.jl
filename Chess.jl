@@ -27,30 +27,7 @@ function perft(b::Board, levels::Integer, white_to_move::Bool=true)
     return cnt
 end
 
-function test_position()
-    b = Board(0,0,0,0,0,0,0,0,true,true)
-
-    #set!(b, WHITE, ROOK, E, 2)
-    #set!(b, WHITE, PAWN, E, 4)
-    #set!(b, BLACK, PAWN, B, 2)
-    #set!(b, BLACK, KING, H, 8)
-
-    #set!(b, WHITE, PAWN, E, 4)
-    #set!(b, BLACK, PAWN, E, 5)
-    #set!(b, BLACK, PAWN, F, 5)
-    #set!(b, BLACK, PAWN, A, 6)
-    #set!(b, WHITE, ROOK, D, 3)
-    #set!(b, WHITE, BISHOP, G, 6)
-
-    #set!(b, WHITE, KNIGHT, B, 1)
-    set!(b, WHITE, KNIGHT, E, 5)
-
-    #printbd(b)
-
-    b
-end
-
-function play_both_sides(b, nmoves)
+function play_both_sides(b, nmoves=100000)
     #srand(0)
     white_to_move = true
     moves_made = Move[]
@@ -71,16 +48,16 @@ function play_both_sides(b, nmoves)
         make_move!(b, m)
         push!(moves_made,m)
         white_to_move = !white_to_move
-        sleep(0.1)
+        sleep(0.001)
     end
 end
 
 function play_self()
-    play_both_sides(new_game(), 1000)
+    play_both_sides(new_game())
 end
 
 function test_position_1()
-    b = Board(0,0,0,0,0,0,0,0,true,true)
+    b = Board()
 
     set!(b, WHITE, ROOK, E, 2)
     set!(b, BLACK, PAWN, E, 5)
@@ -132,7 +109,7 @@ end
 
 function test_position_3()
 
-    b = Board(0,0,0,0,0,0,0,0,true,true)
+    b = Board()
 
     set!(b, WHITE, ROOK, A, 1)
     set!(b, WHITE, ROOK, B, 1)
@@ -149,7 +126,7 @@ function test_position_3()
 end
 
 function test_position_4()
-    b = Board(0,0,0,0,0,0,0,0,true,true)
+    b = Board()
     set!(b, WHITE, PAWN, A, 5)
     set!(b, BLACK, PAWN, H, 5)
     printbd(b)
@@ -167,7 +144,7 @@ end
 
 function test_enpassant()
     # https://github.com/official-stockfish/Stockfish
-    b = Board(0,0,0,0,0,0,0,0,true,true)
+    b = Board()
     set!(b, WHITE, PAWN, D, 2)
     set!(b, BLACK, PAWN, C, 4)
     set!(b, BLACK, PAWN, E, 4)
@@ -186,7 +163,15 @@ end
 
 
 
-play_self()
+function test_castling()
+    b = Board()
+    set!(b, WHITE, KING, E, 1)
+    set!(b, WHITE, ROOK, H, 1)
+    moves = generate_moves(b, true)
+    printbd(b,moves)
+    print_algebraic(moves,b)
+end
 
+test_castling()
 
 end
