@@ -27,29 +27,53 @@ function perft(b::Board, levels::Integer, white_to_move::Bool=true)
 end
 
 function play_both_sides(b, nmoves=100000)
-    #srand(0)
+    srand(0)
+    n_white_pieces = count(i->i=='1', bits(b.white_pieces))
+    n_black_pieces = count(i->i=='1', bits(b.black_pieces))
     white_to_move = true
-    moves_made = Move[]
+    moves_made = []
     for i in 1:nmoves
         print("\033[2J")  # clear
         print("\033[11A") # up 12 lines
         println("")
         #println("")
         printbd(b)
+
+        #println(" #w $(count(i->i=='1', bits(b.white_pieces)))  #b $(count(i->i=='1', bits(b.black_pieces)))")
+
+        for (j,mm) in enumerate(moves_made)
+            if (j-1)%2==0
+                println("")
+                print("$(floor(Integer,(j+1)/2)). ")
+            end
+            print(mm)
+            print(" \t")
+        end
         println("")
+
+        # validation
+        @assert n_white_pieces >= count(i->i=='1', bits(b.white_pieces))
+        n_white_pieces = count(i->i=='1', bits(b.white_pieces))
+        @assert n_black_pieces >= count(i->i=='1', bits(b.black_pieces))
+        n_black_pieces = count(i->i=='1', bits(b.black_pieces))
+
+
+
         #print_algebraic(moves_made,b)
         moves = generate_moves(b, white_to_move)
         if length(moves)==0
             break
         end
         m = moves[rand(1:length(moves))]
+
+        push!(moves_made, algebraic_move(m,b))
         #mn = ceil(Integer, (i)/2)
         #println("$mn " * (white_to_move?"":"... ") * algebraic_move(m,b) * "  ")
         #println("")
         make_move!(b, m)
-        push!(moves_made,m)
+
         white_to_move = !white_to_move
-        sleep(0.101)
+        sleep(0.001)
     end
 end
 
@@ -187,3 +211,5 @@ test_castling()
 play_self()
 
 end
+
+nothing

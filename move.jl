@@ -47,19 +47,19 @@ function algebraic_move(m::Move, b::Board)
         return "o-o-o"
     end
 
-    p = character_sqr_piece(b, m.sqr_src)
+    piece_character = character_sqr_piece(b, m.sqr_src)
     if b.pawns & m.sqr_src > 0
-        #p = ""
+        piece_character = ""
     end
-    sn = square_name(m.sqr_dest)
-    s = ' '
-    if     m.promotion_to==QUEEN   s = CHARACTER_QUEEN
-    elseif m.promotion_to==KNIGHT  s = CHARACTER_KNIGHT
-    elseif m.promotion_to==ROOK    s = CHARACTER_ROOK
-    elseif m.promotion_to==BISHOP  s = CHARACTER_BISHOP
+    sqr_name = square_name(m.sqr_dest)
+    optionally_promoted_to = ' '
+    if     m.promotion_to==QUEEN   optionally_promoted_to = CHARACTER_QUEEN
+    elseif m.promotion_to==KNIGHT  optionally_promoted_to = CHARACTER_KNIGHT
+    elseif m.promotion_to==ROOK    optionally_promoted_to = CHARACTER_ROOK
+    elseif m.promotion_to==BISHOP  optionally_promoted_to = CHARACTER_BISHOP
     end
 
-    "$p $sn$s"
+    "$piece_character $sqr_name$optionally_promoted_to"
 end
 
 function print_algebraic(m::Move, b::Board)
@@ -175,6 +175,7 @@ function board_validation_checks(b::Board)
     n_knights = count(i->i=='1', bits(b.knights))
     n_pawns = count(i->i=='1', bits(b.pawns))
 
-    assert( n_white_pieces + n_black_pieces ==
-            n_kings + n_queens + n_rooks + n_bishops + n_knights + n_pawns)
+    a = n_white_pieces + n_black_pieces
+    b = n_kings + n_queens + n_rooks + n_bishops + n_knights + n_pawns
+    @assert a==b  "$a  $b"
 end

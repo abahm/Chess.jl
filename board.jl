@@ -139,7 +139,7 @@ CHARACTER_SQUARE_EMPTY = '.'
 #CHARACTER_SQUARE_EMPTY = ' '
 function printbd(b::Board, moves=nothing)
     for r in 8:-1:1
-        print("  ")
+        print("$r   ")
         for c in 1:8
             sqr = square(c, r)
             s = character_sqr_piece(b,sqr)
@@ -156,8 +156,10 @@ function printbd(b::Board, moves=nothing)
             end
             print("$s ")
         end
-        println("")
+        println()
     end
+    println()
+    println("    a b c d e f g h")
 end
 
 function occupied_by(b::Board, sqr::UInt64)
