@@ -30,7 +30,8 @@ CASTLING_RIGHTS_WHITE_KINGSIDE = UInt8(1)
 CASTLING_RIGHTS_WHITE_QUEENSIDE = CASTLING_RIGHTS_WHITE_KINGSIDE << 1
 CASTLING_RIGHTS_BLACK_KINGSIDE = CASTLING_RIGHTS_WHITE_KINGSIDE << 2
 CASTLING_RIGHTS_BLACK_QUEENSIDE = CASTLING_RIGHTS_WHITE_KINGSIDE << 3
-
+CASTLING_RIGHTS_WHITE_ANYSIDE = CASTLING_RIGHTS_WHITE_KINGSIDE | CASTLING_RIGHTS_WHITE_QUEENSIDE
+CASTLING_RIGHTS_BLACK_ANYSIDE = CASTLING_RIGHTS_BLACK_KINGSIDE | CASTLING_RIGHTS_BLACK_QUEENSIDE
 
 function square(c, r)
     sqr = UInt64(1) << ((c-1) + 8*(r-1))
@@ -234,7 +235,7 @@ SQUARE_F8 = SQUARE_A1 << 61
 SQUARE_G8 = SQUARE_A1 << 62
 SQUARE_H8 = SQUARE_A1 << 63
 
-function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_push::UInt64=UInt64(0))
+function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_push::UInt64=UInt64(0), ignore_castling=false)
     my_color = white_to_move ? WHITE : BLACK
     enemy_color = white_to_move ? BLACK : WHITE
     moves = Move[]
@@ -262,63 +263,65 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
             add_move!(moves, b, sqr, (sqr<<9) & ~FILE_A, my_color)
 
             # castling kingside (allows for chess960 castling too)
-            travel_sqrs = []
-            if my_color == WHITE
-                # check for castling rights
-                if b.castling_rights & CASTLING_RIGHTS_WHITE_KINGSIDE > 0
-                    travel_sqrs = [SQUARE_E1, SQUARE_F1, SQUARE_G1]
-                end
-            elseif my_color == BLACK
-                # check for castling rights
-                if b.castling_rights & CASTLING_RIGHTS_BLACK_KINGSIDE > 0
-                    travel_sqrs = [SQUARE_E8, SQUARE_F8, SQUARE_G8]
-                end
-            end
-            # check that the travel squares are empty
-            if reduce(&, Bool[piece_on_sqr(b, s)==NONE for s in travel_sqrs])
-                blocked = false
-                # check that king's traversal squares are not attacked
-                attacking_moves = generate_moves(b, !white_to_move)
-                for m in attacking_moves
-                    if m.sqr_dest in travel_sqrs
-                        blocked = true
-                        break
+            if !ignore_castling
+                travel_sqrs = []
+                if my_color == WHITE
+                    # check for castling rights
+                    if b.castling_rights & CASTLING_RIGHTS_WHITE_KINGSIDE > 0
+                        travel_sqrs = [SQUARE_F1, SQUARE_G1]
+                    end
+                elseif my_color == BLACK
+                    # check for castling rights
+                    if b.castling_rights & CASTLING_RIGHTS_BLACK_KINGSIDE > 0
+                        travel_sqrs = [SQUARE_F8, SQUARE_G8]
                     end
                 end
-                if !blocked
-                    add_move!(moves, b, sqr, travel_sqrs[end], my_color)
+                # check that the travel squares are empty
+                if reduce(&, Bool[piece_on_sqr(b, s)==NONE for s in travel_sqrs])
+                    blocked = false
+                    # check that king's traversal squares are not attacked
+                    attacking_moves = generate_moves(b, !white_to_move, UInt64(0), true)
+                    for m in attacking_moves
+                        if m.sqr_dest in travel_sqrs
+                            blocked = true
+                            break
+                        end
+                    end
+                    if !blocked
+                        push!(moves, Move(sqr, travel_sqrs[end], CASTLING_RIGHTS_WHITE_KINGSIDE) )
+                    end
                 end
-            end
-        end
-        # castling queenside (allows for chess960 castling too)
-        travel_sqrs = []
-        if my_color == WHITE
-            # check for castling rights
-            if b.castling_rights & CASTLING_RIGHTS_WHITE_QUEENSIDE > 0
-                travel_sqrs = [SQUARE_E1, SQUARE_D1, SQUARE_C1]
-            end
-        elseif my_color == BLACK
-            # check for castling rights
-            if b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE > 0
-                travel_sqrs = [SQUARE_E8, SQUARE_D8, SQUARE_C8]
-            end
-        end
-        # check that the travel squares are empty
-        if reduce(&, Bool[piece_on_sqr(b, s)==NONE for s in travel_sqrs])
-            blocked = false
-            # check that king's traversal squares are not attacked
-            attacking_moves = generate_moves(b, !white_to_move)
-            for m in attacking_moves
-                if contains(travel_sqrs, m.sqr_dest)
-                    blocked = true
-                    break
-                end
-            end
-            if !blocked
-                push!(moves, Move(src_sqr, dest_sqr, en_passant_sqr, promotion_to) )
-            end
-        end
 
+                # castling queenside (allows for chess960 castling too)
+                travel_sqrs = []
+                if my_color == WHITE
+                    # check for castling rights
+                    if b.castling_rights & CASTLING_RIGHTS_WHITE_QUEENSIDE > 0
+                        travel_sqrs = [SQUARE_D1, SQUARE_C1]
+                    end
+                elseif my_color == BLACK
+                    # check for castling rights
+                    if b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE > 0
+                        travel_sqrs = [SQUARE_D8, SQUARE_C8]
+                    end
+                end
+                # check that the travel squares are empty
+                if reduce(&, Bool[piece_on_sqr(b, s)==NONE for s in travel_sqrs])
+                    blocked = false
+                    # check that king's traversal squares are not attacked
+                    attacking_moves = generate_moves(b, !white_to_move, UInt64(0), true)
+                    for m in attacking_moves
+                        if m.sqr_dest in travel_sqrs
+                            blocked = true
+                            break
+                        end
+                    end
+                    if !blocked
+                        push!(moves, Move(sqr, travel_sqrs[end], CASTLING_RIGHTS_WHITE_QUEENSIDE) )
+                    end
+                end
+            end # castling checks
+        end # king
 
         # rook moves
         queen = sqr & b.queens

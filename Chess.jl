@@ -2,7 +2,7 @@
 
 module Chess
 
-export perft, new_game
+#export perft, new_game
 
 include("board.jl")
 include("move.jl")
@@ -12,7 +12,6 @@ include("move.jl")
 function perft(b::Board, levels::Integer, white_to_move::Bool=true)
     moves = generate_moves(b, white_to_move)
     if levels==1
-        #print_algebraic(moves, b)
         return length(moves)
     end
 
@@ -34,6 +33,8 @@ function play_both_sides(b, nmoves=100000)
     for i in 1:nmoves
         print("\033[2J")  # clear
         print("\033[11A") # up 12 lines
+        println("")
+        #println("")
         printbd(b)
         println("")
         #print_algebraic(moves_made,b)
@@ -48,7 +49,7 @@ function play_both_sides(b, nmoves=100000)
         make_move!(b, m)
         push!(moves_made,m)
         white_to_move = !white_to_move
-        sleep(0.001)
+        sleep(0.101)
     end
 end
 
@@ -161,17 +162,28 @@ function test_enpassant()
     printbd(b)
 end
 
-
-
 function test_castling()
     b = Board()
+    #@show b.castling_rights
+    #b.castling_rights = CASTLING_RIGHTS_WHITE_KINGSIDE
+    #@show b.castling_rights
     set!(b, WHITE, KING, E, 1)
     set!(b, WHITE, ROOK, H, 1)
+    set!(b, WHITE, ROOK, A, 1)
     moves = generate_moves(b, true)
-    printbd(b,moves)
+    printbd(b)
     print_algebraic(moves,b)
+    m = moves[16]  # castle kingside
+    m = moves[17]  # castle queenside
+    make_move!(b,m)
+    printbd(b)
 end
 
 test_castling()
+
+#@show perft(new_game(), 2)
+#@assert perft(new_game(), 3) == 8902 "perft 3 gives $(perft(new_game(), 3)) instead of 8092"
+
+play_self()
 
 end
