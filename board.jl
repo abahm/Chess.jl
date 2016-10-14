@@ -12,7 +12,7 @@ type Board   # known as "dense Board representation"
     knights::UInt64
     pawns::UInt64
     castling_rights::UInt8
-    Board() = new(0,0,0,0,0,0,0,0,0xFF)
+    Board() = new(0,0,0,0,0,0,0,0,0x0f)
 end
 
 import Base.deepcopy
@@ -20,6 +20,93 @@ Base.deepcopy(b::Board) = Board(b.white_pieces, b.black_pieces,
                                 b.kings, b.queens, b.rooks,
                                 b.bishops, b.knights, b.pawns,
                                 b.castling_rights)
+
+function Base.show(io::IO, b::Board)
+    print(io, "\n")
+    printbd(b, io)
+
+    print(io, "\n")
+    print(io, "white pieces\n")
+    for r in 8:-1:1
+        for c in 1:8
+            sqr = square(c,r)
+            print(io, "$((b.white_pieces & sqr)>0?1:0) ")
+        end
+        print(io, "\n")
+    end
+    print(io, "\n")
+
+    print(io, "black pieces\n")
+    for r in 8:-1:1
+        for c in 1:8
+            sqr = square(c,r)
+            print(io, "$((b.black_pieces & sqr)>0?1:0) ")
+        end
+        print(io, "\n")
+    end
+    print(io, "\n")
+
+    print(io, "kings\n")
+    for r in 8:-1:1
+        for c in 1:8
+            sqr = square(c,r)
+            print(io, "$((b.kings & sqr)>0?1:0) ")
+        end
+        print(io, "\n")
+    end
+    print(io, "\n")
+
+    print(io, "queens\n")
+    for r in 8:-1:1
+        for c in 1:8
+            sqr = square(c,r)
+            print(io, "$((b.queens & sqr)>0?1:0) ")
+        end
+        print(io, "\n")
+    end
+    print(io, "\n")
+
+
+    print(io, "rooks\n")
+    for r in 8:-1:1
+        for c in 1:8
+            sqr = square(c,r)
+            print(io, "$((b.rooks & sqr)>0?1:0) ")
+        end
+        print(io, "\n")
+    end
+    print(io, "\n")
+
+    print(io, "bishops\n")
+    for r in 8:-1:1
+        for c in 1:8
+            sqr = square(c,r)
+            print(io, "$((b.bishops & sqr)>0?1:0) ")
+        end
+        print(io, "\n")
+    end
+    print(io, "\n")
+
+    print(io, "knights\n")
+    for r in 8:-1:1
+        for c in 1:8
+            sqr = square(c,r)
+            print(io, "$((b.knights & sqr)>0?1:0) ")
+        end
+        print(io, "\n")
+    end
+    print(io, "\n")
+
+    print(io, "pawns\n")
+    for r in 8:-1:1
+        for c in 1:8
+            sqr = square(c,r)
+            print(io, "$((b.pawns & sqr)>0?1:0) ")
+        end
+        print(io, "\n")
+    end
+    print(io, "\n")
+end
 
 NONE = 0
 KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN = 1,2,3,4,5,6
@@ -38,8 +125,16 @@ function square(c, r)
     sqr
 end
 
-function set!(b::Board, clr, p, c, r)
-    #@show clr, p, r, c
+function column_row(sqr)
+    square_index = Integer(log2(sqr))
+    # n.b. ÷ gives integer quotient like div()
+    row = (square_index-1)÷8 + 1
+    column = ((square_index-1) % 8) + 1
+    (column,row)
+end
+
+function set!(b::Board, color, p, c, r)
+    #@show color, p, r, c
     mask = square(c, r)
     #@show bin(mask, 64)
     if p==KING    b.kings|=mask    end
@@ -48,8 +143,8 @@ function set!(b::Board, clr, p, c, r)
     if p==BISHOP  b.bishops|=mask  end
     if p==KNIGHT  b.knights|=mask  end
     if p==PAWN    b.pawns|=mask    end
-    if clr==WHITE  b.white_pieces|=mask   end
-    if clr==BLACK  b.black_pieces|=mask   end
+    if color==WHITE  b.white_pieces|=mask   end
+    if color==BLACK  b.black_pieces|=mask   end
     nothing
 end
 
@@ -137,9 +232,18 @@ CHARACTER_SQUARE_EMPTY = '⋯'
 CHARACTER_SQUARE_EMPTY = '_'
 CHARACTER_SQUARE_EMPTY = '.'
 #CHARACTER_SQUARE_EMPTY = ' '
-function printbd(b::Board, moves=nothing)
+#CHARACTER_SQUARE_EMPTY = '▓'
+
+#SMALL_NUMBERS = ['𝟣','𝟤','𝟥','𝟦','𝟧','𝟨','𝟩','𝟪']
+SMALL_NUMBERS = ['₁','₂','₃','₄','₅','₆','₇','₈']
+function printbd(b::Board, io=STDOUT, moves=nothing)
+    print(io, "    ")
+    print(io, (b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE) > 0 )
+    print(io, "       ")
+    print(io, (b.castling_rights & CASTLING_RIGHTS_BLACK_KINGSIDE) > 0 )
+    print(io, "\n")
     for r in 8:-1:1
-        print("$r   ")
+        print(io, "$(SMALL_NUMBERS[r])   ")
         for c in 1:8
             sqr = square(c, r)
             s = character_sqr_piece(b,sqr)
@@ -154,12 +258,38 @@ function printbd(b::Board, moves=nothing)
                     end
                 end
             end
+            print(io, "$s ")
+        end
+        print(io, "\n")
+    end
+    print(io, "    ")
+    print(io, (b.castling_rights & CASTLING_RIGHTS_WHITE_QUEENSIDE) > 0 )
+    print(io, "       ")
+    print(io, (b.castling_rights & CASTLING_RIGHTS_WHITE_KINGSIDE) > 0 )
+    print(io, "\n")
+    print(io, b.castling_rights)
+    print(io, "\n")
+    #println("    a b c d e f g h")
+    #println("    ᵃ ᵇ ᶜ ᵈ ᵉ ᶠ ᵍ ᴴ")
+    #println("    𝑎 𝑏 𝑐 𝑑 𝑒 𝑓 𝑔 h")
+    #println("    𝔞 𝔟 𝔠 𝔡 𝔢 𝔣 𝔤 𝔥")
+    #println("    𝖠 𝖡 𝖢 𝖣 𝖤 𝖥 𝖦 𝖧")
+    #println("    𝕒 𝕓 𝕔 𝕕 𝕖 𝕗 𝕘 𝕙")
+    print(io, "    𝖺 𝖻 𝖼 𝖽 𝖾 𝖿 𝗀 𝗁\n")
+end
+
+function debug_print(b::Board)
+    for r in 8:-1:1
+        print("$(SMALL_NUMBERS[r])   ")
+        for c in 1:8
+            sqr = square(c, r)
+            s = character_sqr_piece(b,sqr)
             print("$s ")
         end
         println()
     end
     println()
-    println("    a b c d e f g h")
+    println("    𝖺 𝖻 𝖼 𝖽 𝖾 𝖿 𝗀 𝗁")
 end
 
 function occupied_by(b::Board, sqr::UInt64)
@@ -179,7 +309,8 @@ UNBLOCKED, BLOCKED = 0,1
 
 # handle adding sliding moves of QUEEN, ROOK, BISHOP
 #  which end by being BLOCKED or capturing an enemy piece
-function add_move!(moves, b::Board, src_sqr, dest_sqr, my_color, en_passant_sqr=UInt64(0), promotion_to=NONE)
+function add_move!(moves, b::Board, src_sqr::UInt64, dest_sqr::UInt64, my_color, en_passant_sqr=UInt64(0), promotion_to=NONE)
+    #@show src_sqr, dest_sqr, my_color, en_passant_sqr, promotion_to
     if dest_sqr==0
         return BLOCKED
     end
@@ -289,7 +420,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                             break
                         end
                     end
-                    if !blocked
+                    if !blocked && length(travel_sqrs)>0
                         push!(moves, Move(sqr, travel_sqrs[end], CASTLING_RIGHTS_WHITE_KINGSIDE) )
                     end
                 end
@@ -318,7 +449,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                             break
                         end
                     end
-                    if !blocked
+                    if !blocked && length(travel_sqrs)>0
                         push!(moves, Move(sqr, travel_sqrs[end], CASTLING_RIGHTS_WHITE_QUEENSIDE) )
                     end
                 end
@@ -425,16 +556,15 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
             TAKE_RIGHT = 9
             START_ROW = 2
             LAST_ROW = 7
+            bitshift_direction = <<
             if my_color==BLACK
-                ONE_SQUARE_FORWARD *= -1
-                TWO_SQUARE_FORWARD *= -1
-                TAKE_LEFT *= -1
-                TAKE_RIGHT *= -1
+                TAKE_LEFT = 9
+                TAKE_RIGHT = 7
                 START_ROW = 7
                 LAST_ROW = 2
+                bitshift_direction = >>
             end
-
-            new_sqr = sqr << ONE_SQUARE_FORWARD
+            new_sqr = bitshift_direction(sqr, ONE_SQUARE_FORWARD)
             if occupied_by(b, new_sqr) == NONE
                 if row == LAST_ROW
                     add_move!(moves, b, sqr, new_sqr, my_color, 0, QUEEN)
@@ -445,13 +575,13 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                     add_move!(moves, b, sqr, new_sqr, my_color)
                 end
                 if row == START_ROW
-                    new_sqr = sqr << TWO_SQUARE_FORWARD
+                    new_sqr = bitshift_direction(sqr, TWO_SQUARE_FORWARD)
                     if occupied_by(b, new_sqr) == NONE
                         add_move!(moves, b, sqr, new_sqr, my_color)
                     end
                 end
             end
-            new_sqr = (sqr << TAKE_LEFT) & ~FILE_H
+            new_sqr = bitshift_direction(sqr, TAKE_LEFT) & ~FILE_H
             if occupied_by(b, new_sqr) == enemy_color
                 if row == LAST_ROW
                     add_move!(moves, b, sqr, new_sqr, my_color, 0, QUEEN)
@@ -462,7 +592,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                     add_move!(moves, b, sqr, new_sqr, my_color)
                 end
             end
-            new_sqr = (sqr << TAKE_RIGHT) & ~FILE_A
+            new_sqr = bitshift_direction(sqr, TAKE_RIGHT) & ~FILE_A
             if occupied_by(b, new_sqr) == enemy_color
                 if row == LAST_ROW
                     add_move!(moves, b, sqr, new_sqr, my_color, QUEEN)
@@ -476,7 +606,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
 
             # en passant
             if last_move_pawn_double_push > 0
-                new_sqr = last_move_pawn_double_push << ONE_SQUARE_FORWARD
+                new_sqr = bitshift_direction(last_move_pawn_double_push, ONE_SQUARE_FORWARD)
                 add_move!(moves, b, sqr, new_sqr, my_color, last_move_pawn_double_push)
             end
         end
@@ -487,6 +617,5 @@ end
 
 function draw_with_fonts()
     # convert -size 360x360 xc:white -font "FreeMono" -pointsize 12 -fill black -draw @ascii.txt image.png
-
     # use alpha2 chess diagram font
 end
