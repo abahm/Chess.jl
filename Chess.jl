@@ -4,6 +4,7 @@ module Chess
 
 #export perft, new_game
 
+include("util.jl")
 include("board.jl")
 include("move.jl")
 
@@ -26,8 +27,8 @@ function perft(b::Board, levels::Integer, white_to_move::Bool=true)
     return count
 end
 
-function random_play_both_sides(b=new_game(), nmoves=1000, show_move_history=true)
-    srand(4)
+function random_play_both_sides(seed=0, show_move_history=true, b=new_game(), nmoves=1000)
+    srand(seed)
     n_white_pieces = count(i->i=='1', bits(b.white_pieces))
     n_black_pieces = count(i->i=='1', bits(b.black_pieces))
     white_to_move = true
@@ -275,7 +276,9 @@ end
 #@show perft(new_game(), 2)
 #@assert perft(new_game(), 3) == 8902 "perft 3 gives $(perft(new_game(), 3)) instead of 8092"
 
-#random_play_both_sides()
+for i in 1:100
+    #random_play_both_sides(i, false)
+end
 
 user_play_both_sides()
 

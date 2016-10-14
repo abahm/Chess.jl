@@ -12,14 +12,16 @@ type Board   # known as "dense Board representation"
     knights::UInt64
     pawns::UInt64
     castling_rights::UInt8
+    last_move_pawn_double_push::UInt64
 end
-Board() = Board(0,0, 0,0,0, 0,0,0, 0x0F)
+Board() = Board(0,0, 0,0,0, 0,0,0, 0x0F,0)
 
 import Base.deepcopy
 Base.deepcopy(b::Board) = Board(b.white_pieces, b.black_pieces,
                                 b.kings, b.queens, b.rooks,
                                 b.bishops, b.knights, b.pawns,
-                                b.castling_rights)
+                                b.castling_rights,
+                                b.last_move_pawn_double_push)
 
 function Base.show(io::IO, b::Board)
     print(io, "\n")
@@ -119,19 +121,6 @@ CASTLING_RIGHTS_BLACK_KINGSIDE = CASTLING_RIGHTS_WHITE_KINGSIDE << 2
 CASTLING_RIGHTS_BLACK_QUEENSIDE = CASTLING_RIGHTS_WHITE_KINGSIDE << 3
 CASTLING_RIGHTS_WHITE_ANYSIDE = CASTLING_RIGHTS_WHITE_KINGSIDE | CASTLING_RIGHTS_WHITE_QUEENSIDE
 CASTLING_RIGHTS_BLACK_ANYSIDE = CASTLING_RIGHTS_BLACK_KINGSIDE | CASTLING_RIGHTS_BLACK_QUEENSIDE
-
-function square(c, r)
-    sqr = UInt64(1) << ((c-1) + 8*(r-1))
-    sqr
-end
-
-function column_row(sqr)
-    square_index = Integer(log2(sqr))
-    # n.b. ÷ gives integer quotient like div()
-    row = (square_index-1)÷8 + 1
-    column = ((square_index-1) % 8) + 1
-    (column,row)
-end
 
 function set!(b::Board, color, p, c, r)
     #@show color, p, r, c
@@ -241,7 +230,11 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
     print(io, (b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE) > 0 )
     print(io, "       ")
     print(io, (b.castling_rights & CASTLING_RIGHTS_BLACK_KINGSIDE) > 0 )
+    if b.last_move_pawn_double_push > 0
+        print(io, "     $(square_name(b.last_move_pawn_double_push))")
+    end
     print(io, "\n")
+
     for r in 8:-1:1
         print(io, "$(SMALL_NUMBERS[r])   ")
         for c in 1:8
@@ -368,7 +361,7 @@ SQUARE_F8 = SQUARE_A1 << 61
 SQUARE_G8 = SQUARE_A1 << 62
 SQUARE_H8 = SQUARE_A1 << 63
 
-function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_push::UInt64=UInt64(0), ignore_castling=false)
+function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
     my_color = white_to_move ? WHITE : BLACK
     enemy_color = white_to_move ? BLACK : WHITE
     moves = Move[]
@@ -413,7 +406,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                 if reduce(&, Bool[piece_on_sqr(b, s)==NONE for s in travel_sqrs])
                     blocked = false
                     # check that king's traversal squares are not attacked
-                    attacking_moves = generate_moves(b, !white_to_move, UInt64(0), true)
+                    attacking_moves = generate_moves(b, !white_to_move, true)
                     for m in attacking_moves
                         if m.sqr_dest in travel_sqrs
                             blocked = true
@@ -442,7 +435,7 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                 if reduce(&, Bool[piece_on_sqr(b, s)==NONE for s in travel_sqrs])
                     blocked = false
                     # check that king's traversal squares are not attacked
-                    attacking_moves = generate_moves(b, !white_to_move, UInt64(0), true)
+                    attacking_moves = generate_moves(b, !white_to_move, true)
                     for m in attacking_moves
                         if m.sqr_dest in travel_sqrs
                             blocked = true
@@ -592,6 +585,11 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                     add_move!(moves, b, sqr, new_sqr, my_color)
                 end
             end
+            # en passant
+            if b.last_move_pawn_double_push > 0 &&
+                new_sqr == bitshift_direction(b.last_move_pawn_double_push, ONE_SQUARE_FORWARD)
+                add_move!(moves, b, sqr, new_sqr, my_color, b.last_move_pawn_double_push)
+            end
             new_sqr = bitshift_direction(sqr, TAKE_RIGHT) & ~FILE_A
             if occupied_by(b, new_sqr) == enemy_color
                 if row == LAST_ROW
@@ -603,12 +601,12 @@ function generate_moves(b::Board, white_to_move::Bool, last_move_pawn_double_pus
                     add_move!(moves, b, sqr, new_sqr, my_color)
                 end
             end
-
             # en passant
-            if last_move_pawn_double_push > 0
-                new_sqr = bitshift_direction(last_move_pawn_double_push, ONE_SQUARE_FORWARD)
-                add_move!(moves, b, sqr, new_sqr, my_color, last_move_pawn_double_push)
+            if b.last_move_pawn_double_push > 0 &&
+                new_sqr == bitshift_direction(b.last_move_pawn_double_push, ONE_SQUARE_FORWARD)
+                add_move!(moves, b, sqr, new_sqr, my_color, b.last_move_pawn_double_push)
             end
+
         end
     end # for square_index in 1:64
 
@@ -618,4 +616,61 @@ end
 function draw_with_fonts()
     # convert -size 360x360 xc:white -font "FreeMono" -pointsize 12 -fill black -draw @ascii.txt image.png
     # use alpha2 chess diagram font
+end
+
+function board_validation_checks(b::Board)
+    # check no overlap - each square can have one and only one piece
+
+    for i in 0:63
+        sqr = UInt64(1) << i
+
+        # a color must have a piece
+        if sqr & b.white_pieces > 0
+            @assert (sqr & (b.pawns | b.knights | b.bishops | b.rooks | b.queens | b.kings) > 0) "$b\n white nothing at $(square_name(sqr))"
+        end
+        if sqr & b.black_pieces > 0
+            @assert (sqr & (b.pawns | b.knights | b.bishops | b.rooks | b.queens | b.kings) > 0) "$b\n black nothing at $(square_name(sqr))"
+        end
+
+        # square can't hold both a black and a white piece simultaneously
+        @assert sqr & b.white_pieces & b.black_pieces == 0  "$b\n over occupied at $(square_name(sqr))"
+
+        # a piece must have a color
+        if sqr & b.pawns > 0
+            @assert (sqr & b.pawns & b.white_pieces > 0) || (sqr & b.pawns & b.black_pieces > 0) "$b\n colorless pawn at $(square_name(sqr))"
+        end
+        if sqr & b.knights > 0
+            @assert (sqr & b.knights & b.white_pieces > 0) || (sqr & b.knights & b.black_pieces > 0) "$b\n colorless knight at $(square_name(sqr))"
+        end
+        if sqr & b.bishops > 0
+            @assert (sqr & b.bishops & b.white_pieces > 0) || (sqr & b.bishops & b.black_pieces > 0) "$b\n colorless bishop at $(square_name(sqr))"
+        end
+        if sqr & b.rooks > 0
+            @assert (sqr & b.rooks & b.white_pieces > 0) || (sqr & b.rooks & b.black_pieces > 0) "$b\n colorless rook at $(square_name(sqr))"
+        end
+        if sqr & b.queens > 0
+            @assert (sqr & b.queens & b.white_pieces > 0) || (sqr & b.queens & b.black_pieces > 0) "$b\n colorless queen at $(square_name(sqr))"
+        end
+        if sqr & b.kings > 0
+            @assert (sqr & b.kings & b.white_pieces > 0) || (sqr & b.kings & b.black_pieces > 0) "$b\n colorless king at $(square_name(sqr))"
+        end
+    end
+
+    # s
+    @assert b.kings & b.queens & b.rooks & b.bishops & b.knights & b.pawns == 0  "$b"
+
+    # check counts
+    n_white_pieces = count(i->i=='1', bits(b.white_pieces))
+    n_black_pieces = count(i->i=='1', bits(b.black_pieces))
+
+    n_kings = count(i->i=='1', bits(b.kings))
+    n_queens = count(i->i=='1', bits(b.queens))
+    n_rooks = count(i->i=='1', bits(b.rooks))
+    n_bishops = count(i->i=='1', bits(b.bishops))
+    n_knights = count(i->i=='1', bits(b.knights))
+    n_pawns = count(i->i=='1', bits(b.pawns))
+
+    t1 = n_white_pieces + n_black_pieces
+    t2 = n_kings + n_queens + n_rooks + n_bishops + n_knights + n_pawns
+    @assert t1==t2  "$b"
 end

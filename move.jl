@@ -8,11 +8,10 @@ type Move
     sqr_ep::UInt64
     promotion_to::Integer
     castling::UInt8
-
-    Move(src, dest) = new(src, dest, UInt64(0), NONE, UInt8(0))
-    Move(src, dest, cstl) = new(src, dest, UInt64(0), NONE, cstl)
-    Move(src, dest, ep, promote) = new(src, dest, ep, promote, UInt8(0))
 end
+Move(src, dest) = Move(src, dest, UInt64(0), NONE, UInt8(0))
+Move(src, dest, cstl) = Move(src, dest, UInt64(0), NONE, cstl)
+Move(src, dest, ep, promote) = Move(src, dest, ep, promote, UInt8(0))
 
 function square_name(sqr::UInt64)
     f = ' '
@@ -107,6 +106,13 @@ function make_move!(b::Board, m::Move)
     elseif moving_piece == PAWN     b.pawns = (b.pawns & ~sqr_src) | sqr_dest
     end
 
+    # set en passant marker
+    b.last_move_pawn_double_push = UInt64(0)
+    if moving_piece == PAWN &&
+        (sqr_dest << 16 == sqr_src || sqr_src << 16 == sqr_dest)
+        b.last_move_pawn_double_push = sqr_dest
+    end
+
     # update the moving color (remove from src, add to dest)
     if (b.white_pieces & sqr_src) > 0
         b.white_pieces = (b.white_pieces & ~sqr_src) | sqr_dest
@@ -166,61 +172,4 @@ function make_move!(b::Board, m::Move)
     board_validation_checks(b)
 
     nothing
-end
-
-function board_validation_checks(b::Board)
-    # check no overlap - each square can have one and only one piece
-
-    for i in 0:63
-        sqr = UInt64(1) << i
-
-        # a color must have a piece
-        if sqr & b.white_pieces > 0
-            @assert (sqr & (b.pawns | b.knights | b.bishops | b.rooks | b.queens | b.kings) > 0) "$b\n white nothing at $(square_name(sqr))"
-        end
-        if sqr & b.black_pieces > 0
-            @assert (sqr & (b.pawns | b.knights | b.bishops | b.rooks | b.queens | b.kings) > 0) "$b\n black nothing at $(square_name(sqr))"
-        end
-
-        # square can't hold both a black and a white piece simultaneously
-        @assert sqr & b.white_pieces & b.black_pieces == 0  "$b\n over occupied at $(square_name(sqr))"
-
-        # a piece must have a color
-        if sqr & b.pawns > 0
-            @assert (sqr & b.pawns & b.white_pieces > 0) || (sqr & b.pawns & b.black_pieces > 0) "$b\n colorless pawn at $(square_name(sqr))"
-        end
-        if sqr & b.knights > 0
-            @assert (sqr & b.knights & b.white_pieces > 0) || (sqr & b.knights & b.black_pieces > 0) "$b\n colorless knight at $(square_name(sqr))"
-        end
-        if sqr & b.bishops > 0
-            @assert (sqr & b.bishops & b.white_pieces > 0) || (sqr & b.bishops & b.black_pieces > 0) "$b\n colorless bishop at $(square_name(sqr))"
-        end
-        if sqr & b.rooks > 0
-            @assert (sqr & b.rooks & b.white_pieces > 0) || (sqr & b.rooks & b.black_pieces > 0) "$b\n colorless rook at $(square_name(sqr))"
-        end
-        if sqr & b.queens > 0
-            @assert (sqr & b.queens & b.white_pieces > 0) || (sqr & b.queens & b.black_pieces > 0) "$b\n colorless queen at $(square_name(sqr))"
-        end
-        if sqr & b.kings > 0
-            @assert (sqr & b.kings & b.white_pieces > 0) || (sqr & b.kings & b.black_pieces > 0) "$b\n colorless king at $(square_name(sqr))"
-        end
-    end
-
-    # s
-    @assert b.kings & b.queens & b.rooks & b.bishops & b.knights & b.pawns == 0  "$b"
-
-    # check counts
-    n_white_pieces = count(i->i=='1', bits(b.white_pieces))
-    n_black_pieces = count(i->i=='1', bits(b.black_pieces))
-
-    n_kings = count(i->i=='1', bits(b.kings))
-    n_queens = count(i->i=='1', bits(b.queens))
-    n_rooks = count(i->i=='1', bits(b.rooks))
-    n_bishops = count(i->i=='1', bits(b.bishops))
-    n_knights = count(i->i=='1', bits(b.knights))
-    n_pawns = count(i->i=='1', bits(b.pawns))
-
-    t1 = n_white_pieces + n_black_pieces
-    t2 = n_kings + n_queens + n_rooks + n_bishops + n_knights + n_pawns
-    @assert t1==t2  "$b"
 end
