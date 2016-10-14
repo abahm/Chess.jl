@@ -5,8 +5,8 @@ module Chess
 #export perft, new_game
 
 include("util.jl")
-include("board.jl")
 include("move.jl")
+include("board.jl")
 
 
 
