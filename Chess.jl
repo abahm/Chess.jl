@@ -101,7 +101,7 @@ function user_play_both_sides(b=new_game())
                     print("$(floor(Integer,(j+1)/2)). ")
                 end
                 print(mm)
-                print(" \t")
+                print("  \t")
             end
             println()
         end
@@ -121,7 +121,7 @@ function user_play_both_sides(b=new_game())
 
         # user chooses next move
         r = parse(readline())
-        if r==0
+        if typeof(r)==Void || r==0 || r>length(moves)
             break
         end
         m = moves[r]
@@ -276,8 +276,8 @@ end
 #@show perft(new_game(), 2)
 #@assert perft(new_game(), 3) == 8902 "perft 3 gives $(perft(new_game(), 3)) instead of 8092"
 
-for i in 1:100
-    #random_play_both_sides(i, false)
+for i in 1:10
+    random_play_both_sides(i, false)
 end
 
 user_play_both_sides()

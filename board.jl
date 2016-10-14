@@ -260,7 +260,6 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
     print(io, "       ")
     print(io, (b.castling_rights & CASTLING_RIGHTS_WHITE_KINGSIDE) > 0 )
     print(io, "\n")
-    print(io, b.castling_rights)
     print(io, "\n")
     #println("    a b c d e f g h")
     #println("    ᵃ ᵇ ᶜ ᵈ ᵉ ᶠ ᵍ ᴴ")
@@ -337,10 +336,10 @@ function algebraic_move(m::Move, b::Board)
     end
     sqr_name = square_name(m.sqr_dest)
     optionally_promoted_to = ""
-    if     m.promotion_to==QUEEN   optionally_promoted_to = "="*CHARACTER_QUEEN
-    elseif m.promotion_to==KNIGHT  optionally_promoted_to = "="*CHARACTER_KNIGHT
-    elseif m.promotion_to==ROOK    optionally_promoted_to = "="*CHARACTER_ROOK
-    elseif m.promotion_to==BISHOP  optionally_promoted_to = "="*CHARACTER_BISHOP
+    if     m.promotion_to==QUEEN   optionally_promoted_to = "=$CHARACTER_QUEEN"
+    elseif m.promotion_to==KNIGHT  optionally_promoted_to = "=$CHARACTER_KNIGHT"
+    elseif m.promotion_to==ROOK    optionally_promoted_to = "=$CHARACTER_ROOK"
+    elseif m.promotion_to==BISHOP  optionally_promoted_to = "=$CHARACTER_BISHOP"
     end
 
     "$piece_character $sqr_name$optionally_promoted_to"
