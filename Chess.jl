@@ -15,15 +15,15 @@ function perft(b::Board, levels::Integer, white_to_move::Bool=true)
         return length(moves)
     end
 
-    cnt = 0
-    saved_b = deepcopy(b)
+    count = 0
+    saved_board = deepcopy(b)
     for m in moves
         #print_algebraic(m,b)
         make_move!(b, m)
-        cnt = cnt + perft(b, levels-1, !white_to_move)
-        b = deepcopy(saved_b)
+        count = count + perft(b, levels-1, !white_to_move)
+        b = deepcopy(saved_board)
     end
-    return cnt
+    return count
 end
 
 function random_play_both_sides(b=new_game(), nmoves=1000, show_move_history=true)

@@ -77,7 +77,7 @@ function print_algebraic(moves::Array{Move,1}, b::Board)
 end
 
 function make_move!(b::Board, m::Move)
-    print_algebraic(m,b)
+    #print_algebraic(m,b)
     #print(b)
 
     sqr_src = m.sqr_src

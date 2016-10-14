@@ -12,8 +12,8 @@ type Board   # known as "dense Board representation"
     knights::UInt64
     pawns::UInt64
     castling_rights::UInt8
-    Board() = new(0,0,0,0,0,0,0,0,0x0f)
 end
+Board() = Board(0,0, 0,0,0, 0,0,0, 0x0F)
 
 import Base.deepcopy
 Base.deepcopy(b::Board) = Board(b.white_pieces, b.black_pieces,
