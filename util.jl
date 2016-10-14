@@ -1,5 +1,7 @@
 # util.jl
 
+
+
 function square(c::Integer, r::Integer)
     sqr = UInt64(1) << ((c-1) + 8*(r-1))
     sqr
