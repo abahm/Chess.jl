@@ -223,13 +223,22 @@ CHARACTER_SQUARE_EMPTY = '.'
 #CHARACTER_SQUARE_EMPTY = ' '
 #CHARACTER_SQUARE_EMPTY = '▓'
 
+CHARACTER_CASTLING_AVAILABLE = "↔"
+CHARACTER_CASTLING_AVAILABLE = "⇋"
+CHARACTER_CASTLING_AVAILABLE = "⇔"
+CHARACTER_CASTLING_AVAILABLE = "⟷"
+
 #SMALL_NUMBERS = ['𝟣','𝟤','𝟥','𝟦','𝟧','𝟨','𝟩','𝟪']
 SMALL_NUMBERS = ['₁','₂','₃','₄','₅','₆','₇','₈']
 function printbd(b::Board, io=STDOUT, moves=nothing)
-    print(io, "    ")
-    print(io, (b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE) > 0 )
     print(io, "       ")
-    print(io, (b.castling_rights & CASTLING_RIGHTS_BLACK_KINGSIDE) > 0 )
+    if b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE > 0
+        print(io, CHARACTER_CASTLING_AVAILABLE)
+    end
+    print(io, "       ")
+    if b.castling_rights & CASTLING_RIGHTS_BLACK_KINGSIDE > 0
+        print(io, CHARACTER_CASTLING_AVAILABLE)
+    end
     if b.last_move_pawn_double_push > 0
         print(io, "   en passant from $(square_name(b.last_move_pawn_double_push))")
     end
@@ -255,10 +264,14 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
         end
         print(io, "\n")
     end
-    print(io, "    ")
-    print(io, (b.castling_rights & CASTLING_RIGHTS_WHITE_QUEENSIDE) > 0 )
     print(io, "       ")
-    print(io, (b.castling_rights & CASTLING_RIGHTS_WHITE_KINGSIDE) > 0 )
+    if b.castling_rights & CASTLING_RIGHTS_WHITE_QUEENSIDE > 0
+        print(io, CHARACTER_CASTLING_AVAILABLE)
+    end
+    print(io, "       ")
+    if b.castling_rights & CASTLING_RIGHTS_WHITE_KINGSIDE > 0
+        print(io, CHARACTER_CASTLING_AVAILABLE)
+    end
     print(io, "\n")
     print(io, "\n")
     #println("    a b c d e f g h")
@@ -358,7 +371,6 @@ function print_algebraic(moves::Array{Move,1}, b::Board)
     end
     println()
 end
-
 
 # handle adding sliding moves of QUEEN, ROOK, BISHOP
 #  which end by being BLOCKED or capturing an enemy piece
@@ -484,10 +496,12 @@ function board_validation_checks(b::Board)
     @assert t1==t2  "$b"
 end
 
+
 function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
     my_color = white_to_move ? WHITE : BLACK
     enemy_color = white_to_move ? BLACK : WHITE
     moves = Move[]
+
     for square_index in 1:64
         sqr = UInt64(1) << (square_index-1)
 
@@ -575,6 +589,7 @@ function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
         # rook moves
         queen = sqr & b.queens
         rook = sqr & b.rooks
+
         if rook > 0 || queen > 0
             for i in 1:7
                 new_sqr = sqr>>i
@@ -729,12 +744,27 @@ function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
                 new_sqr == bitshift_direction(b.last_move_pawn_double_push, ONE_SQUARE_FORWARD)
                 add_move!(moves, b, sqr, new_sqr, my_color, b.last_move_pawn_double_push)
             end
-
-        end
+        end  #  if pawn > 0
     end # for square_index in 1:64
+
+
+    # PINNED pieces
+    # check for pieces pinned to the king
+    #   and remove any moves by them
+    # PLAN: 1 find king's unique square
+    #kings_square = b.kings & (white_to_move ? b.white_pieces : b.black_pieces)
+    #       2 generate_moves only on queens,rooks,bishops
+
+    #       3 look for captures of S
+
+
+    # TODO: order moves by captures first
+
+    # TODO: order moves so that a capture of last moved piece is first
 
     moves
 end
+
 
 function make_move!(b::Board, m::Move)
     #print_algebraic(m,b)

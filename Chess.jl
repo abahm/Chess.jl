@@ -217,8 +217,11 @@ end
 function perft()
     # run through all the first 1,2,3,4,5,6,7 moves
     # https://chessprogramming.wikispaces.com/Perft+Results
-    for i in 1:4
-        println("$i   $(perft(new_game(), i))")
+    for i in 1:6
+        tic()
+        nodes = perft(new_game(), i)
+        t = toq()
+        println("$i   $nodes nodes  $(round(t,4)) s  $(round(nodes/(t*1000),2)) kn/s")
     end
 end
 
@@ -267,21 +270,36 @@ function test_castling()
     printbd(b)
     moves = generate_moves(b, true)
     print_algebraic(moves,b)
-
-
 end
+
+function test_pins()
+    b = Board()
+    set!(b, WHITE, KING, E, 5)
+    set!(b, WHITE, PAWN, D, 5)
+    set!(b, BLACK, PAWN, C, 5)
+    set!(b, BLACK, ROOK, A, 5)
+    set!(b, WHITE, PAWN, G, 5)
+    set!(b, BLACK, QUEEN, H, 5)
+    set!(b, WHITE, KNIGHT, C, 7)
+    set!(b, BLACK, BISHOP, B, 8)
+
+    b.castling_rights = 0x00
+    b.last_move_pawn_double_push = square(C, 5)
+    printbd(b)
+
+    moves = generate_moves(b, true)
+    print_algebraic(moves, b)
+end
+
 
 #test_castling()
-
 #@show perft(new_game(), 2)
 #@assert perft(new_game(), 3) == 8902 "perft 3 gives $(perft(new_game(), 3)) instead of 8092"
+#for i in 1:10
+    #random_play_both_sides(i, false)
+#end
+#user_play_both_sides()
+#perft()
+#test_pins()
 
-for i in 1:10
-    random_play_both_sides(i, false)
 end
-
-user_play_both_sides()
-
-end
-
-nothing
