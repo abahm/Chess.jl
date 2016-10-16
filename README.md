@@ -17,6 +17,7 @@ Bitboards are used to represent the state.   This code is a learning exercise fo
 * Gamedev chess articles [1. Intro](http://www.gamedev.net/page/resources/_/technical/artificial-intelligence/chess-programming-part-i-getting-started-r1014) [2. Data structures](http://www.gamedev.net/page/resources/_/technical/artificial-intelligence/chess-programming-part-ii-data-structures-r1046) [3. Move gen](http://www.gamedev.net/page/resources/_/technical/artificial-intelligence/chess-programming-part-iii-move-generation-r1126) [4. Eval functions](http://www.gamedev.net/page/resources/_/technical/artificial-intelligence/chess-programming-part-vi-evaluation-functions-r1208)
 * [Chess Engine Communication Protocol](http://www.tim-mann.org/engines.html)
 * [Computer chess programming theory](http://www.frayn.net/beowulf/theory.html)
+* [Chess Tree Search](https://verhelst.home.xs4all.nl/chess/search.html)
 
 
 ## History
