@@ -757,6 +757,7 @@ function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
 
     #       3 look for captures of S
 
+    # TODO: only allow king moves that aren't to attacked squares
 
     # TODO: order moves by captures first
 
