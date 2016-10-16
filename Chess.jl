@@ -27,7 +27,7 @@ function perft(b::Board, levels::Integer, white_to_move::Bool=true)
     return count
 end
 
-function random_play_both_sides(seed=0, show_move_history=true, b=new_game(), nmoves=1000)
+function random_play_both_sides(seed, show_move_history, b=new_game(), nmoves=1000)
     srand(seed)
     n_white_pieces = count(i->i=='1', bits(b.white_pieces))
     n_black_pieces = count(i->i=='1', bits(b.black_pieces))
@@ -77,6 +77,12 @@ function random_play_both_sides(seed=0, show_move_history=true, b=new_game(), nm
 
         white_to_move = !white_to_move
         sleep(0.001)
+    end
+end
+
+function random_play_both_sides(n)
+    for random_seed in 1:n
+        random_play_both_sides(random_seed, false)
     end
 end
 
@@ -272,6 +278,22 @@ function test_castling()
     print_algebraic(moves,b)
 end
 
+function test_king_moves()
+    b = Board()
+    set!(b, WHITE, KING, E, 5)
+    set!(b, BLACK, ROOK, D, 8)
+    set!(b, BLACK, ROOK, F, 8)
+    set!(b, BLACK, ROOK, A, 6)
+    set!(b, BLACK, ROOK, A, 4)
+
+    b.castling_rights = 0x00
+    b.last_move_pawn_double_push = square(C, 5)
+    printbd(b)
+
+    moves = generate_moves(b, true)
+    print_algebraic(moves, b)
+end
+
 function test_pins()
     b = Board()
     set!(b, WHITE, KING, E, 5)
@@ -296,11 +318,10 @@ end
 #test_castling()
 #@show perft(new_game(), 2)
 #@assert perft(new_game(), 3) == 8902 "perft 3 gives $(perft(new_game(), 3)) instead of 8092"
-#for i in 1:10
-    #random_play_both_sides(i, false)
-#end
+
 #user_play_both_sides()
 #perft()
-test_pins()
+test_king_moves()
+#test_pins()
 
 end

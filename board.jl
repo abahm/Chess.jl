@@ -331,6 +331,14 @@ function square_name(sqr::UInt64)
     "$file_character$rank_character"
 end
 
+function square_name(sqrs::Array{UInt64,1})
+    output = ""
+    for s in sqrs
+        output = output * square_name(s) * " "
+    end
+    output
+end
+
 function algebraic_move(m::Move, b::Board)
     if m.castling & CASTLING_RIGHTS_WHITE_KINGSIDE > 0 ||
        m.castling & CASTLING_RIGHTS_BLACK_KINGSIDE > 0
@@ -495,9 +503,17 @@ function board_validation_checks(b::Board)
     @assert t1==t2  "$b"
 end
 
-function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
+function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_moves=false)
     my_color, enemy_color = white_to_move ? (WHITE, BLACK) : (BLACK, WHITE)
     moves = Move[]
+
+    attacking_moves = []
+    attacked_squares = []
+    if !generate_only_attacking_moves
+        attacking_moves = generate_moves(b, !white_to_move, true)
+        attacked_squares = [m.sqr_dest for m in attacking_moves]
+@show square_name(attacked_squares)
+    end
 
     for square_index in 1:64
         sqr = UInt64(1) << (square_index-1)
@@ -513,17 +529,41 @@ function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
         # kings moves
         king = sqr & b.kings
         if king > 0
-            add_move!(moves, b, sqr, (sqr>>9) & ~FILE_H, my_color)
-            add_move!(moves, b, sqr, (sqr>>8),           my_color)
-            add_move!(moves, b, sqr, (sqr>>7) & ~FILE_A, my_color)
-            add_move!(moves, b, sqr, (sqr>>1) & ~FILE_H, my_color)
-            add_move!(moves, b, sqr, (sqr<<1) & ~FILE_A, my_color)
-            add_move!(moves, b, sqr, (sqr<<7) & ~FILE_H, my_color)
-            add_move!(moves, b, sqr, (sqr<<8),           my_color)
-            add_move!(moves, b, sqr, (sqr<<9) & ~FILE_A, my_color)
+            new_sqr = (sqr>>9) & ~FILE_H
+            if new_sqr ∉ attacked_squares
+                add_move!(moves, b, sqr, new_sqr, my_color)
+            end
+            new_sqr = (sqr>>8)         
+            if new_sqr ∉ attacked_squares
+                add_move!(moves, b, sqr, new_sqr, my_color)
+            end
+            new_sqr = (sqr>>7) & ~FILE_A
+            if new_sqr ∉ attacked_squares
+                add_move!(moves, b, sqr, new_sqr, my_color)
+            end
+            new_sqr = (sqr>>1) & ~FILE_H
+            if new_sqr ∉ attacked_squares
+                add_move!(moves, b, sqr, new_sqr, my_color)
+            end
+            new_sqr = (sqr<<1) & ~FILE_A
+            if new_sqr ∉ attacked_squares
+                add_move!(moves, b, sqr, new_sqr, my_color)
+            end
+            new_sqr = (sqr<<7) & ~FILE_H
+            if new_sqr ∉ attacked_squares
+                add_move!(moves, b, sqr, new_sqr, my_color)
+            end
+            new_sqr = (sqr<<8)         
+            if new_sqr ∉ attacked_squares
+                add_move!(moves, b, sqr, new_sqr, my_color)
+            end
+            new_sqr = (sqr<<9) & ~FILE_A
+            if new_sqr ∉ attacked_squares
+                add_move!(moves, b, sqr, new_sqr, my_color)
+            end
 
             # castling kingside (allows for chess960 castling too)
-            if !ignore_castling
+            if !generate_only_attacking_moves
                 travel_sqrs = []
                 if my_color == WHITE
                     # check for castling rights
@@ -536,20 +576,13 @@ function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
                         travel_sqrs = [SQUARE_F8, SQUARE_G8]
                     end
                 end
-                # check that the travel squares are empty
-                if reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in travel_sqrs])
-                    blocked = false
+@show travel_sqrs
+                if length(travel_sqrs)>0 &&
+                    # check that the travel squares are empty
+                    reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in travel_sqrs]) &&
                     # check that king's traversal squares are not attacked
-                    attacking_moves = generate_moves(b, !white_to_move, true)
-                    for m in attacking_moves
-                        if m.sqr_dest in travel_sqrs
-                            blocked = true
-                            break
-                        end
-                    end
-                    if !blocked && length(travel_sqrs)>0
+                    reduce(&, Bool[s ∉ attacked_squares for s in travel_sqrs])
                         push!(moves, Move(sqr, travel_sqrs[end], CASTLING_RIGHTS_WHITE_KINGSIDE) )
-                    end
                 end
 
                 # castling queenside (allows for chess960 castling too)
@@ -565,20 +598,12 @@ function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
                         travel_sqrs = [SQUARE_D8, SQUARE_C8]
                     end
                 end
-                # check that the travel squares are empty
-                if reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in travel_sqrs])
-                    blocked = false
+                if length(travel_sqrs)>0 &&
+                    # check that the travel squares are empty
+                    reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in travel_sqrs]) &&
                     # check that king's traversal squares are not attacked
-                    attacking_moves = generate_moves(b, !white_to_move, true)
-                    for m in attacking_moves
-                        if m.sqr_dest in travel_sqrs
-                            blocked = true
-                            break
-                        end
-                    end
-                    if !blocked && length(travel_sqrs)>0
+                    reduce(&, Bool[s ∉ attacked_squares for s in travel_sqrs])
                         push!(moves, Move(sqr, travel_sqrs[end], CASTLING_RIGHTS_WHITE_QUEENSIDE) )
-                    end
                 end
             end # castling checks
         end # king
