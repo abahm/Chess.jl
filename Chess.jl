@@ -282,6 +282,7 @@ function test_pins()
     set!(b, BLACK, QUEEN, H, 5)
     set!(b, WHITE, KNIGHT, C, 7)
     set!(b, BLACK, BISHOP, B, 8)
+    set!(b, BLACK, KNIGHT, G, 3)
 
     b.castling_rights = 0x00
     b.last_move_pawn_double_push = square(C, 5)
@@ -300,6 +301,6 @@ end
 #end
 #user_play_both_sides()
 #perft()
-#test_pins()
+test_pins()
 
 end

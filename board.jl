@@ -225,8 +225,8 @@ CHARACTER_SQUARE_EMPTY = '.'
 
 CHARACTER_CASTLING_AVAILABLE = "↔"
 CHARACTER_CASTLING_AVAILABLE = "⇋"
-CHARACTER_CASTLING_AVAILABLE = "⇔"
 CHARACTER_CASTLING_AVAILABLE = "⟷"
+CHARACTER_CASTLING_AVAILABLE = "⇔"
 
 #SMALL_NUMBERS = ['𝟣','𝟤','𝟥','𝟦','𝟧','𝟨','𝟩','𝟪']
 SMALL_NUMBERS = ['₁','₂','₃','₄','₅','₆','₇','₈']
@@ -272,7 +272,6 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
     if b.castling_rights & CASTLING_RIGHTS_WHITE_KINGSIDE > 0
         print(io, CHARACTER_CASTLING_AVAILABLE)
     end
-    print(io, "\n")
     print(io, "\n")
     #println("    a b c d e f g h")
     #println("    ᵃ ᵇ ᶜ ᵈ ᵉ ᶠ ᵍ ᴴ")
@@ -496,10 +495,8 @@ function board_validation_checks(b::Board)
     @assert t1==t2  "$b"
 end
 
-
 function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
-    my_color = white_to_move ? WHITE : BLACK
-    enemy_color = white_to_move ? BLACK : WHITE
+    my_color, enemy_color = white_to_move ? (WHITE, BLACK) : (BLACK, WHITE)
     moves = Move[]
 
     for square_index in 1:64
@@ -511,7 +508,7 @@ function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
         end
 
         # n.b. ÷ gives integer quotient like div()
-        row = (square_index-1)÷8 + 1
+        rank = (square_index-1)÷8 + 1
 
         # kings moves
         king = sqr & b.kings
@@ -685,19 +682,19 @@ function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
             TWO_SQUARE_FORWARD = 16
             TAKE_LEFT = 7
             TAKE_RIGHT = 9
-            START_ROW = 2
-            LAST_ROW = 7
+            START_RANK = 2
+            LAST_RANK = 7
             bitshift_direction = <<
             if my_color==BLACK
                 TAKE_LEFT = 9
                 TAKE_RIGHT = 7
-                START_ROW = 7
-                LAST_ROW = 2
+                START_RANK = 7
+                LAST_RANK = 2
                 bitshift_direction = >>
             end
             new_sqr = bitshift_direction(sqr, ONE_SQUARE_FORWARD)
             if occupied_by(b, new_sqr) == NONE
-                if row == LAST_ROW
+                if rank == LAST_RANK
                     add_move!(moves, b, sqr, new_sqr, my_color, 0, QUEEN)
                     add_move!(moves, b, sqr, new_sqr, my_color, 0, KNIGHT)
                     add_move!(moves, b, sqr, new_sqr, my_color, 0, ROOK)
@@ -705,7 +702,7 @@ function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
                 else
                     add_move!(moves, b, sqr, new_sqr, my_color)
                 end
-                if row == START_ROW
+                if rank == START_RANK
                     new_sqr = bitshift_direction(sqr, TWO_SQUARE_FORWARD)
                     if occupied_by(b, new_sqr) == NONE
                         add_move!(moves, b, sqr, new_sqr, my_color)
@@ -714,7 +711,7 @@ function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
             end
             new_sqr = bitshift_direction(sqr, TAKE_LEFT) & ~FILE_H
             if occupied_by(b, new_sqr) == enemy_color
-                if row == LAST_ROW
+                if rank == LAST_RANK
                     add_move!(moves, b, sqr, new_sqr, my_color, 0, QUEEN)
                     add_move!(moves, b, sqr, new_sqr, my_color, 0, KNIGHT)
                     add_move!(moves, b, sqr, new_sqr, my_color, 0, ROOK)
@@ -730,7 +727,7 @@ function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
             end
             new_sqr = bitshift_direction(sqr, TAKE_RIGHT) & ~FILE_A
             if occupied_by(b, new_sqr) == enemy_color
-                if row == LAST_ROW
+                if rank == LAST_RANK
                     add_move!(moves, b, sqr, new_sqr, my_color, QUEEN)
                     add_move!(moves, b, sqr, new_sqr, my_color, KNIGHT)
                     add_move!(moves, b, sqr, new_sqr, my_color, ROOK)
@@ -752,7 +749,7 @@ function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
     # check for pieces pinned to the king
     #   and remove any moves by them
     # PLAN: 1 find king's unique square
-    #kings_square = b.kings & (white_to_move ? b.white_pieces : b.black_pieces)
+    kings_square = b.kings & (white_to_move ? b.white_pieces : b.black_pieces)
     #       2 generate_moves only on queens,rooks,bishops
 
     #       3 look for captures of S
@@ -765,7 +762,6 @@ function generate_moves(b::Board, white_to_move::Bool, ignore_castling=false)
 
     moves
 end
-
 
 function make_move!(b::Board, m::Move)
     #print_algebraic(m,b)
