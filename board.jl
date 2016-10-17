@@ -512,7 +512,6 @@ function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_m
     if !generate_only_attacking_moves
         attacking_moves = generate_moves(b, !white_to_move, true)
         attacked_squares = [m.sqr_dest for m in attacking_moves]
-@show square_name(attacked_squares)
     end
 
     for square_index in 1:64
@@ -530,35 +529,35 @@ function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_m
         king = sqr & b.kings
         if king > 0
             new_sqr = (sqr>>9) & ~FILE_H
-            if new_sqr ∉ attacked_squares
+            if new_sqr ∉ attacked_squares  # can't move into check
                 add_move!(moves, b, sqr, new_sqr, my_color)
             end
-            new_sqr = (sqr>>8)         
-            if new_sqr ∉ attacked_squares
+            new_sqr = (sqr>>8)
+            if new_sqr ∉ attacked_squares  # can't move into check
                 add_move!(moves, b, sqr, new_sqr, my_color)
             end
             new_sqr = (sqr>>7) & ~FILE_A
-            if new_sqr ∉ attacked_squares
+            if new_sqr ∉ attacked_squares  # can't move into check
                 add_move!(moves, b, sqr, new_sqr, my_color)
             end
             new_sqr = (sqr>>1) & ~FILE_H
-            if new_sqr ∉ attacked_squares
+            if new_sqr ∉ attacked_squares  # can't move into check
                 add_move!(moves, b, sqr, new_sqr, my_color)
             end
             new_sqr = (sqr<<1) & ~FILE_A
-            if new_sqr ∉ attacked_squares
+            if new_sqr ∉ attacked_squares  # can't move into check
                 add_move!(moves, b, sqr, new_sqr, my_color)
             end
             new_sqr = (sqr<<7) & ~FILE_H
-            if new_sqr ∉ attacked_squares
+            if new_sqr ∉ attacked_squares  # can't move into check
                 add_move!(moves, b, sqr, new_sqr, my_color)
             end
-            new_sqr = (sqr<<8)         
-            if new_sqr ∉ attacked_squares
+            new_sqr = (sqr<<8)
+            if new_sqr ∉ attacked_squares  # can't move into check
                 add_move!(moves, b, sqr, new_sqr, my_color)
             end
             new_sqr = (sqr<<9) & ~FILE_A
-            if new_sqr ∉ attacked_squares
+            if new_sqr ∉ attacked_squares  # can't move into check
                 add_move!(moves, b, sqr, new_sqr, my_color)
             end
 
@@ -576,7 +575,7 @@ function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_m
                         travel_sqrs = [SQUARE_F8, SQUARE_G8]
                     end
                 end
-@show travel_sqrs
+
                 if length(travel_sqrs)>0 &&
                     # check that the travel squares are empty
                     reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in travel_sqrs]) &&
@@ -735,7 +734,7 @@ function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_m
                 end
             end
             new_sqr = bitshift_direction(sqr, TAKE_LEFT) & ~FILE_H
-            if occupied_by(b, new_sqr) == enemy_color
+            if occupied_by(b, new_sqr) == enemy_color || generate_only_attacking_moves
                 if rank == LAST_RANK
                     add_move!(moves, b, sqr, new_sqr, my_color, 0, QUEEN)
                     add_move!(moves, b, sqr, new_sqr, my_color, 0, KNIGHT)
@@ -751,7 +750,7 @@ function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_m
                 add_move!(moves, b, sqr, new_sqr, my_color, b.last_move_pawn_double_push)
             end
             new_sqr = bitshift_direction(sqr, TAKE_RIGHT) & ~FILE_A
-            if occupied_by(b, new_sqr) == enemy_color
+            if occupied_by(b, new_sqr) == enemy_color || generate_only_attacking_moves
                 if rank == LAST_RANK
                     add_move!(moves, b, sqr, new_sqr, my_color, QUEEN)
                     add_move!(moves, b, sqr, new_sqr, my_color, KNIGHT)
@@ -770,16 +769,34 @@ function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_m
     end # for square_index in 1:64
 
 
-    # PINNED pieces
-    # check for pieces pinned to the king
-    #   and remove any moves by them
-    # PLAN: 1 find king's unique square
-    kings_square = b.kings & (white_to_move ? b.white_pieces : b.black_pieces)
-    #       2 generate_moves only on queens,rooks,bishops
+    if !generate_only_attacking_moves
+        # PINNED pieces
+        # check for pieces pinned to the king
+        #   and remove any moves by them
+        # PLAN: find king's unique square
+        kings_square = b.kings & (white_to_move ? b.white_pieces : b.black_pieces)
+        #       find any enemy queens,rooks,bishops on same file/columm/diagonal as king
+        #       check if there is only an interposing mycolor piece
+        #       remove any moves by that piece away from that file/columm/diagonal
+        # OR,
+        # simply run the ply, make each move, and if the enemy response allows king capture,
+        # remove it from the list
+        illegal_moves = []
+        saved_board = deepcopy(b)
+        for m in moves
+            make_move!(b,m)
+            reply_moves = generate_moves(b, !white_to_move, true)
+            for rm in reply_moves
+                if rm.sqr_dest == kings_square
+                    push!(illegal_moves, m)
+                    break
+                end
+            end
+            b = deepcopy(saved_board)
+        end
+        filter!(m->m∉illegal_moves, moves)
+    end
 
-    #       3 look for captures of S
-
-    # TODO: only allow king moves that aren't to attacked squares
 
     # TODO: order moves by captures first
 

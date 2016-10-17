@@ -10,7 +10,7 @@ Bitboards are used to represent the state.   This code is a learning exercise fo
 
 ## Resources
 * [Chess programming wiki](https://chessprogramming.wikispaces.com/)
-* [Stockfish - excellent open source code](https://github.com/official-stockfish/Stockfish)
+* Open source code: [Stockfish - excellent](https://github.com/official-stockfish/Stockfish), [Ethereal](https://github.com/AndyGrant/Ethereal)
 * [Book - How Computers Play Chess (1991) - David Levy](https://www.amazon.com/Computers-Play-Chess-David-Levy/dp/4871878015/ref=sr_1_1?ie=UTF8&qid=1476596099&sr=8-1&keywords=david+levy+how+computers)
 * [Book - Computer Chess Compendium (2009) - David Levy](https://www.amazon.com/Computer-Chess-Compendium-David-N-L/dp/487187804X/ref=sr_1_7?ie=UTF8&qid=1476457271&sr=8-7&keywords=computer+chess)
 * [TSCP Chess] (https://sites.google.com/site/tscpchess/move-generation)
@@ -25,14 +25,17 @@ Bitboards are used to represent the state.   This code is a learning exercise fo
 I've gotten piece movement working and displaying.  Still to do are en passant, promotion, and testing for illegal moves that put the king in check.
 
 ![snapshot from 8 Oct 2016](2016-10-08-chess.png)
+<a href="snapshot from 8 Oct 2016"><img src="2016-10-08-chess.png" align="left" width="600" ></a>
 
 ### 2016 October 15
 The bitboard nearly works, castling and en passant have been added.  I found a nasty bug to do with << with a negative number.  It tested fine initially, but caused unpredictable behavior in v0.46 and v0.50, with different random numbers selected (from the same seed), and corruption of memory structures!   The test perft() reports incorrect numbers of moves by ply=4 because of this.  This version of the code generates moves at about 400kNodes/sec, which isn't bad, but could be faster for a 64-bit laptop.  
 
 ![perft snapshot from 15 Oct 2016](2016-10-15-perft.png)
+<a href="perft snapshot from 15 Oct 2016"><img src="2016-10-15-perft.png" align="left" width="932" ></a>
 
 The UI in the REPL looks a little nicer, and can allow the user to select a move from the list.
 
 ![ui snapshot from 15 Oct 2016](2016-10-15-chess.png)
+<a href="ui snapshot from 15 Oct 2016"><img src="2016-10-15-chess.png" align="left" width="760" ></a>
 
 Next to implement is pinned pieces and not allowing king moves into check.  I want generate_moves() to only make legal suggestions.

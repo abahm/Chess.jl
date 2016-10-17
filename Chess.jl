@@ -2,7 +2,7 @@
 
 module Chess
 
-#export perft, new_game
+export perft, new_game
 
 include("util.jl")
 include("move.jl")
@@ -321,7 +321,7 @@ end
 
 #user_play_both_sides()
 #perft()
-test_king_moves()
+#test_king_moves()
 #test_pins()
 
 end
