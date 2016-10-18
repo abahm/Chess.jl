@@ -3,6 +3,8 @@
 module Chess
 
 export perft, new_game
+export random_play_both_sides, user_play_both_sides
+
 
 include("util.jl")
 include("move.jl")
@@ -220,17 +222,6 @@ function test_position_4()
     print_algebraic(moves, b)
 end
 
-function perft()
-    # run through all the first 1,2,3,4,5,6,7 moves
-    # https://chessprogramming.wikispaces.com/Perft+Results
-    for i in 1:6
-        tic()
-        nodes = perft(new_game(), i)
-        t = toq()
-        println("$i   $nodes nodes  $(round(t,4)) s  $(round(nodes/(t*1000),2)) kn/s")
-    end
-end
-
 function test_enpassant()
     # https://github.com/official-stockfish/Stockfish
     b = Board()
@@ -323,5 +314,37 @@ end
 #perft()
 #test_king_moves()
 #test_pins()
+
+function test_fen()
+    for (name,fen) in perft_fens
+        println("$name $fen")
+        b, white_to_move = read_fen(fen)
+        printbd(b)
+        for i in 1:3
+            tic()
+            nodes = perft(b, i, white_to_move)
+            t = toq()
+            println("$i   $nodes nodes  $(round(t,4)) s  $(round(nodes/(t*1000),2)) kn/s")
+        end
+        println()
+        println()
+    end
+end
+
+
+#test_fen()
+
+function test_position_6()
+    b = Board()
+    set!(b, WHITE, PAWN, A, 7)
+    set!(b, BLACK, PAWN, H, 2)
+    printbd(b)
+    moves = generate_moves(b,true)
+    print_algebraic(moves, b)
+    make_move!(b, moves[1])
+    printbd(b)
+end
+
+test_position_6()
 
 end

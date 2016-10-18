@@ -331,6 +331,13 @@ function square_name(sqr::UInt64)
     "$file_character$rank_character"
 end
 
+function square(square_name::String)
+    assert(length(square_name)==2)
+    file = parse(Integer, square_name[1]-48)
+    rank = parse(Integer, square_name[2])
+    square(file, rank)
+end
+
 function square_name(sqrs::Array{UInt64,1})
     output = ""
     for s in sqrs
@@ -377,6 +384,51 @@ function print_algebraic(moves::Array{Move,1}, b::Board)
         end
     end
     println()
+end
+
+function read_fen(fen::String)
+    b = Board()
+    # r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -
+    file = 1
+    rank = 8
+    splitfen = split(fen, " ")
+    for t in splitfen[1]
+        if t=='K' set!(b, WHITE, KING,   file, rank)
+        elseif t=='Q' set!(b, WHITE, QUEEN,   file, rank)
+        elseif t=='R' set!(b, WHITE, ROOK,   file, rank)
+        elseif t=='B' set!(b, WHITE, BISHOP,   file, rank)
+        elseif t=='N' set!(b, WHITE, KNIGHT,   file, rank)
+        elseif t=='P' set!(b, WHITE, PAWN,   file, rank)
+        elseif t=='k' set!(b, BLACK, KING,   file, rank)
+        elseif t=='q' set!(b, BLACK, QUEEN,   file, rank)
+        elseif t=='r' set!(b, BLACK, ROOK,   file, rank)
+        elseif t=='b' set!(b, BLACK, BISHOP,   file, rank)
+        elseif t=='n' set!(b, BLACK, KNIGHT,   file, rank)
+        elseif t=='p' set!(b, BLACK, PAWN,   file, rank)
+        elseif isnumber(t) file += parse(Integer,t)-1
+        elseif t=='/'
+            rank -= 1
+            file = 0
+        end
+        file += 1
+    end
+
+    white_to_move = (splitfen[2]=="w")
+
+    b.castling_rights = 0x00
+    for t in splitfen[3]
+        if t=='K' b.castling_rights = b.castling_rights | CASTLING_RIGHTS_WHITE_KINGSIDE
+        elseif t=='Q' b.castling_rights = b.castling_rights | CASTLING_RIGHTS_WHITE_QUEENSIDE
+        elseif t=='k' b.castling_rights = b.castling_rights | CASTLING_RIGHTS_BLACK_KINGSIDE
+        elseif t=='q' b.castling_rights = b.castling_rights | CASTLING_RIGHTS_BLACK_QUEENSIDE
+        end
+    end
+
+    if splitfen[4]!="-"
+        b.last_move_pawn_double_push = square(splitfen[4])
+    end
+
+    b, white_to_move
 end
 
 # handle adding sliding moves of QUEEN, ROOK, BISHOP
@@ -883,7 +935,6 @@ function make_move!(b::Board, m::Move)
 
     # castling - move rook in addition to the king
     if m.castling > 0
-        @show m.castling
         if sqr_dest == SQUARE_C1
             b.rooks = (b.rooks & ~SQUARE_A1) | SQUARE_D1
             b.white_pieces = (b.white_pieces & ~SQUARE_A1)  | SQUARE_D1
