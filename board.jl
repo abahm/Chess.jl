@@ -834,17 +834,16 @@ function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_m
         # simply run the ply, make each move, and if the enemy response allows king capture,
         # remove it from the list
         illegal_moves = []
-        saved_board = deepcopy(b)
         for m in moves
-            make_move!(b,m)
-            reply_moves = generate_moves(b, !white_to_move, true)
+            test_board = deepcopy(b)
+            make_move!(test_board,m)
+            reply_moves = generate_moves(test_board, !white_to_move, true)
             for rm in reply_moves
                 if rm.sqr_dest == kings_square
                     push!(illegal_moves, m)
                     break
                 end
             end
-            b = deepcopy(saved_board)
         end
         filter!(m->m∉illegal_moves, moves)
     end
@@ -858,13 +857,24 @@ function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_m
 end
 
 function make_move!(b::Board, m::Move)
+    #println("function make_move!()")
     #print_algebraic(m,b)
     #print(b)
+    #@show m
+    #@show square_name(m.sqr_src)
+    #@show square_name(m.sqr_dest)
+    #printbd(b)
+    #@show b.white_pieces
+    #@show b.pawns
+    #@show b.queens
+    #@show b
 
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest
     color = piece_color_on_sqr(b,sqr_src)
+    assert(color!=NONE)
     moving_piece = piece_type_on_sqr(b,sqr_src)
+    assert(moving_piece!=NONE)
     taken_piece = piece_type_on_sqr(b,sqr_dest)
 
     # remove any piece on destination square
@@ -917,6 +927,9 @@ function make_move!(b::Board, m::Move)
         elseif m.promotion_to == KNIGHT  b.knights = b.knights | sqr_dest
         elseif m.promotion_to == ROOK    b.rooks = b.rooks | sqr_dest
         elseif m.promotion_to == BISHOP  b.bishops = b.bishops | sqr_dest
+        end
+        if color == WHITE      b.white_pieces = b.white_pieces | sqr_dest
+        elseif color == BLACK  b.black_pieces = b.black_pieces | sqr_dest
         end
     end
 

@@ -331,13 +331,10 @@ function test_fen()
     end
 end
 
-
-#test_fen()
-
 function test_position_6()
     b = Board()
     set!(b, WHITE, PAWN, A, 7)
-    set!(b, BLACK, PAWN, H, 2)
+    #set!(b, BLACK, PAWN, H, 2)
     printbd(b)
     moves = generate_moves(b,true)
     print_algebraic(moves, b)
@@ -345,6 +342,7 @@ function test_position_6()
     printbd(b)
 end
 
-test_position_6()
+test_fen()
+
 
 end
