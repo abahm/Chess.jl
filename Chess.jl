@@ -342,6 +342,14 @@ function test_position_6()
     printbd(b)
 end
 
+
+function test_position_7()
+    b, white_to_move = read_fen(perft_fens[4][2])
+    printbd(b)
+    moves = generate_moves(b,white_to_move)
+    print_algebraic(moves, b)
+end
+
 test_fen()
 
 

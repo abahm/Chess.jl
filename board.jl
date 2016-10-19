@@ -826,7 +826,6 @@ function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_m
         # check for pieces pinned to the king
         #   and remove any moves by them
         # PLAN: find king's unique square
-        kings_square = b.kings & (white_to_move ? b.white_pieces : b.black_pieces)
         #       find any enemy queens,rooks,bishops on same file/columm/diagonal as king
         #       check if there is only an interposing mycolor piece
         #       remove any moves by that piece away from that file/columm/diagonal
@@ -837,9 +836,11 @@ function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_m
         for m in moves
             test_board = deepcopy(b)
             make_move!(test_board,m)
+            kings_square = test_board.kings & (white_to_move ? test_board.white_pieces : test_board.black_pieces)
             reply_moves = generate_moves(test_board, !white_to_move, true)
             for rm in reply_moves
                 if rm.sqr_dest == kings_square
+                    #println(" filtering illegal mv  $(algebraic_move(m,b))")
                     push!(illegal_moves, m)
                     break
                 end
