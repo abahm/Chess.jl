@@ -6,9 +6,11 @@ export perft, new_game
 export random_play_both_sides, user_play_both_sides
 
 
+include("constants.jl")
 include("util.jl")
 include("move.jl")
 include("board.jl")
+include("position.jl")
 
 
 
@@ -350,7 +352,47 @@ function test_position_7()
     print_algebraic(moves, b)
 end
 
-test_fen()
 
+function test_position_8()
+    b, white_to_move = read_fen(perft_fens[3][2])
+    printbd(b)
+    moves = generate_moves(b,white_to_move)
+    print_algebraic(moves, b)
+    println("================================================")
+    println("================================================")
+    for m in moves
+        println()
+        println()
+        test_board = deepcopy(b)
+        make_move!(test_board, m)
+        printbd(test_board)
+        reply_moves = generate_moves(test_board, !white_to_move)
+        print_algebraic(reply_moves, test_board)
+    end
+end
+
+function test_position_9()
+    b, white_to_move = read_fen(perft_fens[6][2])
+    printbd(b)
+    moves = generate_moves(b,white_to_move)
+    print_algebraic(moves, b)
+    println("================================================")
+    println("================================================")
+    for m in moves
+        println()
+        println()
+        print_algebraic(m, b)
+        test_board = deepcopy(b)
+        make_move!(test_board, m)
+        printbd(test_board)
+        reply_moves = generate_moves(test_board, !white_to_move)
+        print_algebraic(reply_moves, test_board)
+        @show length(reply_moves)
+    end
+end
+
+
+
+test_position_9()
 
 end
