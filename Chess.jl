@@ -340,7 +340,7 @@ function test_position_8()
 end
 
 function test_position_9()
-    b, white_to_move = read_fen(perft_fens[6][2])
+    b, white_to_move = read_fen(perft_fens[3][2])
     printbd(b)
     moves = generate_moves(b,white_to_move)
     print_algebraic(moves)
