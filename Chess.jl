@@ -23,7 +23,7 @@ function perft(b::Board, levels::Integer, white_to_move::Bool=true)
     count = 0
     saved_board = deepcopy(b)
     for m in moves
-        #print_algebraic(m,b)
+        #print_algebraic(m)
         make_move!(b, m)
         count = count + perft(b, levels-1, !white_to_move)
         b = deepcopy(saved_board)
@@ -64,12 +64,12 @@ function random_play_both_sides(seed, show_move_history, b=new_game(), nmoves=10
         #@assert n_black_pieces >= count(i->i=='1', bits(b.black_pieces))
         #n_black_pieces = count(i->i=='1', bits(b.black_pieces))
 
-        #print_algebraic(moves_made,b)
+        #print_algebraic(moves_made)
         moves = generate_moves(b, white_to_move)
         if length(moves)==0
             break
         end
-        #print_algebraic(moves,b)
+        #print_algebraic(moves)
         r = rand(1:length(moves))
         m = moves[r]
 
@@ -122,12 +122,12 @@ function user_play_both_sides(b=new_game())
         #@assert n_black_pieces >= count(i->i=='1', bits(b.black_pieces))
         #n_black_pieces = count(i->i=='1', bits(b.black_pieces))
 
-        #print_algebraic(moves_made,b)
+        #print_algebraic(moves_made)
         moves = generate_moves(b, white_to_move)
         if length(moves)==0
             break
         end
-        print_algebraic(moves,b)
+        print_algebraic(moves)
 
         # user chooses next move
         r = parse(readline())
@@ -169,30 +169,30 @@ function test_position_2()
     printbd(b)
 
     moves = generate_moves(b, white_to_move)
-    print_algebraic(moves, b)
+    print_algebraic(moves)
     m = moves[12]  # d4
-    print_algebraic(m, b)
+    print_algebraic(m)
     make_move!(b, m)
     printbd(b)
 
     moves = generate_moves(b, !white_to_move)
-    print_algebraic(moves, b)
+    print_algebraic(moves)
     m = moves[10]  # e5
-    print_algebraic(m, b)
+    print_algebraic(m)
     make_move!(b, m)
     printbd(b)
 
     moves = generate_moves(b, white_to_move)
-    print_algebraic(moves, b)
+    print_algebraic(moves)
     m = moves[29]  # d4
-    print_algebraic(m, b)
+    print_algebraic(m)
     make_move!(b, m)
     printbd(b)
 
     moves = generate_moves(b, !white_to_move)
-    print_algebraic(moves, b)
+    print_algebraic(moves)
     m = moves[10]  # d4
-    print_algebraic(m, b)
+    print_algebraic(m)
     make_move!(b, m)
     printbd(b)
 end
@@ -221,7 +221,7 @@ function test_position_4()
     set!(b, BLACK, PAWN, H, 5)
     printbd(b)
     moves = generate_moves(b,true)
-    print_algebraic(moves, b)
+    print_algebraic(moves)
 end
 
 function test_enpassant()
@@ -233,12 +233,12 @@ function test_enpassant()
     printbd(b)
 
     moves = generate_moves(b, true)
-    print_algebraic(moves, b)
+    print_algebraic(moves)
     make_move!(b,moves[2])
     printbd(b)
 
     moves = generate_moves(b, false, moves[2].sqr_dest)
-    print_algebraic(moves, b)
+    print_algebraic(moves)
     make_move!(b,moves[2])
     printbd(b)
 end
@@ -254,21 +254,21 @@ function test_castling()
 
     printbd(b)
     moves = generate_moves(b, true)
-    print_algebraic(moves,b)
+    print_algebraic(moves)
     m = moves[17]
-    print_algebraic(m,b)
+    print_algebraic(m)
 
     make_move!(b, m)
     printbd(b)
     moves = generate_moves(b, true)
-    print_algebraic(moves,b)
+    print_algebraic(moves)
     m = moves[5]
-    print_algebraic(m,b)
+    print_algebraic(m)
 
     make_move!(b, m)
     printbd(b)
     moves = generate_moves(b, true)
-    print_algebraic(moves,b)
+    print_algebraic(moves)
 end
 
 function test_king_moves()
@@ -284,7 +284,7 @@ function test_king_moves()
     printbd(b)
 
     moves = generate_moves(b, true)
-    print_algebraic(moves, b)
+    print_algebraic(moves)
 end
 
 function test_pins()
@@ -304,7 +304,7 @@ function test_pins()
     printbd(b)
 
     moves = generate_moves(b, true)
-    print_algebraic(moves, b)
+    print_algebraic(moves)
 end
 
 
@@ -339,7 +339,7 @@ function test_position_6()
     #set!(b, BLACK, PAWN, H, 2)
     printbd(b)
     moves = generate_moves(b,true)
-    print_algebraic(moves, b)
+    print_algebraic(moves)
     make_move!(b, moves[1])
     printbd(b)
 end
@@ -349,7 +349,7 @@ function test_position_7()
     b, white_to_move = read_fen(perft_fens[4][2])
     printbd(b)
     moves = generate_moves(b,white_to_move)
-    print_algebraic(moves, b)
+    print_algebraic(moves)
 end
 
 
@@ -357,7 +357,7 @@ function test_position_8()
     b, white_to_move = read_fen(perft_fens[3][2])
     printbd(b)
     moves = generate_moves(b,white_to_move)
-    print_algebraic(moves, b)
+    print_algebraic(moves)
     println("================================================")
     println("================================================")
     for m in moves
@@ -367,7 +367,7 @@ function test_position_8()
         make_move!(test_board, m)
         printbd(test_board)
         reply_moves = generate_moves(test_board, !white_to_move)
-        print_algebraic(reply_moves, test_board)
+        print_algebraic(reply_moves)
     end
 end
 
@@ -375,18 +375,18 @@ function test_position_9()
     b, white_to_move = read_fen(perft_fens[6][2])
     printbd(b)
     moves = generate_moves(b,white_to_move)
-    print_algebraic(moves, b)
+    print_algebraic(moves)
     println("================================================")
     println("================================================")
     for m in moves
         println()
         println()
-        print_algebraic(m, b)
+        print_algebraic(m)
         test_board = deepcopy(b)
         make_move!(test_board, m)
         printbd(test_board)
         reply_moves = generate_moves(test_board, !white_to_move)
-        print_algebraic(reply_moves, test_board)
+        print_algebraic(reply_moves)
         @show length(reply_moves)
     end
 end

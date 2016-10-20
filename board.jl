@@ -184,25 +184,6 @@ function piece_color_on_sqr(b::Board, sqr::UInt64)
     return NONE
 end
 
-CHARACTER_KING, CHARACTER_QUEEN, CHARACTER_ROOK, CHARACTER_BISHOP, CHARACTER_KNIGHT, CHARACTER_PAWN = 'k','q','r','b','n','p'
-CHARACTER_KING, CHARACTER_QUEEN, CHARACTER_ROOK, CHARACTER_BISHOP, CHARACTER_KNIGHT, CHARACTER_PAWN = '♔','♕','♖','♗','♘','♙'
-function character_sqr_piece(b::Board, sqr::UInt64)
-    s = CHARACTER_SQUARE_EMPTY
-    p = piece_type_on_sqr(b, sqr)
-    if     p == KING    s = CHARACTER_KING
-    elseif p == QUEEN   s = CHARACTER_QUEEN
-    elseif p == ROOK    s = CHARACTER_ROOK
-    elseif p == BISHOP  s = CHARACTER_BISHOP
-    elseif p == KNIGHT  s = CHARACTER_KNIGHT
-    elseif p == PAWN    s = CHARACTER_PAWN
-    end
-
-    if (b.white_pieces & sqr)>0
-        s = s + 6
-    end
-    s
-end
-
 CHARACTER_SQUARE_EMPTY, CHARACTER_SQUARE_ATTACKED, CHARACTER_SQUARE_CAPTURE = '⋅', '•', 'x'  #'∘'
 CHARACTER_SQUARE_EMPTY = '–'
 CHARACTER_SQUARE_EMPTY = '⋯'
@@ -236,7 +217,9 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
         print(io, "$(SMALL_NUMBERS[r])   ")
         for c in 1:8
             sqr = square(c, r)
-            s = character_sqr_piece(b,sqr)
+            piece = piece_type_on_sqr(b, sqr)
+            color = piece_color_on_sqr(b, sqr)
+            s = character_for_piece(color, piece)
             if moves!=nothing
                 for m in moves
                     if (m.sqr_dest & sqr)>0
@@ -270,20 +253,6 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
     print(io, "    𝖺 𝖻 𝖼 𝖽 𝖾 𝖿 𝗀 𝗁\n")
 end
 
-function debug_print(b::Board)
-    for r in 8:-1:1
-        print("$(SMALL_NUMBERS[r])   ")
-        for c in 1:8
-            sqr = square(c, r)
-            s = character_sqr_piece(b,sqr)
-            print("$s ")
-        end
-        println()
-    end
-    println()
-    println("    𝖺 𝖻 𝖼 𝖽 𝖾 𝖿 𝗀 𝗁")
-end
-
 function occupied_by(b::Board, sqr::UInt64)
 
     if b.white_pieces & sqr > 0
@@ -297,81 +266,11 @@ function occupied_by(b::Board, sqr::UInt64)
     return NONE
 end
 
-function square_name(sqr::UInt64)
-    file_character = ' '
-    if sqr & FILE_A > 0  file_character = 'a'  end
-    if sqr & FILE_B > 0  file_character = 'b'  end
-    if sqr & FILE_C > 0  file_character = 'c'  end
-    if sqr & FILE_D > 0  file_character = 'd'  end
-    if sqr & FILE_E > 0  file_character = 'e'  end
-    if sqr & FILE_F > 0  file_character = 'f'  end
-    if sqr & FILE_G > 0  file_character = 'g'  end
-    if sqr & FILE_H > 0  file_character = 'h'  end
-    rank_character = ' '
-    if sqr & RANK_1 > 0  rank_character = '1'  end
-    if sqr & RANK_2 > 0  rank_character = '2'  end
-    if sqr & RANK_3 > 0  rank_character = '3'  end
-    if sqr & RANK_4 > 0  rank_character = '4'  end
-    if sqr & RANK_5 > 0  rank_character = '5'  end
-    if sqr & RANK_6 > 0  rank_character = '6'  end
-    if sqr & RANK_7 > 0  rank_character = '7'  end
-    if sqr & RANK_8 > 0  rank_character = '8'  end
-    "$file_character$rank_character"
-end
-
 function square(square_name::String)
     assert(length(square_name)==2)
     file = parse(Integer, square_name[1]-48)
     rank = parse(Integer, square_name[2])
     square(file, rank)
-end
-
-function square_name(sqrs::Array{UInt64,1})
-    output = ""
-    for s in sqrs
-        output = output * square_name(s) * " "
-    end
-    output
-end
-
-function algebraic_move(m::Move, b::Board)
-    if m.castling & CASTLING_RIGHTS_WHITE_KINGSIDE > 0 ||
-       m.castling & CASTLING_RIGHTS_BLACK_KINGSIDE > 0
-        return "⚬-⚬" #"○-○" #"o-o"
-    end
-
-    if m.castling & CASTLING_RIGHTS_WHITE_QUEENSIDE > 0 ||
-       m.castling & CASTLING_RIGHTS_BLACK_QUEENSIDE > 0
-        return "⚬-⚬-⚬" #"○-○-○" #"o-o-o"
-    end
-
-    piece_character = character_sqr_piece(b, m.sqr_src)
-    if b.pawns & m.sqr_src > 0
-        piece_character = ""
-    end
-    sqr_name = square_name(m.sqr_dest)
-    optionally_promoted_to = ""
-    if     m.promotion_to==QUEEN   optionally_promoted_to = "=$CHARACTER_QUEEN"
-    elseif m.promotion_to==KNIGHT  optionally_promoted_to = "=$CHARACTER_KNIGHT"
-    elseif m.promotion_to==ROOK    optionally_promoted_to = "=$CHARACTER_ROOK"
-    elseif m.promotion_to==BISHOP  optionally_promoted_to = "=$CHARACTER_BISHOP"
-    end
-
-    "$piece_character $sqr_name$optionally_promoted_to"
-end
-
-function print_algebraic(m::Move, b::Board)
-    println(algebraic_move(m, b) * " ")
-end
-
-function print_algebraic(moves::Array{Move,1}, b::Board)
-    for (i,m) in enumerate(moves)
-        print(algebraic_move(m, b) * " ")
-        if i%10==0
-            println()
-        end
-    end
-    println()
 end
 
 function read_fen(fen::String)
