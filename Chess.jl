@@ -42,7 +42,6 @@ function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game
             print("\033[2J")  # clear screen
             height = displaysize(STDOUT)[1]
             print("\033[$(height)A") # up 12 lines
-            #println()
         end
         println()
         printbd(b)
@@ -81,21 +80,19 @@ function random_play_both_sides(n)
     end
 end
 
-function user_play_both_sides(b=new_game())
+function user_play_both_sides(b=new_game(), show_move_history=true)
     n_white_pieces = count(i->i=='1', bits(b.white_pieces))
     n_black_pieces = count(i->i=='1', bits(b.black_pieces))
     white_to_move = true
     moves_made = []
     for i in 1:100000
-        #print("\033[2J")  # clear
-        #print("\033[11A") # up 12 lines
-        #println()
+        print("\033[2J")  # clear screen
+        height = displaysize(STDOUT)[1]
+        print("\033[$(height)A") # up 12 lines
         println()
         printbd(b)
 
-        #println(" #w $(count(i->i=='1', bits(b.white_pieces)))  #b $(count(i->i=='1', bits(b.black_pieces)))")
-
-        if true
+        if show_move_history
             for (j,mm) in enumerate(moves_made)
                 if (j-1)%2==0
                     println()
@@ -107,13 +104,6 @@ function user_play_both_sides(b=new_game())
             println()
         end
 
-        # validation
-        #@assert n_white_pieces >= count(i->i=='1', bits(b.white_pieces))
-        #n_white_pieces = count(i->i=='1', bits(b.white_pieces))
-        #@assert n_black_pieces >= count(i->i=='1', bits(b.black_pieces))
-        #n_black_pieces = count(i->i=='1', bits(b.black_pieces))
-
-        #print_algebraic(moves_made)
         moves = generate_moves(b, white_to_move)
         if length(moves)==0
             break
@@ -121,16 +111,15 @@ function user_play_both_sides(b=new_game())
         print_algebraic(moves)
 
         # user chooses next move
+        println("Please select next move (1-$(length(moves))):")
         r = parse(readline())
         if typeof(r)==Void || r==0 || r>length(moves)
+            println("No move selected, quitting.")
             break
         end
         m = moves[r]
 
         push!(moves_made, algebraic_move(m))
-        #mn = ceil(Integer, (i)/2)
-        #println("$mn " * (white_to_move?"":"... ") * algebraic_move(m) * "  ")
-        #println()
         make_move!(b, m)
 
         white_to_move = !white_to_move
