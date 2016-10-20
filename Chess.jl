@@ -31,40 +31,34 @@ function perft(b::Board, levels::Integer, white_to_move::Bool=true)
     return count
 end
 
-function random_play_both_sides(seed, show_move_history, b=new_game(), nmoves=1000)
+function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game(), max_number_of_moves=1000)
     srand(seed)
     n_white_pieces = count(i->i=='1', bits(b.white_pieces))
     n_black_pieces = count(i->i=='1', bits(b.black_pieces))
     white_to_move = true
-    moves_made = []
-    for i in 1:nmoves
-        #print("\033[2J")  # clear
-        #print("\033[11A") # up 12 lines
-        #println()
+    move_history = Move[]
+    for i in 1:max_number_of_moves
+        if show_move_history
+            print("\033[2J")  # clear screen
+            height = displaysize(STDOUT)[1]
+            print("\033[$(height)A") # up 12 lines
+            #println()
+        end
         println()
         printbd(b)
 
-        #println(" #w $(count(i->i=='1', bits(b.white_pieces)))  #b $(count(i->i=='1', bits(b.black_pieces)))")
-
         if show_move_history
-            for (j,mm) in enumerate(moves_made)
+            for (j,move) in enumerate(move_history)
                 if (j-1)%2==0
                     println()
                     print("$(floor(Integer,(j+1)/2)). ")
                 end
-                print(mm)
+                print(move)
                 print(" \t")
             end
             println()
         end
 
-        # validation
-        #@assert n_white_pieces >= count(i->i=='1', bits(b.white_pieces))
-        #n_white_pieces = count(i->i=='1', bits(b.white_pieces))
-        #@assert n_black_pieces >= count(i->i=='1', bits(b.black_pieces))
-        #n_black_pieces = count(i->i=='1', bits(b.black_pieces))
-
-        #print_algebraic(moves_made)
         moves = generate_moves(b, white_to_move)
         if length(moves)==0
             break
@@ -73,20 +67,17 @@ function random_play_both_sides(seed, show_move_history, b=new_game(), nmoves=10
         r = rand(1:length(moves))
         m = moves[r]
 
-        push!(moves_made, algebraic_move(m,b))
-        #mn = ceil(Integer, (i)/2)
-        #println("$mn " * (white_to_move?"":"... ") * algebraic_move(m,b) * "  ")
-        #println()
         make_move!(b, m)
+        push!(move_history, m)
 
         white_to_move = !white_to_move
-        sleep(0.001)
+        sleep(delay)
     end
 end
 
 function random_play_both_sides(n)
     for random_seed in 1:n
-        random_play_both_sides(random_seed, false)
+        random_play_both_sides(random_seed, true, 0.1)
     end
 end
 
@@ -136,9 +127,9 @@ function user_play_both_sides(b=new_game())
         end
         m = moves[r]
 
-        push!(moves_made, algebraic_move(m,b))
+        push!(moves_made, algebraic_move(m))
         #mn = ceil(Integer, (i)/2)
-        #println("$mn " * (white_to_move?"":"... ") * algebraic_move(m,b) * "  ")
+        #println("$mn " * (white_to_move?"":"... ") * algebraic_move(m) * "  ")
         #println()
         make_move!(b, m)
 
