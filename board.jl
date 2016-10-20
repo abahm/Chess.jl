@@ -184,6 +184,13 @@ function piece_color_on_sqr(b::Board, sqr::UInt64)
     return NONE
 end
 
+function occupied_by(b::Board, sqr::UInt64)
+    # alias for piece_color_on_sqr()
+    return piece_color_on_sqr(b, sqr)
+end
+
+
+
 CHARACTER_SQUARE_EMPTY, CHARACTER_SQUARE_ATTACKED, CHARACTER_SQUARE_CAPTURE = '⋅', '•', 'x'  #'∘'
 CHARACTER_SQUARE_EMPTY = '–'
 CHARACTER_SQUARE_EMPTY = '⋯'
@@ -251,19 +258,6 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
     #println("    𝖠 𝖡 𝖢 𝖣 𝖤 𝖥 𝖦 𝖧")
     #println("    𝕒 𝕓 𝕔 𝕕 𝕖 𝕗 𝕘 𝕙")
     print(io, "    𝖺 𝖻 𝖼 𝖽 𝖾 𝖿 𝗀 𝗁\n")
-end
-
-function occupied_by(b::Board, sqr::UInt64)
-
-    if b.white_pieces & sqr > 0
-        return WHITE
-    end
-
-    if b.black_pieces & sqr > 0
-        return BLACK
-    end
-
-    return NONE
 end
 
 function square(square_name::String)

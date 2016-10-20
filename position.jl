@@ -279,7 +279,7 @@ function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_m
             if b.last_move_pawn_double_push > 0 &&
                 new_sqr == bitshift_direction(b.last_move_pawn_double_push, ONE_SQUARE_FORWARD) &&
                 !generate_only_attacking_moves
-                add_move!(moves, b, my_color, PAWN, sqr, new_sqr, en_passsant_sqr=b.last_move_pawn_double_push)
+                add_move!(moves, b, my_color, PAWN, sqr, new_sqr, en_passant_sqr=b.last_move_pawn_double_push)
             end
             new_sqr = bitshift_direction(sqr, TAKE_RIGHT) & ~FILE_A
             if occupied_by(b, new_sqr) == enemy_color || generate_only_attacking_moves
@@ -296,7 +296,7 @@ function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_m
             if b.last_move_pawn_double_push > 0 &&
                 new_sqr == bitshift_direction(b.last_move_pawn_double_push, ONE_SQUARE_FORWARD) &&
                 !generate_only_attacking_moves
-                add_move!(moves, b, my_color, PAWN, sqr, new_sqr, en_passsant_sqr=b.last_move_pawn_double_push)
+                add_move!(moves, b, my_color, PAWN, sqr, new_sqr, en_passant_sqr=b.last_move_pawn_double_push)
             end
         end  #  if pawn > 0
     end # for square_index in 1:64

@@ -287,16 +287,6 @@ function test_pins()
     print_algebraic(moves)
 end
 
-
-#test_castling()
-#@show perft(new_game(), 2)
-#@assert perft(new_game(), 3) == 8902 "perft 3 gives $(perft(new_game(), 3)) instead of 8092"
-
-#user_play_both_sides()
-#perft()
-#test_king_moves()
-#test_pins()
-
 function test_fen()
     for (name,fen) in perft_fens
         println("$name $fen")
@@ -324,14 +314,12 @@ function test_position_6()
     printbd(b)
 end
 
-
 function test_position_7()
     b, white_to_move = read_fen(perft_fens[4][2])
     printbd(b)
     moves = generate_moves(b,white_to_move)
     print_algebraic(moves)
 end
-
 
 function test_position_8()
     b, white_to_move = read_fen(perft_fens[3][2])

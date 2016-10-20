@@ -40,13 +40,12 @@ function algebraic_move(m::Move)
     end
 
     piece_character = character_for_piece(m.color_moving, m.piece_moving)
-    #if b.pawns & m.sqr_src > 0
-    #    piece_character = ""
-    #end
+
     sqr_name = square_name(m.sqr_dest)
+
     optionally_promoted_to = ""
     if m.promotion_to!=NONE
-        optionally_promoted_to = character_for_piece(m.color_moving, m.promotion_to)
+        optionally_promoted_to = "($(character_for_piece(m.color_moving, m.promotion_to)) )"
     end
 
     "$piece_character $sqr_name$optionally_promoted_to"
