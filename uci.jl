@@ -1,7 +1,7 @@
 # chess.jl
 
-function perft(b::Board, levels::Integer, white_to_move::Bool=true)
-    moves = generate_moves(b, white_to_move)
+function perft(b::Board, levels::Integer)
+    moves = generate_moves(b)
     if levels<=1
         return length(moves)
     end
@@ -10,7 +10,7 @@ function perft(b::Board, levels::Integer, white_to_move::Bool=true)
     for m in moves
         test_board = deepcopy(b)
         make_move!(test_board, m)
-        count = count + perft(test_board, levels-1, !white_to_move)
+        count = count + perft(test_board, levels-1)
     end
     return count
 end
@@ -19,7 +19,6 @@ function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game
     srand(seed)
     n_white_pieces = count(i->i=='1', bits(b.white_pieces))
     n_black_pieces = count(i->i=='1', bits(b.black_pieces))
-    white_to_move = true
     move_history = Move[]
     for i in 1:max_number_of_moves
         if show_move_history
@@ -42,7 +41,7 @@ function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game
             println()
         end
 
-        moves = generate_moves(b, white_to_move)
+        moves = generate_moves(b)
         if length(moves)==0
             break
         end
@@ -53,7 +52,6 @@ function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game
         make_move!(b, m)
         push!(move_history, m)
 
-        white_to_move = !white_to_move
         sleep(delay)
     end
 end
@@ -67,7 +65,6 @@ end
 function user_play_both_sides(b=new_game(), show_move_history=true)
     n_white_pieces = count(i->i=='1', bits(b.white_pieces))
     n_black_pieces = count(i->i=='1', bits(b.black_pieces))
-    white_to_move = true
     moves_made = []
     for i in 1:100000
         print("\033[2J")  # clear screen
@@ -88,14 +85,14 @@ function user_play_both_sides(b=new_game(), show_move_history=true)
             println()
         end
 
-        moves = generate_moves(b, white_to_move)
+        moves = generate_moves(b)
         if length(moves)==0
             break
         end
         print_algebraic(moves)
 
         # user chooses next move
-        println("Please select next move (1-$(length(moves))) (or divide [n]):")
+        println("Please select next move (1-$(length(moves))) (or divide [n] or debug):")
         r = readline()
         if startswith(r, "divide")
             levels = parse(split(r)[2])-1
@@ -103,12 +100,16 @@ function user_play_both_sides(b=new_game(), show_move_history=true)
             for m in moves
                 test_board = deepcopy(b)
                 make_move!(test_board, m)
-                count = perft(test_board, levels, !white_to_move)
+                count = perft(test_board, levels)
                 total_count += count
                 println("$m $count")
             end
             println("Nodes: $total_count")
             println("Moves: $(length(moves))")
+            break
+        end
+        if startswith(r, "debug")
+            @show b
             break
         end
         mv = parse(r)
@@ -120,10 +121,8 @@ function user_play_both_sides(b=new_game(), show_move_history=true)
 
         push!(moves_made, algebraic_move(m))
         make_move!(b, m)
-
-        white_to_move = !white_to_move
     end
 end
 
-
-user_play_both_sides()
+b = read_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/32Q2/PPPBBPpP/RN2K2R w KQkq -")
+user_play_both_sides(b)

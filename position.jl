@@ -32,14 +32,17 @@ end
 
 
 
-function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_moves=false)
-    my_color, enemy_color = white_to_move ? (WHITE, BLACK) : (BLACK, WHITE)
+function generate_moves(b::Board, generate_only_attacking_moves=false)
+    my_color = b.side_to_move
+    enemy_color = my_color==WHITE ? BLACK : WHITE
     moves = Move[]
 
     attacking_moves = []
     attacked_squares = []
     if !generate_only_attacking_moves
-        attacking_moves = generate_moves(b, !white_to_move, true)
+        b.side_to_move = enemy_color
+        attacking_moves = generate_moves(b, true)
+        b.side_to_move = my_color
         attacked_squares = [m.sqr_dest for m in attacking_moves]
     end
 
@@ -92,46 +95,55 @@ function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_m
 
             # castling kingside (allows for chess960 castling too)
             if !generate_only_attacking_moves
-                travel_sqrs = []
+                kings_travel_sqrs = []
+                rooks_travel_sqrs = []
                 if my_color == WHITE
                     # check for castling rights
                     if b.castling_rights & CASTLING_RIGHTS_WHITE_KINGSIDE > 0
-                        travel_sqrs = [SQUARE_F1, SQUARE_G1]
+                        kings_travel_sqrs = [SQUARE_F1, SQUARE_G1]
+                        rooks_travel_sqrs = [SQUARE_G1]
                     end
                 elseif my_color == BLACK
                     # check for castling rights
                     if b.castling_rights & CASTLING_RIGHTS_BLACK_KINGSIDE > 0
-                        travel_sqrs = [SQUARE_F8, SQUARE_G8]
+                        kings_travel_sqrs = [SQUARE_F8, SQUARE_G8]
+                        rooks_travel_sqrs = [SQUARE_G8]
                     end
                 end
 
-                if length(travel_sqrs)>0 &&
-                    # check that the travel squares are empty
-                    reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in travel_sqrs]) &&
+                if length(kings_travel_sqrs)>0 &&
+                    # check that the king's travel squares are empty
+                    reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in kings_travel_sqrs]) &&
+                    # check that the rook's travel squares are empty
+                    reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in rooks_travel_sqrs]) &&
                     # check that king's traversal squares are not attacked
-                    reduce(&, Bool[s ∉ attacked_squares for s in travel_sqrs])
-                        push!(moves, Move(my_color, KING, sqr, travel_sqrs[end], castling=CASTLING_RIGHTS_WHITE_KINGSIDE) )
+                    reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
+                        push!(moves, Move(my_color, KING, sqr, kings_travel_sqrs[end], castling=CASTLING_RIGHTS_WHITE_KINGSIDE) )
                 end
 
                 # castling queenside (allows for chess960 castling too)
-                travel_sqrs = []
+                kings_travel_sqrs = []
                 if my_color == WHITE
                     # check for castling rights
                     if b.castling_rights & CASTLING_RIGHTS_WHITE_QUEENSIDE > 0
-                        travel_sqrs = [SQUARE_D1, SQUARE_C1]
+                        kings_travel_sqrs = [SQUARE_D1, SQUARE_C1]
+                        rooks_travel_sqrs = [SQUARE_B1, SQUARE_C1]
                     end
                 elseif my_color == BLACK
                     # check for castling rights
                     if b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE > 0
-                        travel_sqrs = [SQUARE_D8, SQUARE_C8]
+                        kings_travel_sqrs = [SQUARE_D8, SQUARE_C8]
+                        rooks_travel_sqrs = [SQUARE_B8, SQUARE_C8]
                     end
                 end
-                if length(travel_sqrs)>0 &&
-                    # check that the travel squares are empty
-                    reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in travel_sqrs]) &&
+                if length(kings_travel_sqrs)>0 &&
+                    # check that the kings travel squares are empty
+                    reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in kings_travel_sqrs]) &&
+                    # check that the rook's travel squares are empty
+                    reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in rooks_travel_sqrs]) &&
                     # check that king's traversal squares are not attacked
-                    reduce(&, Bool[s ∉ attacked_squares for s in travel_sqrs])
-                        push!(moves, Move(my_color, KING, sqr, travel_sqrs[end], castling=CASTLING_RIGHTS_WHITE_QUEENSIDE) )
+                    reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
+                        push!(moves, Move(my_color, KING, sqr, kings_travel_sqrs[end], castling=CASTLING_RIGHTS_WHITE_QUEENSIDE) )
                 end
             end # castling checks
         end # king
@@ -317,8 +329,8 @@ function generate_moves(b::Board, white_to_move::Bool, generate_only_attacking_m
         for m in moves
             test_board = deepcopy(b)
             make_move!(test_board,m)
-            kings_square = test_board.kings & (white_to_move ? test_board.white_pieces : test_board.black_pieces)
-            reply_moves = generate_moves(test_board, !white_to_move, true)
+            kings_square = test_board.kings & (test_board.side_to_move==WHITE ? test_board.white_pieces : test_board.black_pieces)
+            reply_moves = generate_moves(test_board, true)
             for rm in reply_moves
                 if rm.sqr_dest == kings_square
                     #println(" filtering illegal mv  $(algebraic_move(m))")
@@ -445,6 +457,12 @@ function make_move!(b::Board, m::Move)
             b.rooks = (b.rooks & ~SQUARE_H8) | SQUARE_F8
             b.black_pieces = (b.black_pieces & ~SQUARE_H8) | SQUARE_F8
         end
+    end
+
+    if b.side_to_move == WHITE
+        b.side_to_move = BLACK
+    elseif b.side_to_move == BLACK
+        b.side_to_move = WHITE
     end
 
     board_validation_checks(b)

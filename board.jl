@@ -11,15 +11,17 @@ type Board   # known as "dense Board representation"
     bishops::UInt64
     knights::UInt64
     pawns::UInt64
+    side_to_move::UInt8
     castling_rights::UInt8
     last_move_pawn_double_push::UInt64
 end
-Board() = Board(0,0, 0,0,0, 0,0,0, 0x0F,0)
+Board() = Board(0,0, 0,0,0, 0,0,0, NONE, 0x0F,0)
 
 import Base.deepcopy
 Base.deepcopy(b::Board) = Board(b.white_pieces, b.black_pieces,
                                 b.kings, b.queens, b.rooks,
                                 b.bishops, b.knights, b.pawns,
+                                b.side_to_move,
                                 b.castling_rights,
                                 b.last_move_pawn_double_push)
 
@@ -164,7 +166,7 @@ function new_game()
     set!(b, BLACK, KNIGHT, G, 8)
     set!(b, BLACK, ROOK,   H, 8)
 
-    #@show b
+    b.side_to_move = WHITE
     b
 end
 
@@ -207,6 +209,7 @@ CHARACTER_CASTLING_AVAILABLE = "⇔"
 #SMALL_NUMBERS = ['𝟣','𝟤','𝟥','𝟦','𝟧','𝟨','𝟩','𝟪']
 SMALL_NUMBERS = ['₁','₂','₃','₄','₅','₆','₇','₈']
 function printbd(b::Board, io=STDOUT, moves=nothing)
+    println("FEN $(write_fen(b))")
     print(io, "       ")
     if b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE > 0
         print(io, CHARACTER_CASTLING_AVAILABLE)
@@ -214,6 +217,10 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
     print(io, "       ")
     if b.castling_rights & CASTLING_RIGHTS_BLACK_KINGSIDE > 0
         print(io, CHARACTER_CASTLING_AVAILABLE)
+    end
+    if b.side_to_move==WHITE     print("     WHITE to move")
+    elseif b.side_to_move==BLACK print("     BLACK to move")
+    else                         print("     ????? to move")
     end
     if b.last_move_pawn_double_push > 0
         print(io, "   en passant from $(square_name(b.last_move_pawn_double_push))")
@@ -295,6 +302,11 @@ function read_fen(fen::String)
     end
 
     white_to_move = (splitfen[2]=="w")
+    if white_to_move
+        b.side_to_move = WHITE
+    else
+        b.side_to_move = BLACK
+    end
 
     b.castling_rights = 0x00
     for t in splitfen[3]
@@ -309,7 +321,17 @@ function read_fen(fen::String)
         b.last_move_pawn_double_push = square(splitfen[4])
     end
 
-    b, white_to_move
+    b
+end
+
+function write_fen(b::Board)
+    empty_squares = 0
+    for rank in 8:-1:1
+        for file in 1:8
+
+        end
+    end
+    " "
 end
 
 function draw_with_fonts()
@@ -319,6 +341,7 @@ end
 
 function board_validation_checks(b::Board)
     # check no overlap - each square can have one and only one piece
+    assert(b.side_to_move!=NONE)
 
     for i in 0:63
         sqr = UInt64(1) << i
