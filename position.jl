@@ -456,6 +456,11 @@ function make_move!(b::Board, m::Move)
         elseif sqr_src == SQUARE_H8   b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_BLACK_KINGSIDE
         end
     end
+    if sqr_dest == SQUARE_A1      b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_WHITE_QUEENSIDE
+    elseif sqr_dest == SQUARE_H1  b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_WHITE_KINGSIDE
+    elseif sqr_dest == SQUARE_A8  b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_BLACK_QUEENSIDE
+    elseif sqr_dest == SQUARE_H8  b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_BLACK_KINGSIDE
+    end
 
     # castling - move rook in addition to the king
     if m.castling > 0

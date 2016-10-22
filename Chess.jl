@@ -24,14 +24,7 @@ include("uci.jl")
 
 
 b = read_fen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ -")
-printbd(b)
-moves = generate_moves(b)
-print_algebraic(moves)
-assert(length(moves)==43)
-
-
-b = read_fen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ -")
-#user_play_both_sides(b)
+user_play_both_sides(b)
 
 
 end
