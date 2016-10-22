@@ -150,6 +150,7 @@ function test_king_moves()
 end
 
 function test_pins()
+    println("Checking test_pins() ...")
     b = Board()
     set!(b, WHITE, KING, E, 5)
     set!(b, WHITE, PAWN, D, 5)
@@ -167,6 +168,7 @@ function test_pins()
 
     moves = generate_moves(b)
     print_algebraic(moves)
+    assert(length(moves)==5)
 end
 
 function test_fen()
@@ -247,7 +249,7 @@ end
 
 
 function perft_runs()
-    println("Running perft ...")
+    println("Checking perft_runs() ...")
     for pd in perft_data
         desc, fen, correct_results = pd[1], pd[2], pd[3]
         println(desc)
@@ -273,6 +275,7 @@ function perft_runs()
     end
 end
 
+test_pins()
 perft_runs()
 
 println("Tests complete!")

@@ -4,8 +4,14 @@ println("Welcome to Julia Chess, v0.01")
 
 module Chess
 
+export WHITE, BLACK
+export KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN
+export A, B, C, D, E, F, G, H
+export square
+export generate_moves, make_move!
+export print_algebraic
+export Board, set!, new_game, read_fen, printbd
 export perft, perft_data
-export new_game, read_fen, printbd
 export random_play_both_sides, user_play_both_sides
 
 include("constants.jl")

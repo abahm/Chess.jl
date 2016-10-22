@@ -325,13 +325,67 @@ function read_fen(fen::String)
 end
 
 function write_fen(b::Board)
+    fen = ""
     empty_squares = 0
     for rank in 8:-1:1
         for file in 1:8
-
+            sqr = square(file, rank)
+            if (b.white_pieces & sqr > 0 || b.black_pieces & sqr > 0) && empty_squares > 0
+                fen *= string(empty_squares)
+                empty_squares = 0
+            end
+            if b.white_pieces & sqr > 0
+                if b.kings & sqr > 0   fen *= "K" end
+                if b.queens & sqr > 0  fen *= "Q" end
+                if b.rooks & sqr > 0   fen *= "R" end
+                if b.bishops & sqr > 0 fen *= "B" end
+                if b.knights & sqr > 0 fen *= "N" end
+                if b.pawns & sqr > 0   fen *= "P" end
+            elseif b.black_pieces & sqr > 0
+                if b.kings & sqr > 0   fen *= "k" end
+                if b.queens & sqr > 0  fen *= "q" end
+                if b.rooks & sqr > 0   fen *= "r" end
+                if b.bishops & sqr > 0 fen *= "b" end
+                if b.knights & sqr > 0 fen *= "n" end
+                if b.pawns & sqr > 0   fen *= "p" end
+            else
+                empty_squares += 1
+            end
+        end # for file in 1:8
+        if empty_squares > 0
+            fen *= string(empty_squares)
         end
+        if rank>1
+            fen *= "/"
+        end
+        empty_squares = 0
     end
-    " "
+    fen *= " "
+    if b.side_to_move==WHITE
+        fen *= "w"
+    else
+        fen *= "b"
+    end
+    fen *= " "
+    if b.castling_rights & CASTLING_RIGHTS_WHITE_KINGSIDE > 0 fen *= "K" end
+    if b.castling_rights & CASTLING_RIGHTS_WHITE_QUEENSIDE > 0 fen *= "Q" end
+    if b.castling_rights & CASTLING_RIGHTS_BLACK_KINGSIDE > 0 fen *= "k" end
+    if b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE > 0 fen *= "q" end
+    fen *= " "
+    if b.last_move_pawn_double_push > 0
+        sqr = b.last_move_pawn_double_push
+        if b.side_to_move==WHITE
+            sqr = sqr << 8
+        else
+            sqr = sqr >> 8
+        end
+        fen *= square_name(sqr)
+    else
+        fen *= "-"
+    end
+
+
+    fen
 end
 
 function draw_with_fonts()

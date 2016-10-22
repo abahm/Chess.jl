@@ -34,6 +34,7 @@ end
 
 function generate_moves(b::Board, generate_only_attacking_moves=false)
     my_color = b.side_to_move
+    assert(my_color==WHITE || my_color==BLACK)
     enemy_color = my_color==WHITE ? BLACK : WHITE
     moves = Move[]
 
@@ -313,7 +314,6 @@ function generate_moves(b::Board, generate_only_attacking_moves=false)
         end  #  if pawn > 0
     end # for square_index in 1:64
 
-
     if !generate_only_attacking_moves
         # PINNED pieces
         # check for pieces pinned to the king
@@ -329,10 +329,12 @@ function generate_moves(b::Board, generate_only_attacking_moves=false)
         for m in moves
             test_board = deepcopy(b)
             make_move!(test_board,m)
-            kings_square = test_board.kings & (test_board.side_to_move==WHITE ? test_board.white_pieces : test_board.black_pieces)
+            kings_square = test_board.kings & (my_color==WHITE ? test_board.white_pieces : test_board.black_pieces)
+            assert( kings_square>0 ) # can't find the king
+            #println("Checking $(m) for pins against KING on $(square_name(kings_square)) ($kings_square)")
             reply_moves = generate_moves(test_board, true)
-            for rm in reply_moves
-                if rm.sqr_dest == kings_square
+            for replymv in reply_moves
+                if replymv.sqr_dest == kings_square
                     #println(" filtering illegal mv  $(algebraic_move(m))")
                     push!(illegal_moves, m)
                     break
