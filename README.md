@@ -36,3 +36,13 @@ The UI in the REPL looks a little nicer, and can allow the user to select a move
 ![ui snapshot from 15 Oct 2016](2016-10-15-chess.png)
 
 Next to implement is pinned pieces and not allowing king moves into check.  I want generate_moves() to only make legal suggestions.
+
+
+### 2016 October 22 - v0.10
+The legal move generator is working now, and being tested against a handful of different known perft starting positions.  FEN input and output is now supported, which helps in debugging against other engines.   All the perft results are correct up to level three.  Past that the engine takes a long time to run, so these still have to be evaluated.   The kNodes/sec has dropped by an order of magnitude (the engine is much slower, due to checking for legal moves (pinned pieces, etc.)).   
+
+![perft snapshot from 22 Oct 2016](2016-10-22-perft.png)
+
+The UI in the REPL looks even nicer, and now allows the developer to print debug or "divide" output.
+
+![ui snapshot from 22 Oct 2016](2016-10-22-chess.png)
