@@ -47,6 +47,16 @@ function generate_moves(b::Board, generate_only_attacking_moves=false)
         attacked_squares = [m.sqr_dest for m in attacking_moves]
     end
 
+    # is king in check?
+    kings_square = b.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
+    if kings_square == UInt64(0)
+        return moves # empty list
+    end
+    assert( kings_square > 0 ) # can't find the king!
+    king_in_check = kings_square ∈ attacked_squares
+    my_color_str = my_color==WHITE?"WHITE":"BLACK"
+    #@show my_color_str, king_in_check
+
     for square_index in 1:64
         sqr = UInt64(1) << (square_index-1)
 
@@ -94,8 +104,8 @@ function generate_moves(b::Board, generate_only_attacking_moves=false)
                 add_move!(moves, b, my_color, KING, sqr, new_sqr)
             end
 
-            # castling kingside (allows for chess960 castling too)
-            if !generate_only_attacking_moves
+            # castling kingside
+            if !king_in_check && !generate_only_attacking_moves
                 kings_travel_sqrs = []
                 rooks_travel_sqrs = []
                 if my_color == WHITE
@@ -146,7 +156,7 @@ function generate_moves(b::Board, generate_only_attacking_moves=false)
                     reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
                         push!(moves, Move(my_color, KING, sqr, kings_travel_sqrs[end], castling=CASTLING_RIGHTS_WHITE_QUEENSIDE) )
                 end
-            end # castling checks
+            end # castling moves
         end # king
 
         # rook moves
@@ -323,18 +333,21 @@ function generate_moves(b::Board, generate_only_attacking_moves=false)
         #       check if there is only an interposing mycolor piece
         #       remove any moves by that piece away from that file/columm/diagonal
         # OR,
-        # simply run the ply, make each move, and if the enemy response allows king capture,
-        # remove it from the list
+        #       simply run the ply, make each move, and if the enemy response allows king capture,
+        #       remove it from the list
         illegal_moves = []
         for m in moves
             test_board = deepcopy(b)
             make_move!(test_board,m)
-            kings_square = test_board.kings & (my_color==WHITE ? test_board.white_pieces : test_board.black_pieces)
-            assert( kings_square>0 ) # can't find the king
-            #println("Checking $(m) for pins against KING on $(square_name(kings_square)) ($kings_square)")
+            kings_new_square = test_board.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
+            if m.piece_moving==KING
+                kings_new_square = m.sqr_dest
+            end
+            #println("Checking $(m) for pins against KING on $(square_name(kings_new_square))")
             reply_moves = generate_moves(test_board, true)
             for replymv in reply_moves
-                if replymv.sqr_dest == kings_square
+                #@show replymv
+                if replymv.sqr_dest == kings_new_square
                     #println(" filtering illegal mv  $(algebraic_move(m))")
                     push!(illegal_moves, m)
                     break

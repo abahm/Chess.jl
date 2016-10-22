@@ -6,23 +6,6 @@ end
 
 using Chess
 
-function test_position_1()
-    b = Board()
-
-    set!(b, WHITE, ROOK, E, 2)
-    set!(b, BLACK, PAWN, E, 5)
-
-    b.side_to_move = WHITE
-
-    moves = generate_moves(b)
-    printbd(b,moves)
-    m = moves[11]
-
-    make_move!(b, m)
-
-    printbd(b)
-end
-
 function test_position_2()
     b = new_game()
     printbd(b)
@@ -149,28 +132,6 @@ function test_king_moves()
     print_algebraic(moves)
 end
 
-function test_pins()
-    println("Checking test_pins() ...")
-    b = Board()
-    set!(b, WHITE, KING, E, 5)
-    set!(b, WHITE, PAWN, D, 5)
-    set!(b, BLACK, PAWN, C, 5)
-    set!(b, BLACK, ROOK, A, 5)
-    set!(b, WHITE, PAWN, G, 5)
-    set!(b, BLACK, QUEEN, H, 5)
-    set!(b, WHITE, KNIGHT, C, 7)
-    set!(b, BLACK, BISHOP, B, 8)
-    set!(b, BLACK, KNIGHT, G, 3)
-    b.side_to_move = WHITE
-    b.castling_rights = 0x00
-    b.last_move_pawn_double_push = square(C, 5)
-    printbd(b)
-
-    moves = generate_moves(b)
-    print_algebraic(moves)
-    assert(length(moves)==5)
-end
-
 function test_fen()
     for (name,fen) in perft_data
         println("$name $fen")
@@ -248,6 +209,55 @@ function test_position_9()
 end
 
 
+
+function test_no_castling_in_check()
+    println("Checking test_no_castling_in_check() ...")
+    b = Board()
+    set!(b, WHITE, KING, E, 1)
+    set!(b, WHITE, ROOK, H, 1)
+    set!(b, BLACK, KNIGHT, D, 3)
+    set!(b, BLACK, KING, A, 8)
+    b.side_to_move = WHITE
+    b.castling_rights = CASTLING_RIGHTS_ALL
+    printbd(b)
+
+    moves = generate_moves(b)
+    print_algebraic(moves)
+    assert(length(moves)==4)
+end
+
+function test_pinned_pieces_still_attack_enemy_king()
+    println("Checking test_pinned_pieces_still_attack_enemy_king() ...")
+    b = read_fen("rnQq1k1r/pp2bppp/2p5/8/2B5/8/PPP1N1PP/RNBnK2R w KQ -")
+    printbd(b)
+    moves = generate_moves(b)
+    print_algebraic(moves)
+    assert(length(moves)==43)
+end
+
+function test_pins()
+    println("Checking test_pins() ...")
+    b = Board()
+    set!(b, WHITE, KING, E, 5)
+    set!(b, WHITE, PAWN, D, 5)
+    set!(b, BLACK, PAWN, C, 5)
+    set!(b, BLACK, ROOK, A, 5)
+    set!(b, WHITE, PAWN, G, 5)
+    set!(b, BLACK, QUEEN, H, 5)
+    set!(b, WHITE, KNIGHT, C, 7)
+    set!(b, BLACK, BISHOP, B, 8)
+    set!(b, BLACK, KNIGHT, G, 3)
+    set!(b, BLACK, KING, H, 8)
+    b.side_to_move = WHITE
+    b.castling_rights = 0x00
+    b.last_move_pawn_double_push = square(C, 5)
+    printbd(b)
+
+    moves = generate_moves(b)
+    print_algebraic(moves)
+    assert(length(moves)==5)
+end
+
 function perft_runs()
     println("Checking perft_runs() ...")
     for pd in perft_data
@@ -258,7 +268,7 @@ function perft_runs()
         printbd(b)
         for (levels, count) in enumerate(correct_results)
             # computation time too long at higher levels
-            if levels==5
+            if levels==4
                 break
             end
             engine_count = perft(b, levels)
@@ -275,6 +285,8 @@ function perft_runs()
     end
 end
 
+test_pinned_pieces_still_attack_enemy_king()
+test_no_castling_in_check()
 test_pins()
 perft_runs()
 

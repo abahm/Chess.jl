@@ -123,25 +123,3 @@ function user_play_both_sides(b=new_game(), show_move_history=true)
         make_move!(b, m)
     end
 end
-
-#b = read_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/32Q2/PPPBBPpP/RN2K2R w KQkq -")
-#user_play_both_sides()#b)
-
-
-b = Board()
-set!(b, WHITE, KING, E, 5)
-set!(b, WHITE, PAWN, D, 5)
-set!(b, BLACK, PAWN, C, 5)
-set!(b, BLACK, ROOK, A, 5)
-set!(b, WHITE, PAWN, G, 5)
-set!(b, BLACK, QUEEN, H, 5)
-set!(b, WHITE, KNIGHT, C, 7)
-set!(b, BLACK, BISHOP, B, 8)
-set!(b, BLACK, KNIGHT, G, 3)
-b.side_to_move = WHITE
-b.castling_rights = 0x00
-b.last_move_pawn_double_push = square(C, 5)
-printbd(b)
-
-moves = generate_moves(b)
-print_algebraic(moves)

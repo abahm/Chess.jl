@@ -112,18 +112,29 @@ function Base.show(io::IO, b::Board)
     print(io, "\n")
 end
 
+function clear_square(b::Board, c, r)
+    sqr = square(c, r)
+    b.white_pieces = b.white_pieces & ~sqr
+    b.black_pieces = b.black_pieces & ~sqr
+    b.kings = b.kings & ~sqr
+    b.queens = b.queens & ~sqr
+    b.rooks = b.rooks & ~sqr
+    b.bishops = b.bishops & ~sqr
+    b.knights = b.knights & ~sqr
+    b.pawns = b.pawns & ~sqr
+end
+
 function set!(b::Board, color, p, c, r)
-    #@show color, p, r, c
-    mask = square(c, r)
-    #@show bin(mask, 64)
-    if p==KING    b.kings|=mask    end
-    if p==QUEEN   b.queens|=mask   end
-    if p==ROOK    b.rooks|=mask    end
-    if p==BISHOP  b.bishops|=mask  end
-    if p==KNIGHT  b.knights|=mask  end
-    if p==PAWN    b.pawns|=mask    end
-    if color==WHITE  b.white_pieces|=mask   end
-    if color==BLACK  b.black_pieces|=mask   end
+    clear_square(b, c, r) # insure all prior information is cleared out
+    sqr = square(c, r)
+    if p==KING    b.kings|=sqr    end
+    if p==QUEEN   b.queens|=sqr   end
+    if p==ROOK    b.rooks|=sqr    end
+    if p==BISHOP  b.bishops|=sqr  end
+    if p==KNIGHT  b.knights|=sqr  end
+    if p==PAWN    b.pawns|=sqr    end
+    if color==WHITE  b.white_pieces|=sqr   end
+    if color==BLACK  b.black_pieces|=sqr   end
     nothing
 end
 
