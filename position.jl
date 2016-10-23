@@ -38,8 +38,8 @@ function generate_moves(b::Board, generate_only_attacking_moves=false)
     enemy_color = my_color==WHITE ? BLACK : WHITE
     moves = Move[]
 
-    attacking_moves = []
-    attacked_squares = []
+    attacking_moves = Move[]
+    attacked_squares = UInt64[]
     if !generate_only_attacking_moves
         b.side_to_move = enemy_color
         attacking_moves = generate_moves(b, true)

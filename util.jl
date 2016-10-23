@@ -3,7 +3,7 @@
 
 # https://chessprogramming.wikispaces.com/Perft+Results
 #
-perft_data = [
+const perft_data = [
 ("perft_fen1", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", [20, 400, 8902, 197281, 4865609, 119060324, 3195901860]),
 ("perft_fen2", "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -", [48, 2039, 97862, 4085603, 193690690]),
 ("perft_fen3", "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - -", [14, 191, 2812, 43238, 674624, 11030083, 178633661]),
@@ -12,9 +12,6 @@ perft_data = [
 ("perft_fen5", "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8 ", [44, 1486, 62379, 2103487, 89941194]),
 ("perft_fen6", "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10", [46, 2079, 89890, 3894594, 164075551]),
 ]
-
-
-
 
 
 function square(c::Integer, r::Integer)
@@ -62,17 +59,14 @@ end
 
 
 
-CHARACTER_KING, CHARACTER_QUEEN, CHARACTER_ROOK, CHARACTER_BISHOP, CHARACTER_KNIGHT, CHARACTER_PAWN = 'k','q','r','b','n','p'
-CHARACTER_KING, CHARACTER_QUEEN, CHARACTER_ROOK, CHARACTER_BISHOP, CHARACTER_KNIGHT, CHARACTER_PAWN = '♔','♕','♖','♗','♘','♙'
+#CHARACTERS = ['k','q','r','b','n','p']
+const CHARACTERS = ['♔','♕','♖','♗','♘','♙']
 function character_for_piece(color, piece)
-    s = CHARACTER_SQUARE_EMPTY
-    if     piece==KING    s = CHARACTER_KING
-    elseif piece==QUEEN   s = CHARACTER_QUEEN
-    elseif piece==ROOK    s = CHARACTER_ROOK
-    elseif piece==BISHOP  s = CHARACTER_BISHOP
-    elseif piece==KNIGHT  s = CHARACTER_KNIGHT
-    elseif piece==PAWN    s = CHARACTER_PAWN
+    if piece==0
+        return CHARACTER_SQUARE_EMPTY
     end
+    
+    s = CHARACTERS[piece]
     if color==WHITE
         s = s + 6
     end
