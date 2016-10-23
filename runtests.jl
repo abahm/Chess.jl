@@ -210,6 +210,11 @@ end
 
 
 
+
+
+
+
+
 function test_no_castling_in_check()
     println("Checking test_no_castling_in_check() ...")
     b = Board()
@@ -268,7 +273,7 @@ function perft_runs()
         printbd(b)
         for (levels, count) in enumerate(correct_results)
             # computation time too long at higher levels
-            if levels==4
+            if levels==5
                 break
             end
             engine_count = perft(b, levels)
