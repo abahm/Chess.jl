@@ -181,27 +181,6 @@ function new_game()
     b
 end
 
-@inline function piece_type_on_sqr(b::Board, sqr::UInt64)
-    if (b.kings   & sqr)>0  return KING  end
-    if (b.queens  & sqr)>0  return QUEEN  end
-    if (b.rooks   & sqr)>0  return ROOK  end
-    if (b.bishops & sqr)>0  return BISHOP  end
-    if (b.knights & sqr)>0  return KNIGHT  end
-    if (b.pawns   & sqr)>0  return PAWN  end
-    return NONE
-end
-
-@inline function piece_color_on_sqr(b::Board, sqr::UInt64)
-    if (b.white_pieces & sqr)>0  return WHITE  end
-    if (b.black_pieces & sqr)>0  return BLACK  end
-    return NONE
-end
-
-@inline function occupied_by(b::Board, sqr::UInt64)
-    # alias for piece_color_on_sqr()
-    return piece_color_on_sqr(b, sqr)
-end
-
 
 
 CHARACTER_SQUARE_ATTACKED = '•'
