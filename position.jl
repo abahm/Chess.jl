@@ -21,10 +21,10 @@ end
     return piece_color_on_sqr(b, sqr)
 end
 
-
 # handle adding sliding moves of QUEEN, ROOK, BISHOP
 #  which end by being BLOCKED or capturing an enemy piece
-UNBLOCKED, BLOCKED = 0,1
+const UNBLOCKED = UInt8(0)
+const BLOCKED = UInt8(1)
 @inline function add_move!(moves, b::Board, my_color::UInt8, my_piece::UInt8, src_sqr::UInt64, dest_sqr::UInt64; promotion_to::UInt8=NONE, en_passant_sqr::UInt64=UInt64(0))
     # move is off the board
     if dest_sqr==0
@@ -51,8 +51,6 @@ UNBLOCKED, BLOCKED = 0,1
 
     return UNBLOCKED
 end
-
-
 
 function generate_moves(b::Board, generate_only_attacking_moves=false)
     my_color = b.side_to_move
@@ -387,21 +385,7 @@ function generate_moves(b::Board, generate_only_attacking_moves=false)
     moves
 end
 
-
-
 function make_move!(b::Board, m::Move)
-    #println("function make_move!()")
-    #print_algebraic(m,b)
-    #print(b)
-    #@show m
-    #@show square_name(m.sqr_src)
-    #@show square_name(m.sqr_dest)
-    #printbd(b)
-    #@show b.white_pieces
-    #@show b.pawns
-    #@show b.queens
-    #@show b
-
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest
     color = piece_color_on_sqr(b,sqr_src)

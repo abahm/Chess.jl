@@ -1,6 +1,6 @@
 # chess.jl
 
-println("Welcome to Julia Chess, v0.10")
+println("Welcome to Julia Chess, v0.20")
 
 module Chess
 
@@ -20,6 +20,7 @@ include("util.jl")
 include("move.jl")
 include("board.jl")
 include("position.jl")
+include("evaluation.jl")
 include("uci.jl")
 
 

@@ -17,8 +17,6 @@ end
 
 function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game(), max_number_of_moves=1000)
     srand(seed)
-    n_white_pieces = count(i->i=='1', bits(b.white_pieces))
-    n_black_pieces = count(i->i=='1', bits(b.black_pieces))
     move_history = Move[]
     for i in 1:max_number_of_moves
         if show_move_history
@@ -63,8 +61,6 @@ function random_play_both_sides(n)
 end
 
 function user_play_both_sides(b=new_game(), show_move_history=true)
-    n_white_pieces = count(i->i=='1', bits(b.white_pieces))
-    n_black_pieces = count(i->i=='1', bits(b.black_pieces))
     moves_made = []
     for i in 1:100000
         print("\033[2J")  # clear screen
@@ -121,5 +117,53 @@ function user_play_both_sides(b=new_game(), show_move_history=true)
 
         push!(moves_made, algebraic_move(m))
         make_move!(b, m)
+    end
+end
+
+function best_play_both_sides(show_move_history = true, delay=1.0, b=new_game(), max_number_of_moves=100)
+    move_history = Move[]
+    for i in 1:max_number_of_moves
+        if show_move_history
+            print("\033[2J")  # clear screen
+            height = displaysize(STDOUT)[1]
+            print("\033[$(height)A") # up 12 lines
+        end
+        println()
+        printbd(b)
+
+        if show_move_history
+            for (j,move) in enumerate(move_history)
+                if (j-1)%2==0
+                    println()
+                    print("$(floor(Integer,(j+1)/2)). ")
+                end
+                print(move)
+                print(" \t")
+            end
+            println()
+        end
+
+        moves = generate_moves(b)
+        if length(moves)==0
+            break
+        end
+
+        multiplier = (b.side_to_move==WHITE ? 1 : -1)
+        best_value = -Inf
+        best_move = nothing
+        for m in moves
+            test_board = deepcopy(b)
+            make_move!(test_board, m)
+            value = multiplier*evaluate(test_board)
+            if best_value < value
+                best_value = value
+                best_move = m
+            end
+        end
+
+        make_move!(b, best_move)
+        push!(move_history, best_move)
+
+        sleep(delay)
     end
 end

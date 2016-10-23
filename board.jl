@@ -257,7 +257,8 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
     #println("    𝔞 𝔟 𝔠 𝔡 𝔢 𝔣 𝔤 𝔥")
     #println("    𝖠 𝖡 𝖢 𝖣 𝖤 𝖥 𝖦 𝖧")
     #println("    𝕒 𝕓 𝕔 𝕕 𝕖 𝕗 𝕘 𝕙")
-    print(io, "    𝖺 𝖻 𝖼 𝖽 𝖾 𝖿 𝗀 𝗁\n")
+    print(io, "    𝖺 𝖻 𝖼 𝖽 𝖾 𝖿 𝗀 𝗁")
+    print(io, "    Score $(evaluate(b))\n")
 end
 
 function square(square_name::String)
@@ -429,15 +430,15 @@ function board_validation_checks(b::Board)
     @assert b.kings & b.queens & b.rooks & b.bishops & b.knights & b.pawns == 0  "$b"
 
     # check counts
-    n_white_pieces = count(i->i=='1', bits(b.white_pieces))
-    n_black_pieces = count(i->i=='1', bits(b.black_pieces))
+    n_white_pieces = count(b.white_pieces)
+    n_black_pieces = count(b.black_pieces)
 
-    n_kings = count(i->i=='1', bits(b.kings))
-    n_queens = count(i->i=='1', bits(b.queens))
-    n_rooks = count(i->i=='1', bits(b.rooks))
-    n_bishops = count(i->i=='1', bits(b.bishops))
-    n_knights = count(i->i=='1', bits(b.knights))
-    n_pawns = count(i->i=='1', bits(b.pawns))
+    n_kings = count(b.kings)
+    n_queens = count(b.queens)
+    n_rooks = count(b.rooks)
+    n_bishops = count(b.bishops)
+    n_knights = count(b.knights)
+    n_pawns = count(b.pawns)
 
     t1 = n_white_pieces + n_black_pieces
     t2 = n_kings + n_queens + n_rooks + n_bishops + n_knights + n_pawns

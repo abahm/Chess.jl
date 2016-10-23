@@ -57,18 +57,20 @@ function square_name(sqrs::Array{UInt64,1})
     output
 end
 
-
-
 #CHARACTERS = ['k','q','r','b','n','p']
 const CHARACTERS = ['♔','♕','♖','♗','♘','♙']
 function character_for_piece(color, piece)
     if piece==0
         return CHARACTER_SQUARE_EMPTY
     end
-    
+
     s = CHARACTERS[piece]
     if color==WHITE
         s = s + 6
     end
     s
+end
+
+@inline function Base.count(bit_mask::UInt64)
+    count(i->i=='1', bits(bit_mask))
 end
