@@ -181,7 +181,7 @@ function new_game()
     b
 end
 
-function piece_type_on_sqr(b::Board, sqr::UInt64)
+@inline function piece_type_on_sqr(b::Board, sqr::UInt64)
     if (b.kings   & sqr)>0  return KING  end
     if (b.queens  & sqr)>0  return QUEEN  end
     if (b.rooks   & sqr)>0  return ROOK  end
@@ -191,13 +191,13 @@ function piece_type_on_sqr(b::Board, sqr::UInt64)
     return NONE
 end
 
-function piece_color_on_sqr(b::Board, sqr::UInt64)
+@inline function piece_color_on_sqr(b::Board, sqr::UInt64)
     if (b.white_pieces & sqr)>0  return WHITE  end
     if (b.black_pieces & sqr)>0  return BLACK  end
     return NONE
 end
 
-function occupied_by(b::Board, sqr::UInt64)
+@inline function occupied_by(b::Board, sqr::UInt64)
     # alias for piece_color_on_sqr()
     return piece_color_on_sqr(b, sqr)
 end
