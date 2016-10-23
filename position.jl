@@ -25,7 +25,7 @@ end
 # handle adding sliding moves of QUEEN, ROOK, BISHOP
 #  which end by being BLOCKED or capturing an enemy piece
 UNBLOCKED, BLOCKED = 0,1
-function add_move!(moves, b::Board, my_color::UInt8, my_piece::UInt8, src_sqr::UInt64, dest_sqr::UInt64; promotion_to::UInt8=NONE, en_passant_sqr::UInt64=UInt64(0))
+@inline function add_move!(moves, b::Board, my_color::UInt8, my_piece::UInt8, src_sqr::UInt64, dest_sqr::UInt64; promotion_to::UInt8=NONE, en_passant_sqr::UInt64=UInt64(0))
     # move is off the board
     if dest_sqr==0
         return BLOCKED
