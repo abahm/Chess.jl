@@ -29,8 +29,7 @@ include("uci.jl")
 
 
 # start up an interactive board
-#user_play_both_sides()
-
-uci_loop()
+user_play_both_sides()
+#uci_loop()
 
 end
