@@ -28,6 +28,17 @@ function Base.show(io::IO, move::Move)
 end
 
 
+# for UCI interface
+function long_algebraic_move(m::Move)
+    uci_move = square_name(m.sqr_src)
+    uci_move *= square_name(m.sqr_dest)
+    if m.promotion_to==QUEEN   uci_move *= "q"  end
+    if m.promotion_to==KNIGHT  uci_move *= "n"  end
+    if m.promotion_to==BISHOP  uci_move *= "b"  end
+    if m.promotion_to==ROOK    uci_move *= "r"  end
+    uci_move
+end
+
 function algebraic_move(m::Move)
     if m.castling & CASTLING_RIGHTS_WHITE_KINGSIDE > 0 ||
        m.castling & CASTLING_RIGHTS_BLACK_KINGSIDE > 0

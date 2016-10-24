@@ -202,6 +202,7 @@ CHARACTER_CASTLING_AVAILABLE = "⇔"
 #SMALL_NUMBERS = ['𝟣','𝟤','𝟥','𝟦','𝟧','𝟨','𝟩','𝟪']
 SMALL_NUMBERS = ['₁','₂','₃','₄','₅','₆','₇','₈']
 function printbd(b::Board, io=STDOUT, moves=nothing)
+    println("$(version)")
     println("FEN $(write_fen(b))")
     print(io, "       ")
     if b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE > 0

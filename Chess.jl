@@ -1,8 +1,11 @@
 # chess.jl
 
-println("Welcome to Julia Chess, v0.20")
-
 module Chess
+
+const version = "Julia Chess, v0.21"
+const author = "Alan Bahm"
+
+println("Welcome to $(version) by $author")
 
 export WHITE, BLACK
 export KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN
@@ -28,5 +31,6 @@ include("uci.jl")
 # start up an interactive board
 #user_play_both_sides()
 
+uci_loop()
 
 end
