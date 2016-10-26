@@ -4,8 +4,7 @@ module Chess
 
 const version = "Julia Chess, v0.21"
 const author = "Alan Bahm"
-
-println("Welcome to $(version) by $author")
+#println("Welcome to $(version) by $author")
 
 export WHITE, BLACK
 export KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN
@@ -24,12 +23,12 @@ include("move.jl")
 include("board.jl")
 include("position.jl")
 include("evaluation.jl")
-include("uci.jl")
-
+include("search.jl")
+include("ui.jl")
 
 
 # start up an interactive board
-user_play_both_sides()
-#uci_loop()
+#user_play_both_sides()
+uci_loop()
 
 end
