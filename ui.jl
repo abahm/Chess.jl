@@ -120,7 +120,7 @@ function user_play_both_sides(b=new_game(), show_move_history=true)
     end
 end
 
-function best_play_both_sides(show_move_history = true, b=new_game(), max_number_of_moves=100)
+function best_play_both_sides(depth, show_move_history = true, b=new_game(), max_number_of_moves=100)
     move_history = Move[]
     for i in 1:max_number_of_moves
         if show_move_history
@@ -148,47 +148,35 @@ function best_play_both_sides(show_move_history = true, b=new_game(), max_number
             break
         end
 
-        multiplier = (b.side_to_move==WHITE ? 1 : -1)
         best_value = -Inf
         best_move = nothing
+        minmax = b.side_to_move==WHITE?1:-1
+        minmax *= (depth%2==0?1:-1)
         for m in moves
             test_board = deepcopy(b)
             make_move!(test_board, m)
-            value = multiplier*evaluate(test_board)
+
+            value = minmax*negaMax(test_board, depth)
+            #@show value, algebraic_move(m)
             if best_value < value
                 best_value = value
                 best_move = m
             end
         end
-
+        #readline()
         make_move!(b, best_move)
         push!(move_history, best_move)
 
     end
 end
 
-uci_debug_mode = false
-const log_filename = "uci_log.txt"
-function uci_record_to_file(s::String)
-    io = open(log_filename, "a")
-    print(io, string(now()) * " " * s)
-    close(io)
-end
+chess_engine_debug_mode = false
 
-function uci_output(s::String)
-    uci_record_to_file("<-- " * s * "\n")
-    println(s)
-end
 
 function uci_loop()
     board = new_game()
-    uci_record_to_file(" \n")
-    uci_record_to_file("starting $(version) \n")
     while true
-        inputline = readline()
-        uci_record_to_file("--> " * inputline)
-
-        tokens = split(inputline)
+        tokens = split(readline())
 
         if "uci" ∈ tokens
             #=
@@ -201,10 +189,10 @@ function uci_loop()
             	After that the engine should send "uciok" to acknowledge the uci mode.
             	If no uciok is sent within a certain time period, the engine task will be killed by the GUI.
             =#
-            uci_output("id name $version")
-            uci_output("id author $author")
-            uci_output("option")
-            uci_output("uciok")
+            println("id name $version")
+            println("id author $author")
+            println("option")
+            println("uciok")
         end
 
         if "debug" ∈ tokens
@@ -217,10 +205,10 @@ function uci_loop()
             	any time, also when the engine is thinking.
             =#
             if "debug off" ∈ tokens
-                uci_debug_mode = false
+                chess_engine_debug_mode = false
             end
             if "debug on" ∈ tokens
-                uci_debug_mode = true
+                chess_engine_debug_mode = true
             end
         end
 
@@ -237,7 +225,7 @@ function uci_loop()
             	This command must always be answered with "readyok" and can be sent also when the engine is calculating
             	in which case the engine should also immediately answer with "readyok" without stopping the search.
             =#
-            uci_output("readyok")
+            println("readyok")
         end
 
         if "setoption" ∈ tokens
@@ -384,7 +372,7 @@ function uci_loop()
             end
 
             bestmovestr = long_algebraic_move(best_move)
-            uci_output("bestmove $bestmovestr")
+            println("bestmove $bestmovestr")
         end
 
         if "stop" ∈ tokens
@@ -772,6 +760,35 @@ function uci_loop()
                Example: The normal chess position would be:
                rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w AHah -
         =#
+
+    end
+end
+
+
+
+function xboard_loop()
+    board = new_game()
+    while true
+        tokens = split(readline())
+
+        if "uci" ∈ tokens
+            #=
+            * uci
+            	tell engine to use the uci (universal chess interface),
+            	this will be sent once as a first command after program boot
+            	to tell the engine to switch to uci mode.
+            	After receiving the uci command the engine must identify itself with the "id" command
+            	and send the "option" commands to tell the GUI which engine settings the engine supports if any.
+            	After that the engine should send "uciok" to acknowledge the uci mode.
+            	If no uciok is sent within a certain time period, the engine task will be killed by the GUI.
+            =#
+            println("id name $version")
+            println("id author $author")
+            println("option")
+            println("uciok")
+        end
+
+
 
     end
 end

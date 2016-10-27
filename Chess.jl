@@ -2,7 +2,7 @@
 
 module Chess
 
-const version = "Julia Chess, v0.21"
+const version = "Julia Chess, v0.22"
 const author = "Alan Bahm"
 #println("Welcome to $(version) by $author")
 
@@ -29,6 +29,6 @@ include("ui.jl")
 
 # start up an interactive board
 #user_play_both_sides()
-uci_loop()
+#uci_loop()
 
 end

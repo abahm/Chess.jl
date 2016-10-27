@@ -1,15 +1,15 @@
 # search.jl
 
-function negaMax(board, depth::UInt8)
+function negaMax(board, depth)
     if depth == 0
         return evaluate(board)
     end
-    max = Inf
+    max = -Inf
     for m in generate_moves(board)
         test_board = deepcopy(board)
         make_move!(test_board, m)
 
-        score = -negaMax( depth - 1 )
+        score = -negaMax(test_board, depth - 1 )
         if( score > max )
             max = score
         end
