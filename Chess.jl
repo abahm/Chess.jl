@@ -2,7 +2,7 @@
 
 module Chess
 
-const version = "Julia Chess, v0.22"
+const version = "Julia Chess, v0.23"
 const author = "Alan Bahm"
 #println("Welcome to $(version) by $author")
 

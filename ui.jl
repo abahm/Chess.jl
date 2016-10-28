@@ -143,35 +143,40 @@ function best_play_both_sides(depth, show_move_history = true, b=new_game(), max
             println()
         end
 
-        moves = generate_moves(b)
-        if length(moves)==0
+        best_move = best_move_negamax(b, depth)
+        if best_move==nothing
             break
         end
 
-        best_value = -Inf
-        best_move = nothing
-        minmax = b.side_to_move==WHITE?1:-1
-        minmax *= (depth%2==0?1:-1)
-        for m in moves
-            test_board = deepcopy(b)
-            make_move!(test_board, m)
-
-            value = minmax*negaMax(test_board, depth)
-            #@show value, algebraic_move(m)
-            if best_value < value
-                best_value = value
-                best_move = m
-            end
-        end
-        #readline()
         make_move!(b, best_move)
         push!(move_history, best_move)
-
     end
 end
 
-chess_engine_debug_mode = false
+function best_move_negamax(b, depth)
+    moves = generate_moves(b)
 
+    best_value = -Inf
+    best_move = nothing
+    minmax = b.side_to_move==WHITE?1:-1
+    minmax *= (depth%2==0?1:-1)
+    for m in moves
+        test_board = deepcopy(b)
+        make_move!(test_board, m)
+
+        value = minmax*negaMax(test_board, depth)
+        #@show value, algebraic_move(m)
+        if best_value < value
+            best_value = value
+            best_move = m
+        end
+    end
+
+    best_move
+end
+
+chess_engine_debug_mode = false
+chess_engine_show_thinking = false
 
 function uci_loop()
     board = new_game()
@@ -765,6 +770,9 @@ end
 
 
 function xboard_loop()
+    global chess_engine_debug_mode
+    global chess_engine_show_thinking
+
     board = new_game()
     while true
         r = readline()
@@ -811,16 +819,31 @@ function xboard_loop()
                 versions may be accepted.
             =#
 
+            println("tellics say     $version")
+            println("tellics say     by $author")
+
             # request xboard send moves to the engine with the command "usermove MOVE"
             println("feature usermove=1")
+            readline()
 
             # use the protocol's new "setboard" command to set up positions
             println("feature setboard=1")
+            readline()
+
+            println("feature ping=1")
+            readline()
+
+            println("feature colors=0")
+            readline()
+
+            println("feature myname=\"$(version)\"")
+            readline()
 
             # If you set done=1 during the initial two-second timeout after xboard
             # sends you the "xboard" command, the timeout will end and xboard will
             # not look for any more feature commands before starting normal operation.
             println("feature done=1")
+            readline()
         end
 
         if "accepted" ∈ tokens
@@ -867,6 +890,18 @@ function xboard_loop()
             quit() # the julia REPL
         end
 
+        if "post" ∈ tokens
+            chess_engine_show_thinking = true
+        end
+
+        if "ping" ∈ tokens
+            println("pong $(tokens[2])")
+        end
+
+        if "nopost" ∈ tokens
+            chess_engine_show_thinking = false
+        end
+
         if "go" ∈ tokens
             #=
             go
@@ -875,24 +910,19 @@ function xboard_loop()
                 opponent's clock with the color that is not on move. Start the engine's
                 clock. Start thinking and eventually make a move.
             =#
-            
-            # think of best move
-            moves = generate_moves(board)
-            multiplier = (board.side_to_move==WHITE ? 1 : -1)
-            best_value = -Inf
-            best_move = nothing
-            for m in moves
-                test_board = deepcopy(board)
-                make_move!(test_board, m)
-                value = multiplier*evaluate(test_board)
-                if best_value < value
-                    best_value = value
-                    best_move = m
-                end
-            end
 
             # send xboard reply move
-            if length(moves)>0
+            tic()
+            ply = 2
+            best_move = best_move_negamax(board, ply)
+            time = round(Integer, toq()/100)
+            if chess_engine_show_thinking
+                score = evaluate(board)
+                nodes = 99999
+                pv = "(na)"
+                println("$ply $score $time $nodes $pv")
+            end
+            if best_move!=nothing
                 bestmovestr = long_algebraic_move(best_move)
                 println("move $bestmovestr")
                 make_move!(board, best_move)
@@ -914,22 +944,17 @@ function xboard_loop()
             end
 
             # think of best reply
-            moves = generate_moves(board)
-            multiplier = (board.side_to_move==WHITE ? 1 : -1)
-            best_value = -Inf
-            best_move = nothing
-            for m in moves
-                test_board = deepcopy(board)
-                make_move!(test_board, m)
-                value = multiplier*evaluate(test_board)
-                if best_value < value
-                    best_value = value
-                    best_move = m
-                end
+            tic()
+            ply = 2
+            best_move = best_move_negamax(board, ply)
+            time = round(Integer, toq()/100)
+            if chess_engine_show_thinking
+                score = evaluate(board)
+                nodes = 99999
+                pv = "na"
+                println("$ply $score $time $nodes $pv")
             end
-
-            # send xboard reply move
-            if length(moves)>0
+            if best_move!=nothing
                 bestmovestr = long_algebraic_move(best_move)
                 println("move $bestmovestr")
                 make_move!(board, best_move)
