@@ -30,5 +30,6 @@ include("ui.jl")
 # start up an interactive board
 #user_play_both_sides()
 #uci_loop()
+xboard_loop()
 
 end
