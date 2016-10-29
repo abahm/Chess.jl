@@ -30,7 +30,7 @@ include("ui.jl")
 
 if "-uci" ∈ ARGS
     uci_loop()
-elseif "xboard" ∈ ARGS
+elseif "-xboard" ∈ ARGS
     xboard_loop()
 else
     play()

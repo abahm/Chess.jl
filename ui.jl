@@ -152,11 +152,18 @@ function play()
         #print_algebraic(moves)
 
         # user chooses next move
-        print("Your move? ")
+        print("Your move [enter makes engine play]? ")
         movestr = readline()
 
         if startswith(movestr,"quit")
             return
+        end
+
+        if startswith(movestr,"go") || movestr=="\n"
+            best_move = best_move_negamax(b, 2)
+            push!(moves_made, algebraic_move(best_move))
+            make_move!(b, best_move)
+            continue
         end
 
         mv = nothing
@@ -168,8 +175,10 @@ function play()
         end
 
         if mv==nothing
-            println("?  (try moves like e2e4 or h7h8q)  (type 'quit' to end)")
-            sleep(3)
+            println(" enter moves like e2e4 or h7h8q")
+            println(" type 'go' to have computer move")
+            println(" type 'quit' to end")
+            sleep(2)
             continue
         end
 
