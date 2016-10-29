@@ -1,5 +1,6 @@
 # ui.jl
 
+
 function perft(b::Board, levels::Integer)
     moves = generate_moves(b)
     if levels<=1
@@ -51,7 +52,7 @@ function random_play_both_sides(ngames)
     end
 end
 
-function user_play_both_sides(b=new_game(), show_move_history=true)
+function test_play_both_sides(b=new_game(), show_move_history=true)
     moves_made = Move[]
     for i in 1:100000
         clear_repl()
@@ -102,9 +103,8 @@ function user_play_both_sides(b=new_game(), show_move_history=true)
     end
 end
 
-function play()
+function play(depth=0, show_move_history=true)
     b = new_game()
-    show_move_history = false
 
     moves_made = Move[]
     for i in 1:100000
@@ -125,17 +125,26 @@ function play()
         #print_algebraic(moves)
 
         # user chooses next move
-        print("Your move [enter makes engine play]? ")
+        print("Your move [? for help]? ")
         movestr = readline()
 
-        if startswith(movestr,"quit")
+        if startswith(movestr,"quit") || movestr=="q\n"
             return
         end
 
         if startswith(movestr,"go") || movestr=="\n"
-            best_move = best_move_negamax(b, 2)
+            best_move = best_move_negamax(b, depth)
             push!(moves_made, best_move)
             make_move!(b, best_move)
+            continue
+        end
+
+        if startswith(movestr,"undo") || movestr=="u\n"
+            pop!(moves_made)
+            b = new_game()
+            for m in moves_made
+                make_move!(b, m)
+            end
             continue
         end
 
@@ -148,9 +157,10 @@ function play()
         end
 
         if users_move==nothing
-            println(" enter moves like e2e4 or h7h8q")
-            println(" type 'go' to have computer move")
-            println(" type 'quit' to end")
+            println(" type your moves like 'e2e4' or 'h7h8q'")
+            println(" type 'go' or <enter> to have computer move")
+            println(" type 'undo' or 'u' to go back a move")
+            println(" type 'quit' or 'q' to end")
             sleep(2)
             continue
         end
@@ -159,7 +169,7 @@ function play()
         make_move!(b, users_move)
 
         # make answering move
-        best_move = best_move_negamax(b, 2)
+        best_move = best_move_negamax(b, depth)
         push!(moves_made, best_move)
         make_move!(b, best_move)
 
@@ -190,27 +200,6 @@ function best_play_both_sides(depth, show_move_history = true, b=new_game(), max
     end
 end
 
-function best_move_negamax(b, depth)
-    moves = generate_moves(b)
-
-    best_value = -Inf
-    best_move = nothing
-    minmax = b.side_to_move==WHITE?1:-1
-    minmax *= (depth%2==0?1:-1)
-    for m in moves
-        test_board = deepcopy(b)
-        make_move!(test_board, m)
-
-        value = minmax*negaMax(test_board, depth)
-        #@show value, algebraic_move(m)
-        if best_value < value
-            best_value = value
-            best_move = m
-        end
-    end
-
-    best_move
-end
 
 
 function uci_loop()

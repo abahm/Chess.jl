@@ -14,6 +14,8 @@ const perft_data = [
 ]
 
 
+
+
 function clear_repl()
     print("\033[2J")  # clear screen
     height = displaysize(STDOUT)[1]
