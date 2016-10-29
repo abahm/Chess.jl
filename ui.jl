@@ -52,62 +52,10 @@ function random_play_both_sides(ngames)
     end
 end
 
-function test_play_both_sides(b=new_game(), show_move_history=true)
-    moves_made = Move[]
-    for i in 1:100000
-        clear_repl()
-        println()
-        printbd(b)
-
-        if show_move_history
-            print_move_history(moves_made)
-            println()
-        end
-
-        moves = generate_moves(b)
-        if length(moves)==0
-            break
-        end
-        print_algebraic(moves)
-
-        # user chooses next move
-        println("Please select next move (1-$(length(moves))) (or divide [n] or debug):")
-        r = readline()
-        if startswith(r, "divide")
-            levels = parse(split(r)[2])-1
-            total_count = 0
-            for m in moves
-                test_board = deepcopy(b)
-                make_move!(test_board, m)
-                count = perft(test_board, levels)
-                total_count += count
-                println("$m $count")
-            end
-            println("Nodes: $total_count")
-            println("Moves: $(length(moves))")
-            break
-        end
-        if startswith(r, "debug")
-            @show b
-            break
-        end
-        mv = parse(r)
-        if typeof(mv)==Void || mv==0 || mv>length(moves)
-            println("No move selected, quitting.")
-            break
-        end
-        m = moves[mv]
-
-        push!(moves_made, m)
-        make_move!(b, m)
-    end
-end
-
 function play(depth=0)
     b = new_game()
-
     moves_made = Move[]
-    for i in 1:100000
+    while true
         clear_repl()
         println()
         printbd(b)
@@ -129,7 +77,7 @@ function play(depth=0)
         end
 
         if startswith(movestr,"go") || movestr=="\n"
-            best_move = best_move_negamax(b, depth)
+            best_value, best_move, pv = best_move_negamax(b, depth)
             push!(moves_made, best_move)
             make_move!(b, best_move)
             continue
@@ -161,6 +109,19 @@ function play(depth=0)
             continue
         end
 
+        if startswith(movestr,"analysis") || movestr=="a\n"
+            function search_and_print(analysis_depth)
+                v,m,pv = best_move_negamax(b, analysis_depth)
+                print("$analysis_depth \t$(v/100) \t$m \t$(algebraic_move(pv))")
+            end
+            for analysis_depth in 0:3
+                @time search_and_print(analysis_depth)
+            end
+            println("Press <enter> to continue...")
+            readline()
+            continue
+        end
+
         users_move = nothing
         for m in moves
             if startswith(movestr,long_algebraic_move(m))
@@ -174,6 +135,7 @@ function play(depth=0)
             println(" type 'go' or <enter> to have computer move")
             println(" type 'undo' or 'u' to go back a move")
             println(" type 'fen FEN' to load FEN position")
+            println(" type 'analysis' or 'a' to analyze position")
             println(" type 'quit' or 'q' to end")
             sleep(2)
             continue
@@ -183,37 +145,12 @@ function play(depth=0)
         make_move!(b, users_move)
 
         # make answering move
-        best_move = best_move_negamax(b, depth)
+        best_value, best_move, pv = best_move_negamax(b, depth)
         push!(moves_made, best_move)
         make_move!(b, best_move)
 
     end
 end
-
-function best_play_both_sides(depth, show_move_history = true, b=new_game(), max_number_of_moves=100)
-    moves_made = Move[]
-    for i in 1:max_number_of_moves
-        if show_move_history
-            clear_repl()
-        end
-        println()
-        printbd(b)
-
-        if show_move_history
-            print_move_history(moves_made)
-            println()
-        end
-
-        best_move = best_move_negamax(b, depth)
-        if best_move==nothing
-            break
-        end
-
-        make_move!(b, best_move)
-        push!(moves_made, best_move)
-    end
-end
-
 
 
 function uci_loop()
@@ -971,12 +908,11 @@ function xboard_loop()
             # send xboard reply move
             tic()
             ply = 2
-            best_move = best_move_negamax(board, ply)
+            best_value, best_move, pv = best_move_negamax(board, ply)
             time = round(Integer, toq()/100)
             if chess_engine_show_thinking
                 score = evaluate(board)
                 nodes = 99999
-                pv = "(na)"
                 xboard_println("$ply $score $time $nodes $pv")
             end
             if best_move!=nothing
@@ -1000,12 +936,11 @@ function xboard_loop()
             # think of best reply
             tic()
             ply = 0
-            best_move = best_move_negamax(board, ply)
+            best_value, best_move, pv = best_move_negamax(board, ply)
             time = round(Integer, toq()/100)
             if chess_engine_show_thinking
                 score = evaluate(board)
                 nodes = 99999
-                pv = "na"
                 xboard_println("$ply $score $time $nodes $pv")
             end
             if best_move!=nothing

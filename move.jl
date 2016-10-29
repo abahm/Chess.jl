@@ -62,6 +62,14 @@ function algebraic_move(m::Move)
     "$piece_character $sqr_name$optionally_promoted_to"
 end
 
+function algebraic_move(moves::Array{Move,1})
+    moves_str = ""
+    for m in moves
+        moves_str = moves_str * algebraic_move(m) * " "
+    end
+    moves_str
+end
+
 function print_algebraic(m::Move)
     println(algebraic_move(m) * " ")
 end

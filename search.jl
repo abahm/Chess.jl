@@ -6,34 +6,45 @@ function best_move_negamax(board, depth)
 
     best_value = -Inf
     best_move = nothing
+    principal_variation = Move[]
     for m in moves
         test_board = deepcopy(board)
         make_move!(test_board, m)
 
-        value = -negaMax(test_board, depth)
+        value, pv = negaMax(test_board, depth)
+        value *= -1
         #@show value, algebraic_move(m)
         if best_value < value
             best_value = value
             best_move = m
+            principal_variation = pv
         end
     end
-    best_move
+    reverse!(principal_variation)
+    best_value, best_move, principal_variation
 end
 
 function negaMax(board, depth)
     if depth == 0
-        return (board.side_to_move==WHITE?1:-1)*evaluate(board)
+        return (board.side_to_move==WHITE?1:-1)*evaluate(board), Move[]
     end
-    max = -Inf
+    max_value = -Inf
+    max_move = nothing
+    principal_variation = Move[]
     for m in generate_moves(board)
         test_board = deepcopy(board)
         make_move!(test_board, m)
-        score = -negaMax(test_board, depth - 1 )
-        if( score > max )
-            max = score
+        score, pv = negaMax(test_board, depth - 1 )
+        score *= -1
+        if( score > max_value )
+            max_value = score
+            max_move = m
+            principal_variation = pv
         end
     end
-    max
+
+    push!(principal_variation, max_move)
+    max_value, principal_variation
 end
 
 

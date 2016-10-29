@@ -139,46 +139,7 @@ function set!(b::Board, color, p, c, r)
 end
 
 function new_game()
-    b = Board()
-
-    set!(b, WHITE, ROOK,   A, 1)
-    set!(b, WHITE, KNIGHT, B, 1)
-    set!(b, WHITE, BISHOP, C, 1)
-    set!(b, WHITE, QUEEN,  D, 1)
-    set!(b, WHITE, KING,   E, 1)
-    set!(b, WHITE, BISHOP, F, 1)
-    set!(b, WHITE, KNIGHT, G, 1)
-    set!(b, WHITE, ROOK,   H, 1)
-
-    set!(b, WHITE, PAWN, A, 2)
-    set!(b, WHITE, PAWN, B, 2)
-    set!(b, WHITE, PAWN, C, 2)
-    set!(b, WHITE, PAWN, D, 2)
-    set!(b, WHITE, PAWN, E, 2)
-    set!(b, WHITE, PAWN, F, 2)
-    set!(b, WHITE, PAWN, G, 2)
-    set!(b, WHITE, PAWN, H, 2)
-
-    set!(b, BLACK, PAWN, A, 7)
-    set!(b, BLACK, PAWN, B, 7)
-    set!(b, BLACK, PAWN, C, 7)
-    set!(b, BLACK, PAWN, D, 7)
-    set!(b, BLACK, PAWN, E, 7)
-    set!(b, BLACK, PAWN, F, 7)
-    set!(b, BLACK, PAWN, G, 7)
-    set!(b, BLACK, PAWN, H, 7)
-
-    set!(b, BLACK, ROOK,   A, 8)
-    set!(b, BLACK, KNIGHT, B, 8)
-    set!(b, BLACK, BISHOP, C, 8)
-    set!(b, BLACK, QUEEN,  D, 8)
-    set!(b, BLACK, KING,   E, 8)
-    set!(b, BLACK, BISHOP, F, 8)
-    set!(b, BLACK, KNIGHT, G, 8)
-    set!(b, BLACK, ROOK,   H, 8)
-
-    b.side_to_move = WHITE
-    b
+    read_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 end
 
 
@@ -259,7 +220,7 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
     #println("    𝖠 𝖡 𝖢 𝖣 𝖤 𝖥 𝖦 𝖧")
     #println("    𝕒 𝕓 𝕔 𝕕 𝕖 𝕗 𝕘 𝕙")
     print(io, "    𝖺 𝖻 𝖼 𝖽 𝖾 𝖿 𝗀 𝗁")
-    print(io, "    Score $(evaluate(b))\n")
+    print(io, "    Score $(evaluate(b)/100) pawns\n")
 end
 
 function square(square_name::String)
