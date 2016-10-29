@@ -51,10 +51,10 @@ The UI in the REPL looks even nicer, and now allows the developer to print debug
 Now I'm actually ready to either set up computer play with an evaluation tree, or optimize.   Some important steps are probably to create an "unmove" and improve speed of perft().
 
 
-### 2016 October 28 - v0.28
+### 2016 October 29 - v0.28
 I've created a more full featured REPL game loop, allowing undo, analysis, etc.
 I've also started running some games from the xboard UI, with a couple of bugs still to fix.
 
-![ui snapshot from 22 Oct 2016](history/2016-10-28-chess.png)
+![ui snapshot from 29 Oct 2016](history/2016-10-29-chess.png)
 
 Additionally, the negamax search is now being used to search the whole tree to requested depth, and is returning score, number of nodes visited, time, and principal variation.
