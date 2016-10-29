@@ -18,6 +18,7 @@ Bitboards are used to represent the state.   This code is a learning exercise fo
 * [Chess Engine Communication Protocol](http://www.tim-mann.org/engines.html)
 * [Computer chess programming theory](http://www.frayn.net/beowulf/theory.html)
 * [Chess Tree Search](https://verhelst.home.xs4all.nl/chess/search.html)
+* [Bruce Moreland - Chess programming topics](https://web.archive.org/web/20071026090003/http://www.brucemo.com/compchess/programming/index.htm)
 
 
 ## History
@@ -48,3 +49,12 @@ The UI in the REPL looks even nicer, and now allows the developer to print debug
 ![ui snapshot from 22 Oct 2016](history/2016-10-22-chess.png)
 
 Now I'm actually ready to either set up computer play with an evaluation tree, or optimize.   Some important steps are probably to create an "unmove" and improve speed of perft().
+
+
+### 2016 October 28 - v0.28
+I've created a more full featured REPL game loop, allowing undo, analysis, etc.
+I've also started running some games from the xboard UI, with a couple of bugs still to fix.
+
+![ui snapshot from 22 Oct 2016](history/2016-10-28-chess.png)
+
+Additionally, the negamax search is now being used to search the whole tree to requested depth, and is returning score, number of nodes visited, time, and principal variation.

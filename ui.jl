@@ -59,7 +59,7 @@ function play(depth=0)
         clear_repl()
         println()
         printbd(b)
-        print_move_history(moves_made, 9)
+        print_move_history(moves_made)
         println()
 
         moves = generate_moves(b)
@@ -77,7 +77,7 @@ function play(depth=0)
         end
 
         if startswith(movestr,"go") || movestr=="\n"
-            best_value, best_move, pv = best_move_negamax(b, depth)
+            best_value, best_move, pv, number_nodes_visited, time_s = best_move_negamax(b, depth)
             push!(moves_made, best_move)
             make_move!(b, best_move)
             continue
@@ -110,9 +110,11 @@ function play(depth=0)
         end
 
         if startswith(movestr,"analysis") || movestr=="a\n"
-            function search_and_print(analysis_depth)
-                v,m,pv = best_move_negamax(b, analysis_depth)
-                print("$analysis_depth \t$(v/100) \t$m \t$(algebraic_move(pv))")
+            function search_and_print(ply)
+                score,mv,pv,nnodes,time_s = best_move_negamax(b, ply)
+                # $ply $score $time_s $nodes $pv
+                println("$ply\t $(score/100)\t $(round(time_s,2))\t $nnodes\t $mv\t $(algebraic_move(pv))")
+                print("      ")
             end
             for analysis_depth in 0:3
                 @time search_and_print(analysis_depth)
@@ -145,7 +147,7 @@ function play(depth=0)
         make_move!(b, users_move)
 
         # make answering move
-        best_value, best_move, pv = best_move_negamax(b, depth)
+        best_value, best_move, pv, nodes, time_s = best_move_negamax(b, depth)
         push!(moves_made, best_move)
         make_move!(b, best_move)
 
@@ -758,6 +760,7 @@ function xboard_loop()
     chess_engine_show_thinking = false
     my_time = Inf
     opp_time = Inf
+    ply = 0
 
     board = new_game()
     while true
@@ -906,14 +909,10 @@ function xboard_loop()
             =#
 
             # send xboard reply move
-            tic()
-            ply = 2
-            best_value, best_move, pv = best_move_negamax(board, ply)
-            time = round(Integer, toq()/100)
+            best_value, best_move, pv, nodes, time_s = best_move_negamax(board, ply)
             if chess_engine_show_thinking
                 score = evaluate(board)
-                nodes = 99999
-                xboard_println("$ply $score $time $nodes $pv")
+                xboard_println("$ply $score $time_s $nodes $pv")
             end
             if best_move!=nothing
                 bestmovestr = long_algebraic_move(best_move)
@@ -934,14 +933,10 @@ function xboard_loop()
             end
 
             # think of best reply
-            tic()
-            ply = 0
-            best_value, best_move, pv = best_move_negamax(board, ply)
-            time = round(Integer, toq()/100)
+            best_value, best_move, pv, nodes, time_s = best_move_negamax(board, ply)
             if chess_engine_show_thinking
                 score = evaluate(board)
-                nodes = 99999
-                xboard_println("$ply $score $time $nodes $pv")
+                xboard_println("$ply $score $time_s $nodes $pv")
             end
             if best_move!=nothing
                 bestmovestr = long_algebraic_move(best_move)

@@ -2,16 +2,18 @@
 
 
 function best_move_negamax(board, depth)
+    tic()
     moves = generate_moves(board)
 
     best_value = -Inf
     best_move = nothing
     principal_variation = Move[]
+    number_nodes_visited = 0
     for m in moves
         test_board = deepcopy(board)
         make_move!(test_board, m)
 
-        value, pv = negaMax(test_board, depth)
+        value, pv, nnodes = negaMax(test_board, depth)
         value *= -1
         #@show value, algebraic_move(m)
         if best_value < value
@@ -19,32 +21,35 @@ function best_move_negamax(board, depth)
             best_move = m
             principal_variation = pv
         end
+        number_nodes_visited += nnodes
     end
     reverse!(principal_variation)
-    best_value, best_move, principal_variation
+    best_value, best_move, principal_variation, number_nodes_visited, toq()
 end
 
 function negaMax(board, depth)
     if depth == 0
-        return (board.side_to_move==WHITE?1:-1)*evaluate(board), Move[]
+        return (board.side_to_move==WHITE?1:-1)*evaluate(board), Move[], 1
     end
     max_value = -Inf
     max_move = nothing
     principal_variation = Move[]
+    number_nodes_visited = 0
     for m in generate_moves(board)
         test_board = deepcopy(board)
         make_move!(test_board, m)
-        score, pv = negaMax(test_board, depth - 1 )
+        score, pv, nnodes = negaMax(test_board, depth - 1 )
         score *= -1
         if( score > max_value )
             max_value = score
             max_move = m
             principal_variation = pv
         end
+        number_nodes_visited += nnodes
     end
 
     push!(principal_variation, max_move)
-    max_value, principal_variation
+    max_value, principal_variation, number_nodes_visited
 end
 
 

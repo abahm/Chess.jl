@@ -2,7 +2,7 @@
 
 module Chess
 
-const version = "Julia Chess, v0.27"
+const version = "Julia Chess, v0.28"
 const author = "Alan Bahm"
 #println("Welcome to $(version) by $author")
 
@@ -15,7 +15,7 @@ export generate_moves, make_move!
 export print_algebraic
 export Board, set!, new_game, read_fen, printbd
 export perft, perft_data
-export play, random_play_both_sides, test_play_both_sides
+export play, random_play_both_sides
 
 include("constants.jl")
 include("util.jl")
