@@ -27,9 +27,14 @@ include("search.jl")
 include("ui.jl")
 
 
-# start up an interactive board
-#user_play_both_sides()
-#uci_loop()
-xboard_loop()
+
+if "-uci" ∈ ARGS
+    uci_loop()
+elseif "xboard" ∈ ARGS
+    xboard_loop()
+else
+    play()
+end
+
 
 end

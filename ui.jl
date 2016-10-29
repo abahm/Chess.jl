@@ -120,6 +120,70 @@ function user_play_both_sides(b=new_game(), show_move_history=true)
     end
 end
 
+function play()
+    b = new_game()
+    show_move_history = false
+
+    moves_made = []
+    for i in 1:100000
+        print("\033[2J")  # clear screen
+        height = displaysize(STDOUT)[1]
+        print("\033[$(height)A") # up 12 lines
+        println()
+        printbd(b)
+
+        if show_move_history
+            for (j,mm) in enumerate(moves_made)
+                if (j-1)%2==0
+                    println()
+                    print("$(floor(Integer,(j+1)/2)). ")
+                end
+                print(mm)
+                print("  \t")
+            end
+            println()
+        end
+
+        moves = generate_moves(b)
+        if length(moves)==0
+            println("No moves possible.  Game over!")
+            break
+        end
+        #print_algebraic(moves)
+
+        # user chooses next move
+        print("Your move? ")
+        movestr = readline()
+
+        if startswith(movestr,"quit")
+            return
+        end
+
+        mv = nothing
+        for m in moves
+            if startswith(movestr,long_algebraic_move(m))
+                mv = m
+                break
+            end
+        end
+
+        if mv==nothing
+            println("?  (try moves like e2e4 or h7h8q)  (type 'quit' to end)")
+            sleep(3)
+            continue
+        end
+
+        push!(moves_made, algebraic_move(mv))
+        make_move!(b, mv)
+
+        # make answering move
+        best_move = best_move_negamax(b, 2)
+        push!(moves_made, algebraic_move(best_move))
+        make_move!(b, best_move)
+
+    end
+end
+
 function best_play_both_sides(depth, show_move_history = true, b=new_game(), max_number_of_moves=100)
     move_history = Move[]
     for i in 1:max_number_of_moves
