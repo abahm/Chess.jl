@@ -17,25 +17,16 @@ end
 
 function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game(), max_number_of_moves=1000)
     srand(seed)
-    move_history = Move[]
+    moves_made = Move[]
     for i in 1:max_number_of_moves
         if show_move_history
-            print("\033[2J")  # clear screen
-            height = displaysize(STDOUT)[1]
-            print("\033[$(height)A") # up 12 lines
+            clear_repl()
         end
         println()
         printbd(b)
 
         if show_move_history
-            for (j,move) in enumerate(move_history)
-                if (j-1)%2==0
-                    println()
-                    print("$(floor(Integer,(j+1)/2)). ")
-                end
-                print(move)
-                print(" \t")
-            end
+            print_move_history(moves_made)
             println()
         end
 
@@ -48,36 +39,27 @@ function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game
         m = moves[r]
 
         make_move!(b, m)
-        push!(move_history, m)
+        push!(moves_made, m)
 
         sleep(delay)
     end
 end
 
-function random_play_both_sides(n)
-    for random_seed in 1:n
+function random_play_both_sides(ngames)
+    for random_seed in 1:ngames
         random_play_both_sides(random_seed, true, 0.1)
     end
 end
 
 function user_play_both_sides(b=new_game(), show_move_history=true)
-    moves_made = []
+    moves_made = Move[]
     for i in 1:100000
-        print("\033[2J")  # clear screen
-        height = displaysize(STDOUT)[1]
-        print("\033[$(height)A") # up 12 lines
+        clear_repl()
         println()
         printbd(b)
 
         if show_move_history
-            for (j,mm) in enumerate(moves_made)
-                if (j-1)%2==0
-                    println()
-                    print("$(floor(Integer,(j+1)/2)). ")
-                end
-                print(mm)
-                print("  \t")
-            end
+            print_move_history(moves_made)
             println()
         end
 
@@ -115,7 +97,7 @@ function user_play_both_sides(b=new_game(), show_move_history=true)
         end
         m = moves[mv]
 
-        push!(moves_made, algebraic_move(m))
+        push!(moves_made, m)
         make_move!(b, m)
     end
 end
@@ -124,23 +106,14 @@ function play()
     b = new_game()
     show_move_history = false
 
-    moves_made = []
+    moves_made = Move[]
     for i in 1:100000
-        print("\033[2J")  # clear screen
-        height = displaysize(STDOUT)[1]
-        print("\033[$(height)A") # up 12 lines
+        clear_repl()
         println()
         printbd(b)
 
         if show_move_history
-            for (j,mm) in enumerate(moves_made)
-                if (j-1)%2==0
-                    println()
-                    print("$(floor(Integer,(j+1)/2)). ")
-                end
-                print(mm)
-                print("  \t")
-            end
+            print_move_history(moves_made)
             println()
         end
 
@@ -161,20 +134,20 @@ function play()
 
         if startswith(movestr,"go") || movestr=="\n"
             best_move = best_move_negamax(b, 2)
-            push!(moves_made, algebraic_move(best_move))
+            push!(moves_made, best_move)
             make_move!(b, best_move)
             continue
         end
 
-        mv = nothing
+        users_move = nothing
         for m in moves
             if startswith(movestr,long_algebraic_move(m))
-                mv = m
+                users_move = m
                 break
             end
         end
 
-        if mv==nothing
+        if users_move==nothing
             println(" enter moves like e2e4 or h7h8q")
             println(" type 'go' to have computer move")
             println(" type 'quit' to end")
@@ -182,37 +155,28 @@ function play()
             continue
         end
 
-        push!(moves_made, algebraic_move(mv))
-        make_move!(b, mv)
+        push!(moves_made, users_move)
+        make_move!(b, users_move)
 
         # make answering move
         best_move = best_move_negamax(b, 2)
-        push!(moves_made, algebraic_move(best_move))
+        push!(moves_made, best_move)
         make_move!(b, best_move)
 
     end
 end
 
 function best_play_both_sides(depth, show_move_history = true, b=new_game(), max_number_of_moves=100)
-    move_history = Move[]
+    moves_made = Move[]
     for i in 1:max_number_of_moves
         if show_move_history
-            print("\033[2J")  # clear screen
-            height = displaysize(STDOUT)[1]
-            print("\033[$(height)A") # up 12 lines
+            clear_repl()
         end
         println()
         printbd(b)
 
         if show_move_history
-            for (j,move) in enumerate(move_history)
-                if (j-1)%2==0
-                    println()
-                    print("$(floor(Integer,(j+1)/2)). ")
-                end
-                print(move)
-                print(" \t")
-            end
+            print_move_history(moves_made)
             println()
         end
 
@@ -222,7 +186,7 @@ function best_play_both_sides(depth, show_move_history = true, b=new_game(), max
         end
 
         make_move!(b, best_move)
-        push!(move_history, best_move)
+        push!(moves_made, best_move)
     end
 end
 
@@ -248,8 +212,6 @@ function best_move_negamax(b, depth)
     best_move
 end
 
-chess_engine_debug_mode = false
-chess_engine_show_thinking = false
 
 function uci_loop()
     board = new_game()
@@ -841,14 +803,25 @@ function uci_loop()
     end
 end
 
-
+function xboard_readline()
+    #sleep(0.1)
+    r = readline()
+    #flush(STDIN)
+    r
+end
+function xboard_println(str="")
+    println(str)
+    flush(STDOUT)
+end
 function xboard_loop()
-    global chess_engine_debug_mode
-    global chess_engine_show_thinking
+    chess_engine_debug_mode = false
+    chess_engine_show_thinking = false
+    my_time = Inf
+    opp_time = Inf
 
     board = new_game()
     while true
-        r = readline()
+        r = xboard_readline()
 
         # use xboard -debug instead
         #io = open("xboard_log.txt","a")
@@ -866,7 +839,7 @@ function xboard_loop()
                 you must turn off the prompt and output a newline when the "xboard"
                 command comes in.
             =#
-            println()
+            xboard_println()
         end
 
         if "protover" ∈ tokens
@@ -892,31 +865,31 @@ function xboard_loop()
                 versions may be accepted.
             =#
 
-            println("tellics say     $version")
-            println("tellics say     by $author")
+            xboard_println("tellics say     $version")
+            xboard_println("tellics say     by $author")
+
+            xboard_println("feature myname=\"$(version)\"")
+            xboard_readline()
 
             # request xboard send moves to the engine with the command "usermove MOVE"
-            println("feature usermove=1")
-            readline()
+            xboard_println("feature usermove=1")
+            xboard_readline()
 
             # use the protocol's new "setboard" command to set up positions
-            println("feature setboard=1")
-            readline()
+            xboard_println("feature setboard=1")
+            xboard_readline()
 
-            println("feature ping=1")
-            readline()
+            xboard_println("feature ping=1")
+            xboard_readline()
 
-            println("feature colors=0")
-            readline()
-
-            println("feature myname=\"$(version)\"")
-            readline()
+            xboard_println("feature colors=0")
+            xboard_readline()
 
             # If you set done=1 during the initial two-second timeout after xboard
             # sends you the "xboard" command, the timeout will end and xboard will
             # not look for any more feature commands before starting normal operation.
-            println("feature done=1")
-            readline()
+            xboard_println("feature done=1")
+            xboard_readline()
         end
 
         if "accepted" ∈ tokens
@@ -968,11 +941,19 @@ function xboard_loop()
         end
 
         if "ping" ∈ tokens
-            println("pong $(tokens[2])")
+            xboard_println("pong $(tokens[2])")
         end
 
         if "nopost" ∈ tokens
             chess_engine_show_thinking = false
+        end
+
+        if "time" ∈ tokens
+            my_time = parse(tokens[2])
+        end
+
+        if "otim" ∈ tokens
+            opp_time = parse(tokens[2])
         end
 
         if "go" ∈ tokens
@@ -993,19 +974,16 @@ function xboard_loop()
                 score = evaluate(board)
                 nodes = 99999
                 pv = "(na)"
-                println("$ply $score $time $nodes $pv")
+                xboard_println("$ply $score $time $nodes $pv")
             end
             if best_move!=nothing
                 bestmovestr = long_algebraic_move(best_move)
-                println("move $bestmovestr")
+                xboard_println("move $bestmovestr")
                 make_move!(board, best_move)
             end
         end
 
         if "usermove" ∈ tokens
-            #tmp = readline() # time 30000
-            #tmp = readline() # otim 30000
-
             # translate and make user's move
             movestr = tokens[2]
             moves = generate_moves(board)
@@ -1018,18 +996,18 @@ function xboard_loop()
 
             # think of best reply
             tic()
-            ply = 2
+            ply = 0
             best_move = best_move_negamax(board, ply)
             time = round(Integer, toq()/100)
             if chess_engine_show_thinking
                 score = evaluate(board)
                 nodes = 99999
                 pv = "na"
-                println("$ply $score $time $nodes $pv")
+                xboard_println("$ply $score $time $nodes $pv")
             end
             if best_move!=nothing
                 bestmovestr = long_algebraic_move(best_move)
-                println("move $bestmovestr")
+                xboard_println("move $bestmovestr")
                 make_move!(board, best_move)
             end
         end

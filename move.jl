@@ -75,3 +75,14 @@ function print_algebraic(moves::Array{Move,1})
     end
     println()
 end
+
+function print_move_history(moves::Array{Move,1})
+    for (j,move) in enumerate(moves)
+        if (j-1)%2==0
+            println()
+            print("$(floor(Integer,(j+1)/2)). ")
+        end
+        print(move)
+        print(" \t")
+    end
+end

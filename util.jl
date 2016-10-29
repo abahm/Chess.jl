@@ -14,6 +14,12 @@ const perft_data = [
 ]
 
 
+function clear_repl()
+    print("\033[2J")  # clear screen
+    height = displaysize(STDOUT)[1]
+    print("\033[$(height)A") # set cursor at the top of the display
+end
+
 function square(c::Integer, r::Integer)
     sqr = UInt64(1) << ((c-1) + 8*(r-1))
     sqr
