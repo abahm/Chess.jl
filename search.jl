@@ -1,43 +1,38 @@
 # search.jl
 
 
-function best_move_negamax(b, depth)
-    moves = generate_moves(b)
+function best_move_negamax(board, depth)
+    moves = generate_moves(board)
 
     best_value = -Inf
     best_move = nothing
-    minmax = b.side_to_move==WHITE?1:-1
-    minmax *= (depth%2==0?1:-1)
     for m in moves
-        test_board = deepcopy(b)
+        test_board = deepcopy(board)
         make_move!(test_board, m)
 
-        value = minmax*negaMax(test_board, depth)
+        value = -negaMax(test_board, depth)
         #@show value, algebraic_move(m)
         if best_value < value
             best_value = value
             best_move = m
         end
     end
-
     best_move
 end
 
 function negaMax(board, depth)
     if depth == 0
-        return evaluate(board)
+        return (board.side_to_move==WHITE?1:-1)*evaluate(board)
     end
     max = -Inf
     for m in generate_moves(board)
         test_board = deepcopy(board)
         make_move!(test_board, m)
-
         score = -negaMax(test_board, depth - 1 )
         if( score > max )
             max = score
         end
     end
-
     max
 end
 
@@ -48,7 +43,7 @@ function best_move_alphabeta(time_allowed_centiseconds::UInt64)
     best_value = -Inf
     best_move = nothing
     minmax = b.side_to_move==WHITE?1:-1
-    minmax *= (depth%2==0?1:-1)
+    #minmax *= (depth%2==0?1:-1)
     for m in moves
         test_board = deepcopy(b)
         make_move!(test_board, m)

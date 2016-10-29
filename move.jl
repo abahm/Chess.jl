@@ -76,8 +76,12 @@ function print_algebraic(moves::Array{Move,1})
     println()
 end
 
-function print_move_history(moves::Array{Move,1})
+function print_move_history(moves::Array{Move,1}, last_n_moves=Inf)
+    nmoves = length(moves)
     for (j,move) in enumerate(moves)
+        #if nmoves-j > last_n_moves
+        #    continue
+        #end
         if (j-1)%2==0
             println()
             print("$(floor(Integer,(j+1)/2)). ")

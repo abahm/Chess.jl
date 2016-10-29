@@ -103,7 +103,7 @@ function test_play_both_sides(b=new_game(), show_move_history=true)
     end
 end
 
-function play(depth=0, show_move_history=true)
+function play(depth=0)
     b = new_game()
 
     moves_made = Move[]
@@ -111,21 +111,17 @@ function play(depth=0, show_move_history=true)
         clear_repl()
         println()
         printbd(b)
-
-        if show_move_history
-            print_move_history(moves_made)
-            println()
-        end
+        print_move_history(moves_made, 9)
+        println()
 
         moves = generate_moves(b)
         if length(moves)==0
             println("No moves possible.  Game over!")
             break
         end
-        #print_algebraic(moves)
 
         # user chooses next move
-        print("Your move [? for help]? ")
+        print("Your move (? for help) ")
         movestr = readline()
 
         if startswith(movestr,"quit") || movestr=="q\n"
@@ -140,11 +136,28 @@ function play(depth=0, show_move_history=true)
         end
 
         if startswith(movestr,"undo") || movestr=="u\n"
+            if length(moves_made)==0
+                continue
+            end
             pop!(moves_made)
             b = new_game()
             for m in moves_made
                 make_move!(b, m)
             end
+            continue
+        end
+
+        if startswith(movestr,"new") || movestr=="n\n"
+            b = new_game()
+            moves_made = Move[]
+            continue
+        end
+
+        if startswith(movestr,"fen ")
+            fen = movestr[5:end-1]
+            @show fen
+            b = read_fen(fen)
+            moves_made = Move[]
             continue
         end
 
@@ -160,6 +173,7 @@ function play(depth=0, show_move_history=true)
             println(" type your moves like 'e2e4' or 'h7h8q'")
             println(" type 'go' or <enter> to have computer move")
             println(" type 'undo' or 'u' to go back a move")
+            println(" type 'fen FEN' to load FEN position")
             println(" type 'quit' or 'q' to end")
             sleep(2)
             continue
