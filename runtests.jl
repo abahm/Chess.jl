@@ -5,6 +5,7 @@ if pwd()∉LOAD_PATH  push!(LOAD_PATH, pwd())  end
 # load the Chess.jl module for testing
 using Chess
 
+tic()
 
 function test_fen()
     for (name,fen) in perft_data
@@ -21,16 +22,6 @@ function test_fen()
         println()
     end
 end
-
-
-
-
-
-
-
-
-
-
 
 function test_no_castling_in_check()
     println("Checking test_no_castling_in_check() ...")
@@ -113,3 +104,4 @@ test_pins()
 perft_runs()
 
 println("Tests complete!")
+toc()

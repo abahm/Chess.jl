@@ -495,3 +495,115 @@ function make_move!(b::Board, m::Move)
 
     nothing
 end
+
+function unmake_move!(b::Board, m::Move)
+    sqr_src = m.sqr_src
+    sqr_dest = m.sqr_dest
+    color = piece_color_on_sqr(b,sqr_src)
+    assert(color!=NONE)
+    moving_piece = piece_type_on_sqr(b,sqr_src)
+    assert(moving_piece!=NONE)
+    taken_piece = piece_type_on_sqr(b,sqr_dest)
+
+    # add back any piece taken square
+    if taken_piece == QUEEN  b.queens = b.queens & sqr_dest  end
+    if taken_piece == ROOK  b.rooks = b.rooks & sqr_dest  end
+    if taken_piece == BISHOP  b.bishops = b.bishops & sqr_dest  end
+    if taken_piece == KNIGHT  b.knights = b.knights & sqr_dest  end
+    if taken_piece == PAWN  b.pawns = b.pawns & sqr_dest  end
+    if taken_piece != NONE
+        if color==WHITE
+            b.white_pieces = b.white_pieces & sqr_dest
+        else
+            b.black_pieces = b.black_pieces & sqr_dest
+        end
+    end
+
+    # move the moving piece (remove from dest, add to src)
+    if moving_piece == KING         b.kings = (b.kings & ~sqr_dest) | sqr_src
+    elseif moving_piece == QUEEN    b.queens = (b.queens & ~sqr_dest) | sqr_src
+    elseif moving_piece == ROOK     b.rooks = (b.rooks & ~sqr_dest) | sqr_src
+    elseif moving_piece == BISHOP   b.bishops = (b.bishops & ~sqr_dest) | sqr_src
+    elseif moving_piece == KNIGHT   b.knights = (b.knights & ~sqr_dest) | sqr_src
+    elseif moving_piece == PAWN     b.pawns = (b.pawns & ~sqr_dest) | sqr_src
+    end
+
+    # update the moving color (remove from src, add to dest)
+    if color==WHITE
+        b.white_pieces = (b.white_pieces & ~sqr_src) | sqr_dest
+    else
+        b.black_pieces = (b.black_pieces & ~sqr_src) | sqr_dest
+    end
+
+    # set en passant marker
+    b.last_move_pawn_double_push = UInt64(0)
+    if moving_piece == PAWN &&
+        (sqr_dest << 16 == sqr_src || sqr_src << 16 == sqr_dest)
+        b.last_move_pawn_double_push = sqr_dest
+    end
+
+    # en passant - remove any pawn taken by en passant
+    if m.sqr_ep > 0
+        b.pawns = b.pawns & ~m.sqr_ep
+        b.white_pieces = b.white_pieces & ~m.sqr_ep
+        b.black_pieces = b.black_pieces & ~m.sqr_ep
+    end
+
+    # pawn promotion
+    if m.promotion_to > NONE
+        b.pawns = b.pawns & ~sqr_dest
+        if m.promotion_to == QUEEN       b.queens = b.queens | sqr_dest
+        elseif m.promotion_to == KNIGHT  b.knights = b.knights | sqr_dest
+        elseif m.promotion_to == ROOK    b.rooks = b.rooks | sqr_dest
+        elseif m.promotion_to == BISHOP  b.bishops = b.bishops | sqr_dest
+        end
+        if color == WHITE      b.white_pieces = b.white_pieces | sqr_dest
+        elseif color == BLACK  b.black_pieces = b.black_pieces | sqr_dest
+        end
+    end
+
+    # update castling rights
+    if moving_piece == KING
+        if color == WHITE      b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_WHITE_ANYSIDE
+        elseif color == BLACK  b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_BLACK_ANYSIDE
+        end
+    elseif moving_piece == ROOK
+        if sqr_src == SQUARE_A1       b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_WHITE_QUEENSIDE
+        elseif sqr_src == SQUARE_H1   b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_WHITE_KINGSIDE
+        elseif sqr_src == SQUARE_A8   b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_BLACK_QUEENSIDE
+        elseif sqr_src == SQUARE_H8   b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_BLACK_KINGSIDE
+        end
+    end
+    if sqr_dest == SQUARE_A1      b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_WHITE_QUEENSIDE
+    elseif sqr_dest == SQUARE_H1  b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_WHITE_KINGSIDE
+    elseif sqr_dest == SQUARE_A8  b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_BLACK_QUEENSIDE
+    elseif sqr_dest == SQUARE_H8  b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_BLACK_KINGSIDE
+    end
+
+    # castling - move rook in addition to the king
+    if m.castling > 0
+        if sqr_dest == SQUARE_C1
+            b.rooks = (b.rooks & ~SQUARE_A1) | SQUARE_D1
+            b.white_pieces = (b.white_pieces & ~SQUARE_A1)  | SQUARE_D1
+        elseif sqr_dest == SQUARE_G1
+            b.rooks = (b.rooks & ~SQUARE_H1) | SQUARE_F1
+            b.white_pieces = (b.white_pieces & ~SQUARE_H1) | SQUARE_F1
+        elseif sqr_dest == SQUARE_C8
+            b.rooks = (b.rooks & ~SQUARE_A8) | SQUARE_D8
+            b.black_pieces = (b.black_pieces & ~SQUARE_A8) | SQUARE_D8
+        elseif sqr_dest == SQUARE_G8
+            b.rooks = (b.rooks & ~SQUARE_H8) | SQUARE_F8
+            b.black_pieces = (b.black_pieces & ~SQUARE_H8) | SQUARE_F8
+        end
+    end
+
+    if b.side_to_move == WHITE
+        b.side_to_move = BLACK
+    elseif b.side_to_move == BLACK
+        b.side_to_move = WHITE
+    end
+
+    board_validation_checks(b)
+
+    nothing
+end
