@@ -64,7 +64,11 @@ function play(depth=0)
 
         moves = generate_moves(b)
         if length(moves)==0
-            println("No moves possible.  Game over!")
+            if is_king_in_check(b)
+                println("Checkmate!")
+            else
+                println("Drawn game.")
+            end
             break
         end
 
