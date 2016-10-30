@@ -12,7 +12,7 @@ function test_mate_in_one()
     printbd(b)
     for i in 1:7
         tic()
-        nodes = perft(b, i,)
+        nodes = perft(b, i)
         t = toq()
         println("$i   $nodes nodes  $(round(t,4)) s  $(round(nodes/(t*1000),2)) kn/s")
     end
@@ -27,7 +27,7 @@ function test_fen()
         printbd(b)
         for i in 1:3
             tic()
-            nodes = perft(b, i,)
+            nodes = perft(b, i)
             t = toq()
             println("$i   $nodes nodes  $(round(t,4)) s  $(round(nodes/(t*1000),2)) kn/s")
         end
@@ -97,8 +97,10 @@ function perft_runs()
             if levels==5
                 break
             end
+            tic()
             engine_count = perft(b, levels)
-            print("$count  $engine_count  ")
+            kilonodes_per_sec = round((engine_count/1000)/toq(), 3)
+            print("$count\t $engine_count nodes\t $kilonodes_per_sec kN/sec\t ")
             if count!=engine_count
                 print_with_color(:red, "FAIL\n")
                 return
@@ -111,11 +113,11 @@ function perft_runs()
     end
 end
 
-test_mate_in_one()
 test_pinned_pieces_still_attack_enemy_king()
 test_no_castling_in_check()
 test_pins()
 perft_runs()
+test_mate_in_one()
 
 println("Tests complete!")
 toc()

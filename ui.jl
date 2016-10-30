@@ -1,17 +1,34 @@
 # ui.jl
 
 
-function perft(b::Board, levels::Integer)
-    moves = generate_moves(b)
+function perft(board::Board, levels::Integer)
+    moves = generate_moves(board)
     if levels<=1
         return length(moves)
     end
 
     count = 0
     for m in moves
-        test_board = deepcopy(b)
+        test_board = deepcopy(board)
         make_move!(test_board, m)
         count = count + perft(test_board, levels-1)
+    end
+    return count
+end
+
+function perft_new(board::Board, levels::Integer)
+    moves = generate_moves(board)
+    if levels<=1
+        return length(moves)
+    end
+
+    count = 0
+    prior_castling_rights = board.castling_rights
+    prior_last_move_pawn_double_push = board.last_move_pawn_double_push
+    for m in moves
+        make_move!(board, m)
+        count = count + perft(board, levels-1)
+        unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
     end
     return count
 end
@@ -91,11 +108,14 @@ function play(depth=0)
             if length(moves_made)==0
                 continue
             end
-            pop!(moves_made)
+            m = pop!(moves_made)
+            #unmake_move!(b, m, 0, 0)
+
             b = new_game()
             for m in moves_made
                 make_move!(b, m)
             end
+
             continue
         end
 
@@ -113,11 +133,28 @@ function play(depth=0)
             continue
         end
 
+        if startswith(movestr, "divide")
+            levels = parse(split(movestr)[2]) - 1
+            total_count = 0
+            for m in moves
+                test_board = deepcopy(b)
+                make_move!(test_board, m)
+                count = perft(test_board, levels)
+                total_count += count
+                println("$m $count")
+            end
+            println("Nodes: $total_count")
+            println("Moves: $(length(moves))")
+            println("Press <enter> to continue...")
+            readline()
+            continue
+        end
+
         if startswith(movestr,"analysis") || movestr=="a\n"
             function search_and_print(ply)
                 score,mv,pv,nnodes,time_s = best_move_negamax(b, ply)
                 # $ply $score $time_s $nodes $pv
-                println("$ply\t $(score)\t $(round(time_s,2))\t $nnodes\t $mv\t $(algebraic_move(pv))")
+                println("$ply\t $(round(score,3))\t $(round(time_s,2))\t $nnodes\t $mv\t $(algebraic_move(pv))")
                 print("      ")
             end
             for analysis_depth in 0:3
@@ -142,6 +179,7 @@ function play(depth=0)
             println(" type 'undo' or 'u' to go back a move")
             println(" type 'fen FEN' to load FEN position")
             println(" type 'analysis' or 'a' to analyze position")
+            println(" type 'divide N' count nodes from this position")
             println(" type 'quit' or 'q' to end")
             sleep(2)
             continue

@@ -25,7 +25,11 @@ end
 #  which end by being BLOCKED or capturing an enemy piece
 const UNBLOCKED = UInt8(0)
 const BLOCKED = UInt8(1)
-@inline function add_move!(moves, b::Board, my_color::UInt8, my_piece::UInt8, src_sqr::UInt64, dest_sqr::UInt64; promotion_to::UInt8=NONE, en_passant_sqr::UInt64=UInt64(0))
+@inline function add_move!(moves, b::Board,
+                           my_color::UInt8, my_piece::UInt8,
+                           src_sqr::UInt64, dest_sqr::UInt64;
+                           promotion_to::UInt8=NONE,
+                           en_passant_sqr::UInt64=UInt64(0))
     # move is off the board
     if dest_sqr==0
         return BLOCKED
@@ -149,7 +153,8 @@ function generate_moves(b::Board; only_attacking_moves=false)
                     reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in rooks_travel_sqrs]) &&
                     # check that king's traversal squares are not attacked
                     reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
-                        push!(moves, Move(my_color, KING, sqr, kings_travel_sqrs[end], castling=CASTLING_RIGHTS_WHITE_KINGSIDE) )
+                        push!(moves, Move(my_color, KING, sqr, kings_travel_sqrs[end],
+                                          castling=CASTLING_RIGHTS_WHITE_KINGSIDE) )
                 end
 
                 # castling queenside (allows for chess960 castling too)
@@ -174,7 +179,8 @@ function generate_moves(b::Board; only_attacking_moves=false)
                     reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in rooks_travel_sqrs]) &&
                     # check that king's traversal squares are not attacked
                     reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
-                        push!(moves, Move(my_color, KING, sqr, kings_travel_sqrs[end], castling=CASTLING_RIGHTS_WHITE_QUEENSIDE) )
+                        push!(moves, Move(my_color, KING, sqr, kings_travel_sqrs[end],
+                                          castling=CASTLING_RIGHTS_WHITE_QUEENSIDE )  )
                 end
             end # castling moves
         end # king
@@ -496,14 +502,30 @@ function make_move!(b::Board, m::Move)
     nothing
 end
 
-function unmake_move!(b::Board, m::Move)
+function is_king_in_check(b::Board)
+    # generate enemies attacking moves
+    b.side_to_move = opposite_color(b.side_to_move)
+    moves = generate_moves(b, only_attacking_moves=true)
+    b.side_to_move = opposite_color(b.side_to_move)
+
+    # check if any enemy piece can capture the king
+    kings_square = b.kings & (b.side_to_move==WHITE ? b.white_pieces : b.black_pieces)
+    for m in moves
+        if m.sqr_dest == kings_square
+            return true  # king taken!
+        end
+    end
+    return false
+end
+
+function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_pawn_double_push)
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest
-    color = piece_color_on_sqr(b,sqr_src)
+    color = m.color_moving
     assert(color!=NONE)
-    moving_piece = piece_type_on_sqr(b,sqr_src)
+    moving_piece = m.piece_moving
     assert(moving_piece!=NONE)
-    taken_piece = piece_type_on_sqr(b,sqr_dest)
+    taken_piece = m.piece_taken
 
     # undo any pawn promotion
     if m.promotion_to > NONE
@@ -534,22 +556,21 @@ function unmake_move!(b::Board, m::Move)
     end
 
     # add back any piece taken square
-    if taken_piece == QUEEN  b.queens = b.queens & sqr_dest  end
-    if taken_piece == ROOK  b.rooks = b.rooks & sqr_dest  end
-    if taken_piece == BISHOP  b.bishops = b.bishops & sqr_dest  end
-    if taken_piece == KNIGHT  b.knights = b.knights & sqr_dest  end
-    if taken_piece == PAWN && m.sqr_ep == 0  b.pawns = b.pawns & sqr_dest  end
+    if taken_piece == QUEEN   b.queens = b.queens | sqr_dest  end
+    if taken_piece == ROOK    b.rooks = b.rooks | sqr_dest  end
+    if taken_piece == BISHOP  b.bishops = b.bishops | sqr_dest  end
+    if taken_piece == KNIGHT  b.knights = b.knights | sqr_dest  end
+    if taken_piece == PAWN && m.sqr_ep == 0  b.pawns = b.pawns | sqr_dest  end
     if taken_piece != NONE
         if color==WHITE
-            b.white_pieces = b.white_pieces & sqr_dest
+            b.white_pieces = b.white_pieces | sqr_dest
         else
-            b.black_pieces = b.black_pieces & sqr_dest
+            b.black_pieces = b.black_pieces | sqr_dest
         end
     end
 
-
-    # reset en passant marker
-    b.last_move_pawn_double_push = m.last_move_pawn_double_push
+    # restore en passant marker
+    b.last_move_pawn_double_push = prior_last_move_pawn_double_push
 
     # en passant - replace any pawn taken by en passant
     if m.sqr_ep > 0
@@ -561,70 +582,30 @@ function unmake_move!(b::Board, m::Move)
         end
     end
 
-
-
-
-
-
-
-    # update castling rights
-    if moving_piece == KING
-        if color == WHITE      b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_WHITE_ANYSIDE
-        elseif color == BLACK  b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_BLACK_ANYSIDE
-        end
-    elseif moving_piece == ROOK
-        if sqr_src == SQUARE_A1       b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_WHITE_QUEENSIDE
-        elseif sqr_src == SQUARE_H1   b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_WHITE_KINGSIDE
-        elseif sqr_src == SQUARE_A8   b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_BLACK_QUEENSIDE
-        elseif sqr_src == SQUARE_H8   b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_BLACK_KINGSIDE
-        end
-    end
-    if sqr_dest == SQUARE_A1      b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_WHITE_QUEENSIDE
-    elseif sqr_dest == SQUARE_H1  b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_WHITE_KINGSIDE
-    elseif sqr_dest == SQUARE_A8  b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_BLACK_QUEENSIDE
-    elseif sqr_dest == SQUARE_H8  b.castling_rights = b.castling_rights & ~CASTLING_RIGHTS_BLACK_KINGSIDE
-    end
-
     # castling - move rook in addition to the king
     if m.castling > 0
         if sqr_dest == SQUARE_C1
-            b.rooks = (b.rooks & ~SQUARE_A1) | SQUARE_D1
-            b.white_pieces = (b.white_pieces & ~SQUARE_A1)  | SQUARE_D1
+            b.rooks = (b.rooks | SQUARE_A1) & ~SQUARE_D1
+            b.white_pieces = (b.white_pieces | SQUARE_A1) & ~SQUARE_D1
         elseif sqr_dest == SQUARE_G1
-            b.rooks = (b.rooks & ~SQUARE_H1) | SQUARE_F1
-            b.white_pieces = (b.white_pieces & ~SQUARE_H1) | SQUARE_F1
+            b.rooks = (b.rooks | SQUARE_H1) & ~SQUARE_F1
+            b.white_pieces = (b.white_pieces | SQUARE_H1) & ~SQUARE_F1
         elseif sqr_dest == SQUARE_C8
-            b.rooks = (b.rooks & ~SQUARE_A8) | SQUARE_D8
-            b.black_pieces = (b.black_pieces & ~SQUARE_A8) | SQUARE_D8
+            b.rooks = (b.rooks | SQUARE_A8) & ~SQUARE_D8
+            b.black_pieces = (b.black_pieces | SQUARE_A8) & ~SQUARE_D8
         elseif sqr_dest == SQUARE_G8
-            b.rooks = (b.rooks & ~SQUARE_H8) | SQUARE_F8
-            b.black_pieces = (b.black_pieces & ~SQUARE_H8) | SQUARE_F8
+            b.rooks = (b.rooks | SQUARE_H8) & ~SQUARE_F8
+            b.black_pieces = (b.black_pieces | SQUARE_H8) & ~SQUARE_F8
         end
     end
 
-    if b.side_to_move == WHITE
-        b.side_to_move = BLACK
-    elseif b.side_to_move == BLACK
-        b.side_to_move = WHITE
-    end
+    # restore castling rights
+    b.castling_rights = prior_castling_rights
+
+    # change back the side to move
+    b.side_to_move = opposite_color(b.side_to_move)
 
     board_validation_checks(b)
 
     nothing
-end
-
-function is_king_in_check(b::Board)
-    # generate enemies attacking moves
-    b.side_to_move = opposite_color(b.side_to_move)
-    moves = generate_moves(b, only_attacking_moves=true)
-    b.side_to_move = opposite_color(b.side_to_move)
-
-    # check if any enemy piece can capture the king
-    kings_square = b.kings & (b.side_to_move==WHITE ? b.white_pieces : b.black_pieces)
-    for m in moves
-        if m.sqr_dest == kings_square
-            return true  # king taken!
-        end
-    end
-    return false
 end

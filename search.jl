@@ -63,14 +63,14 @@ end
 
 
 function best_move_alphabeta(time_allowed_centiseconds::UInt64)
-    moves = generate_moves(b)
+    moves = generate_moves(board)
 
     best_value = -Inf
     best_move = nothing
-    minmax = b.side_to_move==WHITE?1:-1
+    minmax = board.side_to_move==WHITE?1:-1
     #minmax *= (depth%2==0?1:-1)
     for m in moves
-        test_board = deepcopy(b)
+        test_board = deepcopy(board)
         make_move!(test_board, m)
 
         value = minmax*αβMax(test_board, -Inf, Inf, depth)
