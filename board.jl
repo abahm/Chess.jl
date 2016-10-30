@@ -220,7 +220,7 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
     #println("    𝖠 𝖡 𝖢 𝖣 𝖤 𝖥 𝖦 𝖧")
     #println("    𝕒 𝕓 𝕔 𝕕 𝕖 𝕗 𝕘 𝕙")
     print(io, "    𝖺 𝖻 𝖼 𝖽 𝖾 𝖿 𝗀 𝗁")
-    print(io, "   Score $(evaluate(b)/100) pawns\n")
+    print(io, "   Score $(evaluate(b)) pawns\n")
 end
 
 function square(square_name::String)

@@ -117,7 +117,7 @@ function play(depth=0)
             function search_and_print(ply)
                 score,mv,pv,nnodes,time_s = best_move_negamax(b, ply)
                 # $ply $score $time_s $nodes $pv
-                println("$ply\t $(score/100)\t $(round(time_s,2))\t $nnodes\t $mv\t $(algebraic_move(pv))")
+                println("$ply\t $(score)\t $(round(time_s,2))\t $nnodes\t $mv\t $(algebraic_move(pv))")
                 print("      ")
             end
             for analysis_depth in 0:3

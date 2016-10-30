@@ -66,14 +66,14 @@ const king_square_table = [
     -30,-40,-40,-50,-50,-40,-40,-30
     ]
 
-const KING_SCORE =   20000
-const QUEEN_SCORE =    900
-const ROOK_SCORE =     500
-const BISHOP_SCORE =   300
-const KNIGHT_SCORE =   320
-const PAWN_SCORE =     100
-const DRAW_SCORE =       0
-const MATE_SCORE = -100000
+const KING_SCORE =   20.0
+const QUEEN_SCORE =   9.0
+const ROOK_SCORE =    5.0
+const BISHOP_SCORE =  3.3
+const KNIGHT_SCORE =  3.2
+const PAWN_SCORE =    1.0
+const DRAW_SCORE =    0.0
+const MATE_SCORE = -100.0
 
 function evaluate(b::Board)
     # simplified evaluation as per Tomasz Michniewski
@@ -111,5 +111,5 @@ function evaluate(b::Board)
         if b.pawns & sqr > 0    position += m * pawn_square_table[i]    end
     end
 
-    material + position
+    material + (position/100)
 end
