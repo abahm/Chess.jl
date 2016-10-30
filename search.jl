@@ -62,18 +62,18 @@ function negaMax(board, depth)
 end
 
 
-function best_move_alphabeta(time_allowed_centiseconds::UInt64)
+function best_move_alphabeta()
     moves = generate_moves(board)
 
     best_value = -Inf
     best_move = nothing
-    minmax = board.side_to_move==WHITE?1:-1
-    #minmax *= (depth%2==0?1:-1)
+    multiplier = board.side_to_move==WHITE?1:-1
+    #multiplier *= (depth%2==0?1:-1)
     for m in moves
         test_board = deepcopy(board)
         make_move!(test_board, m)
 
-        value = minmax*αβMax(test_board, -Inf, Inf, depth)
+        value = multiplier*αβMax(test_board, -Inf, Inf, depth)
         #@show value, algebraic_move(m)
         if best_value < value
             best_value = value

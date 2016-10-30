@@ -226,32 +226,32 @@ end
 function square(square_name::String)
     assert(length(square_name)==2)
     file = parse(Integer, square_name[1]-48)
-    rank = parse(Integer, square_name[2])
-    square(file, rank)
+    row = parse(Integer, square_name[2])
+    square(file, row)
 end
 
 function read_fen(fen::String)
     b = Board()
     # r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -
     file = 1
-    rank = 8
+    row = 8
     splitfen = split(fen, " ")
     for t in splitfen[1]
-        if t=='K' set!(b, WHITE, KING,   file, rank)
-        elseif t=='Q' set!(b, WHITE, QUEEN,   file, rank)
-        elseif t=='R' set!(b, WHITE, ROOK,   file, rank)
-        elseif t=='B' set!(b, WHITE, BISHOP,   file, rank)
-        elseif t=='N' set!(b, WHITE, KNIGHT,   file, rank)
-        elseif t=='P' set!(b, WHITE, PAWN,   file, rank)
-        elseif t=='k' set!(b, BLACK, KING,   file, rank)
-        elseif t=='q' set!(b, BLACK, QUEEN,   file, rank)
-        elseif t=='r' set!(b, BLACK, ROOK,   file, rank)
-        elseif t=='b' set!(b, BLACK, BISHOP,   file, rank)
-        elseif t=='n' set!(b, BLACK, KNIGHT,   file, rank)
-        elseif t=='p' set!(b, BLACK, PAWN,   file, rank)
+        if t=='K' set!(b, WHITE, KING,   file, row)
+        elseif t=='Q' set!(b, WHITE, QUEEN,   file, row)
+        elseif t=='R' set!(b, WHITE, ROOK,   file, row)
+        elseif t=='B' set!(b, WHITE, BISHOP,   file, row)
+        elseif t=='N' set!(b, WHITE, KNIGHT,   file, row)
+        elseif t=='P' set!(b, WHITE, PAWN,   file, row)
+        elseif t=='k' set!(b, BLACK, KING,   file, row)
+        elseif t=='q' set!(b, BLACK, QUEEN,   file, row)
+        elseif t=='r' set!(b, BLACK, ROOK,   file, row)
+        elseif t=='b' set!(b, BLACK, BISHOP,   file, row)
+        elseif t=='n' set!(b, BLACK, KNIGHT,   file, row)
+        elseif t=='p' set!(b, BLACK, PAWN,   file, row)
         elseif isnumber(t) file += parse(Integer,t)-1
         elseif t=='/'
-            rank -= 1
+            row -= 1
             file = 0
         end
         file += 1
@@ -283,9 +283,9 @@ end
 function write_fen(b::Board)
     fen = ""
     empty_squares = 0
-    for rank in 8:-1:1
+    for row in 8:-1:1
         for file in 1:8
-            sqr = square(file, rank)
+            sqr = square(file, row)
             if (b.white_pieces & sqr > 0 || b.black_pieces & sqr > 0) && empty_squares > 0
                 fen *= string(empty_squares)
                 empty_squares = 0
@@ -311,7 +311,7 @@ function write_fen(b::Board)
         if empty_squares > 0
             fen *= string(empty_squares)
         end
-        if rank>1
+        if row>1
             fen *= "/"
         end
         empty_squares = 0

@@ -90,7 +90,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
         end
 
         # n.b. ÷ gives integer quotient like div()
-        rank = (square_index-1)÷8 + 1
+        row = (square_index-1)÷8 + 1
 
         # kings moves
         king = sqr & b.kings
@@ -298,7 +298,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
             end
             new_sqr = bitshift_direction(sqr, ONE_SQUARE_FORWARD)
             if occupied_by(b, new_sqr) == NONE  && !only_attacking_moves
-                if rank == LAST_RANK
+                if row == LAST_RANK
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
@@ -306,7 +306,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
                 else
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
                 end
-                if rank == START_RANK
+                if row == START_RANK
                     new_sqr = bitshift_direction(sqr, TWO_SQUARE_FORWARD)
                     if occupied_by(b, new_sqr) == NONE
                         add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
@@ -315,7 +315,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
             end
             new_sqr = bitshift_direction(sqr, TAKE_LEFT) & ~FILE_H
             if occupied_by(b, new_sqr) == enemy_color || only_attacking_moves
-                if rank == LAST_RANK
+                if row == LAST_RANK
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
@@ -332,7 +332,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
             end
             new_sqr = bitshift_direction(sqr, TAKE_RIGHT) & ~FILE_A
             if occupied_by(b, new_sqr) == enemy_color || only_attacking_moves
-                if rank == LAST_RANK
+                if row == LAST_RANK
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
@@ -362,25 +362,25 @@ function generate_moves(b::Board; only_attacking_moves=false)
         #       simply run the ply, make each move, and if the enemy response allows king capture,
         #       remove it from the list
         illegal_moves = []
-        for m in moves
+        for move in moves
             test_board = deepcopy(b)
-            make_move!(test_board,m)
+            make_move!(test_board,move)
             kings_new_square = test_board.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
-            if m.piece_moving==KING
-                kings_new_square = m.sqr_dest
+            if move.piece_moving==KING
+                kings_new_square = move.sqr_dest
             end
             #println("Checking $(m) for pins against KING on $(square_name(kings_new_square))")
             reply_moves = generate_moves(test_board, only_attacking_moves=true)
-            for replymv in reply_moves
-                #@show replymv
-                if replymv.sqr_dest == kings_new_square
+            for reply_move in reply_moves
+                #@show reply_move
+                if reply_move.sqr_dest == kings_new_square
                     #println(" filtering illegal mv  $(algebraic_move(m))")
-                    push!(illegal_moves, m)
+                    push!(illegal_moves, move)
                     break
                 end
             end
         end
-        filter!(m->m∉illegal_moves, moves)
+        filter!(mv -> mv ∉ illegal_moves, moves)
     end
 
 

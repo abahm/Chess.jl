@@ -2,7 +2,7 @@
 
 module Chess
 
-const version = "Julia Chess, v0.31"
+const version = "Julia Chess, v0.32"
 const author = "Alan Bahm"
 #println("Welcome to $(version) by $author")
 
@@ -34,7 +34,7 @@ if "-uci" ∈ ARGS
 elseif "-xboard" ∈ ARGS
     xboard_loop()
 else
-    depth = 1
+    depth = 2
     play(depth)
 end
 

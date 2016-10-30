@@ -78,7 +78,7 @@ const MATE_SCORE = -100.0
 function evaluate(b::Board)
     # simplified evaluation as per Tomasz Michniewski
     # https://chessprogramming.wikispaces.com/Simplified+evaluation+function
-    material =
+    material_value =
        KING_SCORE   * count(b.white_pieces & b.kings)   +
        QUEEN_SCORE  * count(b.white_pieces & b.queens)  +
        ROOK_SCORE   * count(b.white_pieces & b.rooks)   +
@@ -92,7 +92,7 @@ function evaluate(b::Board)
        KNIGHT_SCORE * count(b.black_pieces & b.knights) +
        PAWN_SCORE   * count(b.black_pieces & b.pawns))
 
-    position = 0
+    position_value = 0
     for square_index in 1:64
         sqr = UInt64(1) << (square_index-1)
 
@@ -103,13 +103,13 @@ function evaluate(b::Board)
             m = -1
         end
 
-        if b.kings & sqr > 0    position += m * king_square_table[i]    end
-        if b.queens & sqr > 0   position += m * queen_square_table[i]   end
-        if b.rooks & sqr > 0    position += m * rook_square_table[i]    end
-        if b.bishops & sqr > 0  position += m * bishop_square_table[i]  end
-        if b.knights & sqr > 0  position += m * knight_square_table[i]  end
-        if b.pawns & sqr > 0    position += m * pawn_square_table[i]    end
+        if b.kings & sqr > 0    position_value += m * king_square_table[i]    end
+        if b.queens & sqr > 0   position_value += m * queen_square_table[i]   end
+        if b.rooks & sqr > 0    position_value += m * rook_square_table[i]    end
+        if b.bishops & sqr > 0  position_value += m * bishop_square_table[i]  end
+        if b.knights & sqr > 0  position_value += m * knight_square_table[i]  end
+        if b.pawns & sqr > 0    position_value += m * pawn_square_table[i]    end
     end
 
-    material + (position/100)
+    material_value + (position_value/100)
 end

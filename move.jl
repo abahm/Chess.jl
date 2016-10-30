@@ -42,7 +42,7 @@ end
 function algebraic_move(m::Move)
     if m.castling & CASTLING_RIGHTS_WHITE_KINGSIDE > 0 ||
        m.castling & CASTLING_RIGHTS_BLACK_KINGSIDE > 0
-        return "⚬-⚬" #"○-○" #"o-o"
+        return "⚬-⚬ " #"○-○" #"o-o"
     end
 
     if m.castling & CASTLING_RIGHTS_WHITE_QUEENSIDE > 0 ||

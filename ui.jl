@@ -7,13 +7,13 @@ function perft(board::Board, levels::Integer)
         return length(moves)
     end
 
-    count = 0
+    node_count = 0
     for m in moves
         test_board = deepcopy(board)
         make_move!(test_board, m)
-        count = count + perft(test_board, levels-1)
+        node_count = node_count + perft(test_board, levels-1)
     end
-    return count
+    return node_count
 end
 
 function perft_new(board::Board, levels::Integer)
@@ -22,15 +22,15 @@ function perft_new(board::Board, levels::Integer)
         return length(moves)
     end
 
-    count = 0
+    node_count = 0
     prior_castling_rights = board.castling_rights
     prior_last_move_pawn_double_push = board.last_move_pawn_double_push
     for m in moves
         make_move!(board, m)
-        count = count + perft(board, levels-1)
+        node_count = node_count + perft(board, levels-1)
         unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
     end
-    return count
+    return node_count
 end
 
 function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game(), max_number_of_moves=1000)
@@ -139,9 +139,9 @@ function play(depth=0)
             for m in moves
                 test_board = deepcopy(b)
                 make_move!(test_board, m)
-                count = perft(test_board, levels)
-                total_count += count
-                println("$m $count")
+                node_count = perft(test_board, levels)
+                total_count += node_count
+                println("$m $node_count")
             end
             println("Nodes: $total_count")
             println("Moves: $(length(moves))")
@@ -152,9 +152,9 @@ function play(depth=0)
 
         if startswith(movestr,"analysis") || movestr=="a\n"
             function search_and_print(ply)
-                score,mv,pv,nnodes,time_s = best_move_negamax(b, ply)
+                score,move,pv,nnodes,time_s = best_move_negamax(b, ply)
                 # $ply $score $time_s $nodes $pv
-                println("$ply\t $(round(score,3))\t $(round(time_s,2))\t $nnodes\t $mv\t $(algebraic_move(pv))")
+                println("$ply\t $(round(score,3))\t $(round(time_s,2))\t $nnodes\t $move\t $(algebraic_move(pv))")
                 print("      ")
             end
             for analysis_depth in 0:3
