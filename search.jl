@@ -48,7 +48,16 @@ function negaMax(board, depth)
         number_nodes_visited += nnodes
     end
 
-    push!(principal_variation, max_move)
+    if max_move == nothing
+        # no moves available - it is either a draw or a mate
+        if is_king_in_check(board)
+            max_value = MATE_SCORE + depth  # add depth to define mate in N moves
+        else
+            max_value = DRAW_SCORE
+        end
+    else
+        push!(principal_variation, max_move)
+    end
     max_value, principal_variation, number_nodes_visited
 end
 

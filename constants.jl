@@ -11,6 +11,7 @@ const PAWN = UInt8(6)
 
 const WHITE = UInt8(1)
 const BLACK = UInt8(2)
+@inline function opposite_color(color::UInt8)  color==WHITE ? BLACK : WHITE  end
 
 const A = UInt8(1)
 const B = UInt8(2)

@@ -173,9 +173,9 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
     if b.castling_rights & CASTLING_RIGHTS_BLACK_KINGSIDE > 0
         print(io, CHARACTER_CASTLING_AVAILABLE)
     end
-    if b.side_to_move==WHITE     print("     WHITE to move")
-    elseif b.side_to_move==BLACK print("     BLACK to move")
-    else                         print("     ????? to move")
+    if b.side_to_move==WHITE     print("      WHITE to move")
+    elseif b.side_to_move==BLACK print("      BLACK to move")
+    else                         print("      ????? to move")
     end
     if b.last_move_pawn_double_push > 0
         print(io, "   en passant from $(square_name(b.last_move_pawn_double_push))")
@@ -220,7 +220,7 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
     #println("    𝖠 𝖡 𝖢 𝖣 𝖤 𝖥 𝖦 𝖧")
     #println("    𝕒 𝕓 𝕔 𝕕 𝕖 𝕗 𝕘 𝕙")
     print(io, "    𝖺 𝖻 𝖼 𝖽 𝖾 𝖿 𝗀 𝗁")
-    print(io, "    Score $(evaluate(b)/100) pawns\n")
+    print(io, "   Score $(evaluate(b)/100) pawns\n")
 end
 
 function square(square_name::String)
