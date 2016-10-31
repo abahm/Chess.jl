@@ -801,7 +801,7 @@ function xboard_writeline(msg::String)
     flush(STDOUT)
 
     io = open("Chess.writeline.txt", "a")
-    print(io, "$nchar "msg*"\n")
+    print(io, "$nchar\t$msg\n")
     close(io)
 end
 function xboard_loop()
