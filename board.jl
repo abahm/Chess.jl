@@ -350,6 +350,8 @@ function draw_with_fonts()
 end
 
 function board_validation_checks(b::Board)
+    return 
+
     # check no overlap - each square can have one and only one piece
     assert(b.side_to_move!=NONE)
 
