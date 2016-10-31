@@ -26,7 +26,8 @@ include("evaluation.jl")
 include("search.jl")
 include("ui.jl")
 
-
+# go back in git history
+# make separate julia protocol run
 
 
 if "-uci" ∈ ARGS

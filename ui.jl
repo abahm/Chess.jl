@@ -797,12 +797,12 @@ function xboard_readline()
     r
 end
 function xboard_writeline(msg::String)
-    io = open("Chess.writeline.txt", "a")
-    print(io, msg*"\n")
-    close(io)
-
-    write(STDOUT, msg*"\n")
+    nchar = write(STDOUT, String(msg*"\n"))
     flush(STDOUT)
+
+    io = open("Chess.writeline.txt", "a")
+    print(io, "$nchar "msg*"\n")
+    close(io)
 end
 function xboard_loop()
     flush(STDIN)
