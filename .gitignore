@@ -1,3 +1,15 @@
 tags
 tagit.bash
 cscope*
+.DS_Store
+xb
+xboard.debug*
+log.*
+game.*
+players.dat
+logo.png
+Julia.png
+cscope.files
+tagit.bash
+Chess.readline.txt
+Chess.writeline.txt
