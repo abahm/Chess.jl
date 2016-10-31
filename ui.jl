@@ -788,21 +788,30 @@ function uci_loop()
 end
 
 function xboard_readline()
-    #sleep(0.1)
     r = readline()
-    #flush(STDIN)
+
+    io = open("Chess.readline.txt", "a")
+    print(io, r)
+    close(io)
+
     r
 end
-function xboard_println(str="")
-    println(str)
+function xboard_writeline(msg::String)
+    io = open("Chess.writeline.txt", "a")
+    print(io, msg*"\n")
+    close(io)
+
+    write(STDOUT, msg*"\n")
     flush(STDOUT)
 end
 function xboard_loop()
+    flush(STDIN)
+    flush(STDOUT)
     chess_engine_debug_mode = false
     chess_engine_show_thinking = false
     my_time = Inf
     opp_time = Inf
-    ply = 0
+    ply = 1
 
     board = new_game()
     while true
@@ -824,7 +833,7 @@ function xboard_loop()
                 you must turn off the prompt and output a newline when the "xboard"
                 command comes in.
             =#
-            xboard_println()
+            xboard_writeline("")
         end
 
         if "protover" ∈ tokens
@@ -850,30 +859,33 @@ function xboard_loop()
                 versions may be accepted.
             =#
 
-            xboard_println("tellics say     $version")
-            xboard_println("tellics say     by $author")
+            xboard_writeline("tellics say     $version")
+            xboard_writeline("tellics say     by $author")
 
-            xboard_println("feature myname=\"$(version)\"")
+            xboard_writeline("feature myname=\"$(version)\"")
             xboard_readline()
 
             # request xboard send moves to the engine with the command "usermove MOVE"
-            xboard_println("feature usermove=1")
+            xboard_writeline("feature usermove=1")
             xboard_readline()
 
             # use the protocol's new "setboard" command to set up positions
-            xboard_println("feature setboard=1")
+            xboard_writeline("feature setboard=1")
             xboard_readline()
 
-            xboard_println("feature ping=1")
+            xboard_writeline("feature ping=1")
             xboard_readline()
 
-            xboard_println("feature colors=0")
+            xboard_writeline("feature colors=0")
+            xboard_readline()
+
+            xboard_writeline("feature option=\"Depth -spin $ply 0 4\"")
             xboard_readline()
 
             # If you set done=1 during the initial two-second timeout after xboard
             # sends you the "xboard" command, the timeout will end and xboard will
             # not look for any more feature commands before starting normal operation.
-            xboard_println("feature done=1")
+            xboard_writeline("feature done=1")
             xboard_readline()
         end
 
@@ -926,7 +938,7 @@ function xboard_loop()
         end
 
         if "ping" ∈ tokens
-            xboard_println("pong $(tokens[2])")
+            xboard_writeline("pong $(tokens[2])")
         end
 
         if "nopost" ∈ tokens
@@ -954,11 +966,11 @@ function xboard_loop()
             best_value, best_move, pv, nodes, time_s = best_move_negamax(board, ply)
             if chess_engine_show_thinking
                 score = evaluate(board)
-                xboard_println("$ply $score $time_s $nodes $pv")
+                #xboard_writeline("$ply $score $time_s $nodes $pv")
             end
             if best_move!=nothing
                 bestmovestr = long_algebraic_move(best_move)
-                xboard_println("move $bestmovestr")
+                xboard_writeline("move $bestmovestr")
                 make_move!(board, best_move)
             end
         end
@@ -978,14 +990,19 @@ function xboard_loop()
             best_value, best_move, pv, nodes, time_s = best_move_negamax(board, ply)
             if chess_engine_show_thinking
                 score = evaluate(board)
-                xboard_println("$ply $score $time_s $nodes $pv")
+                #xboard_writeline("$ply $score $time_s $nodes $pv")
             end
             if best_move!=nothing
                 bestmovestr = long_algebraic_move(best_move)
-                xboard_println("move $bestmovestr")
+                xboard_writeline("move $bestmovestr")
                 make_move!(board, best_move)
             end
         end
 
+        if "option" ∈ tokens
+            if startswith(tokens[2], "Depth=")
+                ply = parse(tokens[2][7:end])
+            end
+        end
     end
 end
