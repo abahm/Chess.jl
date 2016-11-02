@@ -25,6 +25,8 @@ include("position.jl")
 include("evaluation.jl")
 include("search.jl")
 include("ui.jl")
+include("protocols/xboard.jl")
+include("protocols/uci.jl")
 
 
 if "-uci" ∈ ARGS
