@@ -43,4 +43,4 @@ In windows:
 
 ## History
 
-![history](history/README.md)
+[history](docs/README.md)
