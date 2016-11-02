@@ -95,7 +95,7 @@ function xboard_loop()
             best_value, best_move, pv, nodes, time_s = best_move_negamax(board, ply)
             if chess_engine_show_thinking
                 score = evaluate(board)
-                xboard_writeline("$ply $score $time_s $nodes $pv")
+                xboard_writeline("\t $ply\t $score\t $time_s\t $nodes\t $(long_algebraic_move(pv))")
             end
             if best_move!=nothing
                 bestmovestr = long_algebraic_move(best_move)
@@ -118,7 +118,7 @@ function xboard_loop()
             # think of best reply
             score, best_move, pv, nodes, time_s = best_move_negamax(board, ply)
             if chess_engine_show_thinking
-                xboard_writeline("$ply $score $time_s $nodes $pv")
+                xboard_writeline("\t $ply\t $score\t $time_s\t $nodes\t $(long_algebraic_move(pv))")
             end
             if best_move!=nothing
                 bestmovestr = long_algebraic_move(best_move)

@@ -39,6 +39,14 @@ function long_algebraic_move(m::Move)
     uci_move
 end
 
+function long_algebraic_move(moves::Array{Move,1})
+    moves_str = ""
+    for m in moves
+        moves_str = moves_str * long_algebraic_move(m) * " "
+    end
+    moves_str
+end
+
 function algebraic_move(m::Move)
     if m.castling & CASTLING_RIGHTS_WHITE_KINGSIDE > 0 ||
        m.castling & CASTLING_RIGHTS_BLACK_KINGSIDE > 0
