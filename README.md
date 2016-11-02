@@ -1,8 +1,12 @@
 <a name="logo"/>
 <div align="center">
-<img src="JuliaChess.png" alt="Julia Logo" width="210" height="142"></img>
+<img src="JuliaChess.png" alt="Julia Logo" width="210"></img>
 </a>
 </div>
+
+
+<a name="Chess-Engine-in-Julia"/>
+
 
 # Chess.jl
 
