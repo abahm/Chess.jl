@@ -789,147 +789,74 @@ end
 
 function xboard_readline()
     r = readline()
-
+    #=
     io = open("Chess.readline.txt", "a")
     print(io, r)
     close(io)
-
+    =#
     r
 end
 function xboard_writeline(msg::String)
     nchar = write(STDOUT, String(msg*"\n"))
     flush(STDOUT)
-
+    #=
     io = open("Chess.writeline.txt", "a")
     print(io, "$nchar\t$msg\n")
     close(io)
+    =#
 end
 function xboard_loop()
-    flush(STDIN)
-    flush(STDOUT)
+    #flush(STDIN)
+    #flush(STDOUT)
+
     chess_engine_debug_mode = false
     chess_engine_show_thinking = false
     my_time = Inf
     opp_time = Inf
-    ply = 1
+    ply = 2
 
     board = new_game()
     while true
         r = xboard_readline()
-
-        # use xboard -debug instead
-        #io = open("xboard_log.txt","a")
-        #write(io, r)
-        #close(io)
-
         tokens = split(r)
 
         if "xboard" ∈ tokens
-            #=
-            xboard
-                This command will be sent once immediately after your engine
-                process is started. You can use it to put your engine into "xboard mode"
-                if that is needed. If your engine prints a prompt to ask for user input,
-                you must turn off the prompt and output a newline when the "xboard"
-                command comes in.
-            =#
             xboard_writeline("")
         end
 
         if "protover" ∈ tokens
-            #=
-            protover N
-                Beginning in protocol version 2 (in which N=2), this command will be
-                sent immediately after the "xboard" command. If you receive some other
-                command immediately after "xboard" (such as "new"), you can assume that
-                protocol version 1 is in use. The "protover" command is the only new
-                command that xboard always sends in version 2. All other new commands
-                to the engine are sent only if the engine first enables them with the
-                "feature" command. Protocol versions will always be simple integers
-                so that they can easily be compared.
-
-                Your engine should reply to the protover command by sending the "feature"
-                command (see below) with the list of non-default feature settings that
-                you require, if any.
-
-                Your engine should never refuse to run due to receiving a higher protocol
-                version number than it is expecting! New protocol versions will always be
-                compatible with older ones by default; the larger version number is simply
-                a hint that additional "feature" command options added in later protocol
-                versions may be accepted.
-            =#
-
             xboard_writeline("tellics say     $version")
             xboard_writeline("tellics say     by $author")
-
             xboard_writeline("feature myname=\"$(version)\"")
             xboard_readline()
-
             # request xboard send moves to the engine with the command "usermove MOVE"
             xboard_writeline("feature usermove=1")
             xboard_readline()
-
             # use the protocol's new "setboard" command to set up positions
             xboard_writeline("feature setboard=1")
             xboard_readline()
-
+            # tell xboard we are not gnuchess (section 8 of ref), don't kill us
+            xboard_writeline("feature sigint=0")
+            xboard_readline()
+            # allow xboard to synchronize with us
             xboard_writeline("feature ping=1")
             xboard_readline()
-
+            # don't use obsolete "colors" command
             xboard_writeline("feature colors=0")
             xboard_readline()
-
+            # specify options that we can change in the user interface
             xboard_writeline("feature option=\"Depth -spin $ply 0 4\"")
             xboard_readline()
-
-            # If you set done=1 during the initial two-second timeout after xboard
-            # sends you the "xboard" command, the timeout will end and xboard will
-            # not look for any more feature commands before starting normal operation.
+            # done sending commands
             xboard_writeline("feature done=1")
             xboard_readline()
         end
 
-        if "accepted" ∈ tokens
-            #=
-            accepted
-            rejected
-                These commands may be sent to your engine in reply to the "feature"
-                command; see its documentation below.
-            =#
-        end
-
-        if "rejected" ∈ tokens
-        end
-
         if "new" ∈ tokens
-            #=
-            new
-                Reset the board to the standard chess starting position. Set
-                White on move. Leave force mode and set the engine to play Black.
-                Associate the engine's clock with Black and the opponent's clock
-                with White. Reset clocks and time controls to the start of a new
-                game. Use wall clock for time measurement. Stop clocks. Do not
-                ponder on this move, even if pondering is on. Remove any search
-                depth limit previously set by the sd command.
-            =#
             board = new_game()
         end
 
-        if "variant" ∈ tokens
-            #=
-            variant VARNAME
-                If the game is not standard chess, but a variant, this command
-                is sent after "new" and before the first move or "edit" command.
-            =#
-        end
-
         if "quit" ∈ tokens
-            #=
-            quit
-                The chess engine should immediately exit. This command is used
-                when xboard is itself exiting, and also between games if the -xreuse
-                command line option is given (or -xreuse2 for the second engine).
-            =#
             quit() # the julia REPL
         end
 
@@ -954,19 +881,11 @@ function xboard_loop()
         end
 
         if "go" ∈ tokens
-            #=
-            go
-                Leave force mode and set the engine to play the color that is on move.
-                Associate the engine's clock with the color that is on move, the
-                opponent's clock with the color that is not on move. Start the engine's
-                clock. Start thinking and eventually make a move.
-            =#
-
             # send xboard reply move
             best_value, best_move, pv, nodes, time_s = best_move_negamax(board, ply)
             if chess_engine_show_thinking
                 score = evaluate(board)
-                #xboard_writeline("$ply $score $time_s $nodes $pv")
+                xboard_writeline("$ply $score $time_s $nodes $pv")
             end
             if best_move!=nothing
                 bestmovestr = long_algebraic_move(best_move)

@@ -2,9 +2,9 @@
 
 module Chess
 
-const version = "Julia Chess, v0.33"
+const version = "Julia Chess, v0.34"
 const author = "Alan Bahm"
-#println("Welcome to $(version) by $author")
+
 
 export WHITE, BLACK
 export KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN
@@ -25,9 +25,6 @@ include("position.jl")
 include("evaluation.jl")
 include("search.jl")
 include("ui.jl")
-
-# go back in git history
-# make separate julia protocol run
 
 
 if "-uci" ∈ ARGS
