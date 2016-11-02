@@ -21,6 +21,16 @@ Bitboards are used to represent the state.   This code is a learning exercise fo
 
 
 
+## Running with winboard/xboard
+
+In Linux/Max OSX:
+`xboard -fcp 'julia Chess.jl -xboard'`
+
+In windows:
+`winboard.exe /debug /fcp="julia Chess.jl -xboard"`
+
+
+
 ## Resources
 * [Chess programming wiki](https://chessprogramming.wikispaces.com/)
 * Open source code: [Stockfish - excellent](https://github.com/official-stockfish/Stockfish), [Ethereal](https://github.com/AndyGrant/Ethereal)

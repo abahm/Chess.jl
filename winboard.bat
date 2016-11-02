@@ -1,1 +1,0 @@
-C:\WinBoard-4.8.0\WinBoard\winboard.exe /debug /fd="C:\dev\Chess.jl" /fcp="julia C:\dev\Chess.jl\Chess.jl"
