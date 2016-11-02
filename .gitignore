@@ -3,6 +3,7 @@ tagit.bash
 cscope*
 .DS_Store
 xb
+xbb
 xboard.debug*
 log.*
 game.*
