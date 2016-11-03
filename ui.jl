@@ -70,20 +70,18 @@ function random_play_both_sides(ngames)
 end
 
 function play(depth=0)
-    b = new_game()
-    prior_castling_rights = b.castling_rights
-    prior_last_move_pawn_double_push = b.last_move_pawn_double_push
-    moves_made = Move[]
+    board = new_game()
+    game_history = []  # store (move, board) every turn
     while true
         clear_repl()
         println()
-        printbd(b)
-        print_move_history(moves_made)
+        printbd(board)
+        print_move_history(Move[mb[1] for mb in game_history])
         println()
 
-        moves = generate_moves(b)
+        moves = generate_moves(board)
         if length(moves)==0
-            if is_king_in_check(b)
+            if is_king_in_check(board)
                 println("Checkmate!")
             else
                 println("Drawn game.")
@@ -100,59 +98,52 @@ function play(depth=0)
         end
 
         if startswith(movestr,"go") || movestr=="\n"
-            best_value, best_move, pv, number_nodes_visited, time_s = best_move_negamax(b, depth)
-            prior_castling_rights = b.castling_rights
-            prior_last_move_pawn_double_push = b.last_move_pawn_double_push
-            push!(moves_made, best_move)
-            make_move!(b, best_move)
+            best_value, best_move, pv, number_nodes_visited, time_s = best_move_negamax(board, depth)
+            push!(game_history, (best_move,deepcopy(board)))
+            make_move!(board, best_move)
             continue
         end
 
         if startswith(movestr,"undo") || movestr=="u\n"
-            if length(moves_made)==0
+            if length(game_history)==0
                 continue
             end
-            m = pop!(moves_made)
-            unmake_move!(b,m,prior_castling_rights,prior_last_move_pawn_double_push)
+            move, prior_board = pop!(game_history)
 
-            #b = new_game()
-            #for m in moves_made
-            #    make_move!(b, m)
-            #end
+            # we could just copy the prior_board, but we use this to test unmake_move!()
+            unmake_move!(board, move, prior_board.castling_rights,
+                                      prior_board.last_move_pawn_double_push)
 
             continue
         end
 
         if startswith(movestr,"new") || movestr=="n\n"
-            b = new_game()
-            moves_made = Move[]
+            board = new_game()
+            game_history = []
             continue
         end
 
         if startswith(movestr,"fen ")
             fen = movestr[5:end-1]
             @show fen
-            b = read_fen(fen)
-            moves_made = Move[]
+            board = read_fen(fen)
+            game_history = []
             continue
         end
 
         if startswith(movestr, "divide")
             levels = parse(split(movestr)[2]) - 1
             total_count = 0
-            for m in moves
-                #test_board = deepcopy(b)
-                #make_move!(test_board, m)
-                #node_count = perft(test_board, levels)
-
-                prior_castling_rights = b.castling_rights
-                prior_last_move_pawn_double_push = b.last_move_pawn_double_push
-                make_move!(b, m)
-                node_count = perft(b, levels)
-                unmake_move!(b,m,prior_castling_rights,prior_last_move_pawn_double_push)
+            for move in moves
+                prior_castling_rights = board.castling_rights
+                prior_last_move_pawn_double_push = board.last_move_pawn_double_push
+                make_move!(board, move)
+                node_count = perft(board, levels)
+                unmake_move!(board, move, prior_castling_rights,
+                                          prior_last_move_pawn_double_push)
 
                 total_count += node_count
-                println("$(long_algebraic_move(m)) $node_count")
+                println("$(long_algebraic_move(move)) $node_count")
             end
             println("Nodes: $total_count")
             println("Moves: $(length(moves))")
@@ -163,7 +154,7 @@ function play(depth=0)
 
         if startswith(movestr,"analysis") || movestr=="a\n"
             function search_and_print(ply)
-                score,move,pv,nnodes,time_s = best_move_negamax(b, ply)
+                score,move,pv,nnodes,time_s = best_move_negamax(board, ply)
                 # $ply $score $time_s $nodes $pv
                 println("$ply\t $(round(score,3))\t $(round(time_s,2))\t $nnodes\t $move\t $(algebraic_move(pv))")
                 print("      ")
@@ -177,9 +168,9 @@ function play(depth=0)
         end
 
         users_move = nothing
-        for m in moves
-            if startswith(movestr,long_algebraic_move(m))
-                users_move = m
+        for move in moves
+            if startswith(movestr,long_algebraic_move(move))
+                users_move = move
                 break
             end
         end
@@ -196,17 +187,12 @@ function play(depth=0)
             continue
         end
 
-        push!(moves_made, users_move)
-        prior_castling_rights = b.castling_rights
-        prior_last_move_pawn_double_push = b.last_move_pawn_double_push
-        make_move!(b, users_move)
+        push!(game_history, (users_move,deepcopy(board)))
+        make_move!(board, users_move)
 
         # make answering move
-        best_value, best_move, pv, nodes, time_s = best_move_negamax(b, depth)
-        push!(moves_made, best_move)
-        prior_castling_rights = b.castling_rights
-        prior_last_move_pawn_double_push = b.last_move_pawn_double_push
-        make_move!(b, best_move)
-
-    end
+        best_value, best_move, pv, nodes, time_s = best_move_negamax(board, depth)
+        push!(game_history, (best_move,deepcopy(board)))
+        make_move!(board, best_move)
+    end   # while true
 end
