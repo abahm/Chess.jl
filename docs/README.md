@@ -1,4 +1,5 @@
 ## History
+
 ### 2016 October 7
 I've gotten piece movement working and displaying.  Still to do are en passant, promotion, and testing for illegal moves that put the king in check.
 
