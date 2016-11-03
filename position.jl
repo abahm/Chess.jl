@@ -44,7 +44,7 @@ const BLOCKED = UInt8(1)
 
     # move is a capturing move
     if o!=NONE
-        m = Move(my_color, my_piece, src_sqr, dest_sqr, promotion_to=promotion_to)
+        m = Move(my_color, my_piece, src_sqr, dest_sqr, piece_taken=piece_type_on_sqr(b,dest_sqr), promotion_to=promotion_to)
         push!(moves, m)
         return BLOCKED
     end
@@ -391,6 +391,19 @@ function generate_moves(b::Board; only_attacking_moves=false)
     moves
 end
 
+function make_move!(b::Board, movestr::String)
+    move = nothing
+    moves = generate_moves(b)
+    for m in moves
+        if long_algebraic_move(m)==movestr
+            make_move!(b,m)
+            move = m
+            break
+        end
+    end
+    move
+end
+
 function make_move!(b::Board, m::Move)
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest
@@ -522,50 +535,48 @@ function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest
     color = m.color_moving
-    assert(color!=NONE)
     moving_piece = m.piece_moving
-    assert(moving_piece!=NONE)
     taken_piece = m.piece_taken
 
     # undo any pawn promotion
-    if m.promotion_to > NONE
+    if m.promotion_to != NONE
         b.pawns = b.pawns | sqr_dest
         if m.promotion_to == QUEEN       b.queens = b.queens & ~sqr_dest
         elseif m.promotion_to == KNIGHT  b.knights = b.knights & ~sqr_dest
         elseif m.promotion_to == ROOK    b.rooks = b.rooks & ~sqr_dest
         elseif m.promotion_to == BISHOP  b.bishops = b.bishops & ~sqr_dest
         end
-        if color == WHITE      b.white_pieces = b.white_pieces & ~sqr_dest
-        elseif color == BLACK  b.black_pieces = b.black_pieces & ~sqr_dest
-        end
+        #if color == WHITE      b.white_pieces = b.white_pieces & ~sqr_dest
+        #elseif color == BLACK  b.black_pieces = b.black_pieces & ~sqr_dest
+        #end # this is done below
     end
 
     # move the moving piece (remove from dest, add to src)
-    if moving_piece == KING         b.kings = (b.kings & ~sqr_dest) | sqr_src
-    elseif moving_piece == QUEEN    b.queens = (b.queens & ~sqr_dest) | sqr_src
-    elseif moving_piece == ROOK     b.rooks = (b.rooks & ~sqr_dest) | sqr_src
+    if moving_piece == KING         b.kings =   (b.kings & ~sqr_dest) | sqr_src
+    elseif moving_piece == QUEEN    b.queens =  (b.queens & ~sqr_dest) | sqr_src
+    elseif moving_piece == ROOK     b.rooks =   (b.rooks & ~sqr_dest) | sqr_src
     elseif moving_piece == BISHOP   b.bishops = (b.bishops & ~sqr_dest) | sqr_src
     elseif moving_piece == KNIGHT   b.knights = (b.knights & ~sqr_dest) | sqr_src
-    elseif moving_piece == PAWN     b.pawns = (b.pawns & ~sqr_dest) | sqr_src
+    elseif moving_piece == PAWN     b.pawns =   (b.pawns & ~sqr_dest) | sqr_src
     end
-    # update the moving color (remove from src, add to dest)
+    # update the moving color (remove from dest, add to src)
     if color==WHITE
         b.white_pieces = (b.white_pieces & ~sqr_dest) | sqr_src
     else
         b.black_pieces = (b.black_pieces & ~sqr_dest) | sqr_src
     end
 
+    # TODO: switch to XOR for simplicity? speed   Also calculated src | dest once
+
     # add back any piece taken square
-    if taken_piece == QUEEN   b.queens = b.queens | sqr_dest  end
-    if taken_piece == ROOK    b.rooks = b.rooks | sqr_dest  end
-    if taken_piece == BISHOP  b.bishops = b.bishops | sqr_dest  end
-    if taken_piece == KNIGHT  b.knights = b.knights | sqr_dest  end
-    if taken_piece == PAWN && m.sqr_ep == 0  b.pawns = b.pawns | sqr_dest  end
     if taken_piece != NONE
-        if color==WHITE
-            b.white_pieces = b.white_pieces | sqr_dest
-        else
-            b.black_pieces = b.black_pieces | sqr_dest
+        if taken_piece == QUEEN   b.queens = b.queens | sqr_dest  end
+        if taken_piece == ROOK    b.rooks = b.rooks | sqr_dest  end
+        if taken_piece == BISHOP  b.bishops = b.bishops | sqr_dest  end
+        if taken_piece == KNIGHT  b.knights = b.knights | sqr_dest  end
+        if taken_piece == PAWN && m.sqr_ep == 0  b.pawns = b.pawns | sqr_dest  end
+        if color==WHITE           b.black_pieces = b.black_pieces | sqr_dest
+        else                      b.white_pieces = b.white_pieces | sqr_dest
         end
     end
 
@@ -573,12 +584,10 @@ function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_
     b.last_move_pawn_double_push = prior_last_move_pawn_double_push
 
     # en passant - replace any pawn taken by en passant
-    if m.sqr_ep > 0
+    if m.sqr_ep != 0
         b.pawns = b.pawns | m.sqr_ep
-        if color==WHITE
-            b.white_pieces = b.white_pieces | m.sqr_ep
-        else
-            b.black_pieces = b.black_pieces | m.sqr_ep
+        if color==WHITE  b.white_pieces = b.white_pieces | m.sqr_ep
+        else             b.black_pieces = b.black_pieces | m.sqr_ep
         end
     end
 

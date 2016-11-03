@@ -1,7 +1,7 @@
 # ui.jl
 
 
-function perft(board::Board, levels::Integer)
+function perft_old(board::Board, levels::Integer)
     moves = generate_moves(board)
     if levels<=1
         return length(moves)
@@ -16,7 +16,7 @@ function perft(board::Board, levels::Integer)
     return node_count
 end
 
-function perft_new(board::Board, levels::Integer)
+function perft(board::Board, levels::Integer)
     moves = generate_moves(board)
     if levels<=1
         return length(moves)
@@ -71,6 +71,8 @@ end
 
 function play(depth=0)
     b = new_game()
+    prior_castling_rights = b.castling_rights
+    prior_last_move_pawn_double_push = b.last_move_pawn_double_push
     moves_made = Move[]
     while true
         clear_repl()
@@ -99,6 +101,8 @@ function play(depth=0)
 
         if startswith(movestr,"go") || movestr=="\n"
             best_value, best_move, pv, number_nodes_visited, time_s = best_move_negamax(b, depth)
+            prior_castling_rights = b.castling_rights
+            prior_last_move_pawn_double_push = b.last_move_pawn_double_push
             push!(moves_made, best_move)
             make_move!(b, best_move)
             continue
@@ -109,12 +113,12 @@ function play(depth=0)
                 continue
             end
             m = pop!(moves_made)
-            #unmake_move!(b, m, 0, 0)
+            unmake_move!(b,m,prior_castling_rights,prior_last_move_pawn_double_push)
 
-            b = new_game()
-            for m in moves_made
-                make_move!(b, m)
-            end
+            #b = new_game()
+            #for m in moves_made
+            #    make_move!(b, m)
+            #end
 
             continue
         end
@@ -137,11 +141,18 @@ function play(depth=0)
             levels = parse(split(movestr)[2]) - 1
             total_count = 0
             for m in moves
-                test_board = deepcopy(b)
-                make_move!(test_board, m)
-                node_count = perft(test_board, levels)
+                #test_board = deepcopy(b)
+                #make_move!(test_board, m)
+                #node_count = perft(test_board, levels)
+
+                prior_castling_rights = b.castling_rights
+                prior_last_move_pawn_double_push = b.last_move_pawn_double_push
+                make_move!(b, m)
+                node_count = perft(b, levels)
+                unmake_move!(b,m,prior_castling_rights,prior_last_move_pawn_double_push)
+
                 total_count += node_count
-                println("$m $node_count")
+                println("$(long_algebraic_move(m)) $node_count")
             end
             println("Nodes: $total_count")
             println("Moves: $(length(moves))")
@@ -186,11 +197,15 @@ function play(depth=0)
         end
 
         push!(moves_made, users_move)
+        prior_castling_rights = b.castling_rights
+        prior_last_move_pawn_double_push = b.last_move_pawn_double_push
         make_move!(b, users_move)
 
         # make answering move
         best_value, best_move, pv, nodes, time_s = best_move_negamax(b, depth)
         push!(moves_made, best_move)
+        prior_castling_rights = b.castling_rights
+        prior_last_move_pawn_double_push = b.last_move_pawn_double_push
         make_move!(b, best_move)
 
     end

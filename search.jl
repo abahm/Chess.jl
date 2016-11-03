@@ -35,10 +35,15 @@ function negaMax(board, depth)
     max_move = nothing
     principal_variation = Move[]
     number_nodes_visited = 0
+    #prior_castling_rights = board.castling_rights
+    #prior_last_move_pawn_double_push = board.last_move_pawn_double_push
     for m in generate_moves(board)
         test_board = deepcopy(board)
         make_move!(test_board, m)
         score, pv, nnodes = negaMax(test_board, depth - 1 )
+        #make_move!(board, m)
+        #score, pv, nnodes = negaMax(board, depth - 1 )
+        #unmake_move!(board, m, board.castling_rights, board.last_move_pawn_double_push)
         score *= -1
         if( score > max_value )
             max_value = score

@@ -2,7 +2,7 @@
 
 module Chess
 
-const version = "Julia Chess, v0.34"
+const version = "Julia Chess, v0.35"
 const author = "Alan Bahm"
 
 

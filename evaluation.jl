@@ -103,12 +103,13 @@ function evaluate(b::Board)
             m = -1
         end
 
-        if b.kings & sqr > 0    position_value += m * king_square_table[i]    end
-        if b.queens & sqr > 0   position_value += m * queen_square_table[i]   end
-        if b.rooks & sqr > 0    position_value += m * rook_square_table[i]    end
-        if b.bishops & sqr > 0  position_value += m * bishop_square_table[i]  end
-        if b.knights & sqr > 0  position_value += m * knight_square_table[i]  end
-        if b.pawns & sqr > 0    position_value += m * pawn_square_table[i]    end
+        if b.pawns & sqr > 0        position_value += m * pawn_square_table[i]
+        elseif b.rooks & sqr > 0    position_value += m * rook_square_table[i]
+        elseif b.bishops & sqr > 0  position_value += m * bishop_square_table[i]
+        elseif b.knights & sqr > 0  position_value += m * knight_square_table[i]
+        elseif b.queens & sqr > 0   position_value += m * queen_square_table[i]
+        elseif b.kings & sqr > 0    position_value += m * king_square_table[i]
+        end
     end
 
     material_value + (position_value/100)

@@ -107,13 +107,7 @@ function xboard_loop()
         if "usermove" ∈ tokens
             # translate and make user's move
             movestr = tokens[2]
-            moves = generate_moves(board)
-            for m in moves
-                if long_algebraic_move(m)==movestr
-                    make_move!(board,m)
-                    break
-                end
-            end
+            make_move(board, movestr)
 
             # think of best reply
             score, best_move, pv, nodes, time_s = best_move_negamax(board, ply)

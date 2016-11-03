@@ -103,7 +103,7 @@ function perft_runs()
             print("$count\t $engine_count nodes\t $kilonodes_per_sec kN/sec\t ")
             if count!=engine_count
                 print_with_color(:red, "FAIL\n")
-                return
+                assert(false)
                 break
             end
             print_with_color(:green, "pass\n")
