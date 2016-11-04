@@ -1,7 +1,6 @@
 # move.jl
 
 
-# allows for move
 type Move
     color_moving::UInt8
     piece_moving::UInt8
@@ -28,7 +27,7 @@ function Base.show(io::IO, move::Move)
 end
 
 
-# for UCI interface
+"Generate an ascii string for move, e2e4, or h7h8q, for xboard and UCI protocols"
 function long_algebraic_move(m::Move)
     uci_move = square_name(m.sqr_src)
     uci_move *= square_name(m.sqr_dest)
@@ -39,6 +38,7 @@ function long_algebraic_move(m::Move)
     uci_move
 end
 
+"Generate an ascii string for moves, e2e4, or h7h8q, for xboard and UCI protocols"
 function long_algebraic_move(moves::Array{Move,1})
     moves_str = ""
     for m in moves
@@ -47,6 +47,7 @@ function long_algebraic_move(moves::Array{Move,1})
     moves_str
 end
 
+"Generate a unicode string, ♘c6"
 function algebraic_move(m::Move)
     if m.castling & CASTLING_RIGHTS_WHITE_KINGSIDE > 0 ||
        m.castling & CASTLING_RIGHTS_BLACK_KINGSIDE > 0
@@ -70,36 +71,11 @@ function algebraic_move(m::Move)
     "$piece_character $sqr_name$optionally_promoted_to"
 end
 
+"Generate a unicode string, ♘c6"
 function algebraic_move(moves::Array{Move,1})
     moves_str = ""
     for m in moves
         moves_str = moves_str * algebraic_move(m) * " "
     end
     moves_str
-end
-
-function print_algebraic(m::Move)
-    println(algebraic_move(m) * " ")
-end
-
-function print_algebraic(moves::Array{Move,1})
-    for (i,m) in enumerate(moves)
-        print(algebraic_move(m) * " ")
-        if i%10==0
-            println()
-        end
-    end
-    println()
-end
-
-function print_move_history(moves::Array{Move,1})
-    nmoves = length(moves)
-    for (j,move) in enumerate(moves)
-        if (j-1)%2==0
-            println()
-            print("$(floor(Integer,(j+1)/2)). ")
-        end
-        print(move)
-        print(" \t")
-    end
 end

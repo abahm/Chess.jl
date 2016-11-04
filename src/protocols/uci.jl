@@ -1,6 +1,6 @@
 # uci.jl
 
-
+"Plays a game over UCI protocol"
 function uci_loop()
     board = new_game()
     while true

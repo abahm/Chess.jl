@@ -1,5 +1,8 @@
 # constants.jl
 
+#CHARACTERS = ['k','q','r','b','n','p']
+const CHARACTERS = ['♔','♕','♖','♗','♘','♙']
+
 const NONE = UInt8(0)
 
 const KING = UInt8(1)

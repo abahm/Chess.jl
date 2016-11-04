@@ -1,6 +1,19 @@
-# ui.jl
+# play.jl
 
+"Print formated move output  1. ♞c3 	♘c6"
+function print_move_history(moves::Array{Move,1})
+    nmoves = length(moves)
+    for (j,move) in enumerate(moves)
+        if (j-1)%2==0
+            println()
+            print("$(floor(Integer,(j+1)/2)). ")
+        end
+        print(move)
+        print(" \t")
+    end
+end
 
+"Play a random chess game in REPL"
 function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game(), max_number_of_moves=1000)
     srand(seed)
     moves_made = Move[]
@@ -20,7 +33,6 @@ function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game
         if length(moves)==0
             break
         end
-        #print_algebraic(moves)
         r = rand(1:length(moves))
         m = moves[r]
 
@@ -31,13 +43,15 @@ function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game
     end
 end
 
+"Play N random chess games in REPL"
 function random_play_both_sides(ngames)
     for random_seed in 1:ngames
         random_play_both_sides(random_seed, true, 0.1)
     end
 end
 
-function play()
+"Start chess game in REPL"
+function repl_loop()
     depth = 2
     board = new_game()
     game_history = []  # store (move, board) every turn
@@ -176,3 +190,6 @@ function play()
         make_move!(board, best_move)
     end   # while true
 end
+
+"Start chess game in REPL"
+function play()   repl_loop()   end

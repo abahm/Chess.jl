@@ -112,6 +112,7 @@ function Base.show(io::IO, b::Board)
     print(io, "\n")
 end
 
+"Remove any pieces from this column,row square"
 function clear_square(b::Board, c, r)
     sqr = square(c, r)
     b.white_pieces = b.white_pieces & ~sqr
@@ -124,6 +125,7 @@ function clear_square(b::Board, c, r)
     b.pawns = b.pawns & ~sqr
 end
 
+"Place defined color of piece on square"
 function set!(b::Board, color, p, c, r)
     clear_square(b, c, r) # insure all prior information is cleared out
     sqr = square(c, r)
@@ -138,6 +140,7 @@ function set!(b::Board, color, p, c, r)
     nothing
 end
 
+"Creates a new standard chess board"
 function new_game()
     read_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 end
@@ -162,6 +165,7 @@ CHARACTER_CASTLING_AVAILABLE = "⇔"
 
 #SMALL_NUMBERS = ['𝟣','𝟤','𝟥','𝟦','𝟧','𝟨','𝟩','𝟪']
 SMALL_NUMBERS = ['₁','₂','₃','₄','₅','₆','₇','₈']
+"Pretty print the chess board in the REPL"
 function printbd(b::Board, io=STDOUT, moves=nothing)
     println("$(version)")
     println("FEN $(write_fen(b))")
@@ -223,6 +227,7 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
     print(io, "   Score $(round(evaluate(b),2)) pawns\n")
 end
 
+"Given a square name, e4, return the UInt64 value"
 function square(square_name::String)
     assert(length(square_name)==2)
     file = parse(Integer, square_name[1]-48)
@@ -230,6 +235,7 @@ function square(square_name::String)
     square(file, row)
 end
 
+"Create a new board from the FEN string"
 function read_fen(fen::String)
     b = Board()
     # r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -
@@ -280,6 +286,7 @@ function read_fen(fen::String)
     b
 end
 
+"Produce the string FEN of the current board"
 function write_fen(b::Board)
     fen = ""
     empty_squares = 0
@@ -344,11 +351,7 @@ function write_fen(b::Board)
     fen
 end
 
-function draw_with_fonts()
-    # convert -size 360x360 xc:white -font "FreeMono" -pointsize 12 -fill black -draw @ascii.txt image.png
-    # use alpha2 chess diagram font
-end
-
+"Debugging validation checks for internal consistancy of the board"
 function board_validation_checks(b::Board)
     return
 

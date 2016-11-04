@@ -1,5 +1,6 @@
 # position.jl
 
+"Return piece type KING, PAWN on square, or NONE if empty"
 @inline function piece_type_on_sqr(b::Board, sqr::UInt64)
     if (b.kings   & sqr)>0  return KING    end
     if (b.queens  & sqr)>0  return QUEEN   end
@@ -10,21 +11,18 @@
     return NONE
 end
 
+"Return color of piece on square, or NONE if empty"
 @inline function piece_color_on_sqr(b::Board, sqr::UInt64)
     if (b.white_pieces & sqr)>0  return WHITE  end
     if (b.black_pieces & sqr)>0  return BLACK  end
     return NONE
 end
 
-@inline function occupied_by(b::Board, sqr::UInt64)
-    # alias for piece_color_on_sqr()
-    return piece_color_on_sqr(b, sqr)
-end
-
 # handle adding sliding moves of QUEEN, ROOK, BISHOP
 #  which end by being BLOCKED or capturing an enemy piece
 const UNBLOCKED = UInt8(0)
 const BLOCKED = UInt8(1)
+"Called only by generate_moves to check if move can be added to list"
 @inline function add_move!(moves, b::Board,
                            my_color::UInt8, my_piece::UInt8,
                            src_sqr::UInt64, dest_sqr::UInt64;
@@ -35,7 +33,7 @@ const BLOCKED = UInt8(1)
         return BLOCKED
     end
 
-    o = occupied_by(b,dest_sqr)
+    o = piece_color_on_sqr(b,dest_sqr)
 
     # move is blocked by one of my own pieces
     if o==my_color
@@ -56,6 +54,7 @@ const BLOCKED = UInt8(1)
     return UNBLOCKED
 end
 
+"Generate all legal moves on the board, optionally only attacking moves (no castling)"
 function generate_moves(b::Board; only_attacking_moves=false)
     my_color = b.side_to_move
     assert(my_color==WHITE || my_color==BLACK)
@@ -84,7 +83,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
     for square_index in 1:64
         sqr = UInt64(1) << (square_index-1)
 
-        occupied = occupied_by(b,sqr)
+        occupied = piece_color_on_sqr(b,sqr)
         if occupied==NONE || occupied==enemy_color
             continue
         end
@@ -297,7 +296,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
                 bitshift_direction = >>
             end
             new_sqr = bitshift_direction(sqr, ONE_SQUARE_FORWARD)
-            if occupied_by(b, new_sqr) == NONE  && !only_attacking_moves
+            if piece_color_on_sqr(b, new_sqr) == NONE  && !only_attacking_moves
                 if row == LAST_RANK
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
@@ -308,13 +307,13 @@ function generate_moves(b::Board; only_attacking_moves=false)
                 end
                 if row == START_RANK
                     new_sqr = bitshift_direction(sqr, TWO_SQUARE_FORWARD)
-                    if occupied_by(b, new_sqr) == NONE
+                    if piece_color_on_sqr(b, new_sqr) == NONE
                         add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
                     end
                 end
             end
             new_sqr = bitshift_direction(sqr, TAKE_LEFT) & ~FILE_H
-            if occupied_by(b, new_sqr) == enemy_color || only_attacking_moves
+            if piece_color_on_sqr(b, new_sqr) == enemy_color || only_attacking_moves
                 if row == LAST_RANK
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
@@ -331,7 +330,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
                 add_move!(moves, b, my_color, PAWN, sqr, new_sqr, en_passant_sqr=b.last_move_pawn_double_push)
             end
             new_sqr = bitshift_direction(sqr, TAKE_RIGHT) & ~FILE_A
-            if occupied_by(b, new_sqr) == enemy_color || only_attacking_moves
+            if piece_color_on_sqr(b, new_sqr) == enemy_color || only_attacking_moves
                 if row == LAST_RANK
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
@@ -391,6 +390,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
     moves
 end
 
+"Make move described by string, e2e4, on board"
 function make_move!(b::Board, movestr::String)
     move = nothing
     moves = generate_moves(b)
@@ -404,6 +404,7 @@ function make_move!(b::Board, movestr::String)
     move
 end
 
+"Make move on board"
 function make_move!(b::Board, m::Move)
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest
@@ -515,6 +516,7 @@ function make_move!(b::Board, m::Move)
     nothing
 end
 
+"Return true if side to move's king is in check"
 function is_king_in_check(b::Board)
     # generate enemies attacking moves
     b.side_to_move = opposite_color(b.side_to_move)
@@ -531,6 +533,7 @@ function is_king_in_check(b::Board)
     return false
 end
 
+"Undo move on board"
 function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_pawn_double_push)
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest

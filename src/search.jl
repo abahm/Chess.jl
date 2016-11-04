@@ -1,6 +1,11 @@
 # search.jl
 
 
+"""
+Find best move by negamax algorithm, returns:
+    score, best move, principal variation,
+    number of nodes visited, time in seconds
+"""
 function best_move_negamax(board, depth)
     tic()
     moves = generate_moves(board)
@@ -27,6 +32,7 @@ function best_move_negamax(board, depth)
     best_value, best_move, principal_variation, number_nodes_visited, toq()
 end
 
+"Called only by best_move_negamax"
 function negaMax(board, depth)
     if depth == 0
         return (board.side_to_move==WHITE?1:-1)*evaluate(board), Move[], 1
@@ -67,6 +73,7 @@ function negaMax(board, depth)
 end
 
 
+"Find best move by alpha-beta algorithm"
 function best_move_alphabeta()
     moves = generate_moves(board)
 
@@ -89,6 +96,7 @@ function best_move_alphabeta()
     best_move
 end
 
+"Called only by best_move_alphabeta"
 function αβMax(board, α, β, depthleft)
 
     if depthleft == 0
@@ -111,6 +119,7 @@ function αβMax(board, α, β, depthleft)
     α
 end
 
+"Called only by best_move_alphabeta"
 function αβMin(board, α, β, depthleft)
 
     if ( depthleft == 0 )

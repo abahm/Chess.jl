@@ -75,6 +75,7 @@ const PAWN_SCORE =    1.0
 const DRAW_SCORE =    0.0
 const MATE_SCORE = -100.0
 
+"Returns a primitive evaluation of the material and position in centipawns"
 function evaluate(b::Board)
     # simplified evaluation as per Tomasz Michniewski
     # https://chessprogramming.wikispaces.com/Simplified+evaluation+function

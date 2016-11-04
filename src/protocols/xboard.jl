@@ -1,5 +1,6 @@
 # xboard.jl - protocol
 
+"Reads string from STDIN"
 function xboard_readline()
     r = readline()
     #=
@@ -9,6 +10,8 @@ function xboard_readline()
     =#
     r
 end
+
+"Writes string to STDOUT"
 function xboard_writeline(msg::String)
     nchar = write(STDOUT, String(msg*"\n"))
     flush(STDOUT)
@@ -18,6 +21,8 @@ function xboard_writeline(msg::String)
     close(io)
     =#
 end
+
+"Plays a game over xboard protocol"
 function xboard_loop()
     chess_engine_debug_mode = true
     chess_engine_show_thinking = true
