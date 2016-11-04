@@ -586,8 +586,8 @@ function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_
     # en passant - replace any pawn taken by en passant
     if m.sqr_ep != 0
         b.pawns = b.pawns | m.sqr_ep
-        if color==WHITE  b.white_pieces = b.white_pieces | m.sqr_ep
-        else             b.black_pieces = b.black_pieces | m.sqr_ep
+        if color==WHITE  b.black_pieces = b.black_pieces | m.sqr_ep
+        else             b.white_pieces = b.white_pieces | m.sqr_ep
         end
     end
 
