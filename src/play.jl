@@ -51,9 +51,9 @@ function random_play_both_sides(ngames)
 end
 
 "Start chess game in REPL"
-function repl_loop(chess960=false)
+function repl_loop()
     depth = 2
-    board = chess960?new_game_960():new_game()
+    board = new_game()
     game_history = []  # store (move, board) every turn
     while true
         clear_repl()
@@ -100,8 +100,14 @@ function repl_loop(chess960=false)
             continue
         end
 
-        if startswith(movestr,"new") || movestr=="n\n"
-            board = chess960?new_game_960():new_game()
+        if startswith(movestr,"new960") || movestr=="n960\n"
+            board = new_game_960()
+            game_history = []
+            continue
+        end
+
+        if startswith(movestr,"new") || movestr=="\n"
+            board = new_game()
             game_history = []
             continue
         end
@@ -170,6 +176,8 @@ function repl_loop(chess960=false)
             println(" type your moves like 'e2e4' or 'h7h8q'")
             println(" type 'go' or <enter> to have computer move")
             println(" type 'undo' or 'u' to go back a move")
+            println(" type 'new' or 'n' to start a new game")
+            println(" type 'new960' or 'n960' to start a new chess960 game")
             println(" type 'fen FEN' to load FEN position")
             println(" type 'analysis' or 'a' to analyze position")
             println(" type 'divide N' count nodes from this position")
@@ -193,6 +201,3 @@ end
 
 "Start chess game in REPL"
 function play()   repl_loop()   end
-
-"Start chess960 game in REPL"
-function play960()   repl_loop(true)   end
