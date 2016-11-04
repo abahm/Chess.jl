@@ -10,15 +10,23 @@
 
 # Chess.jl
 
-Julia module that plays chess, and [chess960](https://en.wikipedia.org/wiki/Chess960).   To run this program, you must install [Julia](http://julialang.org/), run it from the github cloned directory, and do `include("Chess.jl")` to run the game loop.   The chess board and move history is printed in the [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop).
+[Julia](http://julialang.org/) module which can play chess and [chess960](https://en.wikipedia.org/wiki/Chess960).   
 
 The goal is to create a reasonably performant chess engine, that can generate legal moves, and play with minimal interface (i.e. in the REPL).   
 
-Bitboards are used to represent the state.   This code is a learning exercise for me in both engine building, and performant Julia code.
+Bitboards are used to represent the state.   This code is a learning exercise in both engine building, and performant Julia code.
 
 
 
-## Running with winboard/xboard
+## Playing a game in the REPL
+`julia Chess.jl -repl`
+
+The chess board and move history is printed every move in the  [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop).  Enter moves as "e2e4" or "h7h8q".  Type "?" to see a full list of commands.
+
+
+
+
+## Play a game with winboard/xboard
 
 In Linux/Max OSX:
 `xboard -fcp 'julia Chess.jl -xboard'`
@@ -29,7 +37,7 @@ In windows:
 
 
 ## Developers
-As it is during development, to run the code, you will have to add the path to your
+As it is during development, to load the module, you will have to add the path to your
 .juliarc.jl in your home directory:
 `push!(LOAD_PATH, "~/Chess.jl/src")`
 
