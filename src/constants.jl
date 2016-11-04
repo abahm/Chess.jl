@@ -1,7 +1,25 @@
 # constants.jl
 
-#CHARACTERS = ['k','q','r','b','n','p']
+# Symbols for drawing chess board in REPL
+#const CHARACTERS = ['k','q','r','b','n','p']
 const CHARACTERS = ['♔','♕','♖','♗','♘','♙']
+const CHARACTER_SQUARE_ATTACKED = '•'
+const CHARACTER_SQUARE_CAPTURE = 'x'  #'∘'
+#const CHARACTER_SQUARE_EMPTY = '⋅'
+#const CHARACTER_SQUARE_EMPTY = '–'
+#const CHARACTER_SQUARE_EMPTY = '⋯'
+#const CHARACTER_SQUARE_EMPTY = '_'
+#const CHARACTER_SQUARE_EMPTY = ' '
+#const CHARACTER_SQUARE_EMPTY = '▓'
+const CHARACTER_SQUARE_EMPTY = '.'
+#const CHARACTER_CASTLING_AVAILABLE = "↔"
+#const CHARACTER_CASTLING_AVAILABLE = "⇋"
+#const CHARACTER_CASTLING_AVAILABLE = "⟷"
+const CHARACTER_CASTLING_AVAILABLE = "⇔"
+#const SMALL_NUMBERS = ['𝟣','𝟤','𝟥','𝟦','𝟧','𝟨','𝟩','𝟪']
+const SMALL_NUMBERS = ['₁','₂','₃','₄','₅','₆','₇','₈']
+
+
 
 const NONE = UInt8(0)
 

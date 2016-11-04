@@ -145,26 +145,56 @@ function new_game()
     read_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 end
 
+"""
+Creates a new FisherChess 960 chess board
+Note that pieces aren't truly random:
+  the bishops must be placed on opposite-color squares.
+  the king must be placed on a square between the rooks.
+"""
+function new_game_960()
+    b = Board()
+    for file in 1:8
+        set!(b, WHITE, PAWN, file, 2)
+        set!(b, BLACK, PAWN, file, 7)
+    end
 
+    open_files = [1,2,3,4,5,6,7,8]
 
-CHARACTER_SQUARE_ATTACKED = '•'
-CHARACTER_SQUARE_CAPTURE = 'x'  #'∘'
+    bishop_color_a_file = rand(1:8)
+    set!(b, WHITE, BISHOP, bishop_color_a_file, 1)
+    set!(b, BLACK, BISHOP, bishop_color_a_file, 8)
+    bishop_color_b_file = 2*rand(1:4) - (bishop_color_a_file%2==0?1:0)
+    set!(b, WHITE, BISHOP, bishop_color_b_file, 1)
+    set!(b, BLACK, BISHOP, bishop_color_b_file, 8)
+    filter!(e->e≠bishop_color_a_file,open_files)
+    filter!(e->e≠bishop_color_b_file,open_files)
 
-CHARACTER_SQUARE_EMPTY = '⋅'
-CHARACTER_SQUARE_EMPTY = '–'
-CHARACTER_SQUARE_EMPTY = '⋯'
-CHARACTER_SQUARE_EMPTY = '_'
-CHARACTER_SQUARE_EMPTY = ' '
-CHARACTER_SQUARE_EMPTY = '▓'
-CHARACTER_SQUARE_EMPTY = '.'
+    queen_file = open_files[rand(1:6)]
+    set!(b, WHITE, QUEEN, queen_file, 1)
+    set!(b, BLACK, QUEEN, queen_file, 8)
+    filter!(e->e≠queen_file,open_files)
 
-CHARACTER_CASTLING_AVAILABLE = "↔"
-CHARACTER_CASTLING_AVAILABLE = "⇋"
-CHARACTER_CASTLING_AVAILABLE = "⟷"
-CHARACTER_CASTLING_AVAILABLE = "⇔"
+    knight_a_file = open_files[rand(1:5)]
+    set!(b, WHITE, KNIGHT, knight_a_file, 1)
+    set!(b, BLACK, KNIGHT, knight_a_file, 8)
+    filter!(e->e≠knight_a_file,open_files)
 
-#SMALL_NUMBERS = ['𝟣','𝟤','𝟥','𝟦','𝟧','𝟨','𝟩','𝟪']
-SMALL_NUMBERS = ['₁','₂','₃','₄','₅','₆','₇','₈']
+    knight_b_file = open_files[rand(1:4)]
+    set!(b, WHITE, KNIGHT, knight_b_file, 1)
+    set!(b, BLACK, KNIGHT, knight_b_file, 8)
+    filter!(e->e≠knight_b_file,open_files)
+
+    set!(b, WHITE, ROOK, open_files[1], 1)
+    set!(b, BLACK, ROOK, open_files[1], 8)
+    set!(b, WHITE, KING, open_files[2], 1)
+    set!(b, BLACK, KING, open_files[2], 8)
+    set!(b, WHITE, ROOK, open_files[3], 1)
+    set!(b, BLACK, ROOK, open_files[3], 8)
+
+    b.side_to_move = WHITE
+    b
+end
+
 "Pretty print the chess board in the REPL"
 function printbd(b::Board, io=STDOUT, moves=nothing)
     println("$(version)")

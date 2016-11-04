@@ -41,6 +41,8 @@ As it is during development, to load the module, you will have to add the path t
 .juliarc.jl in your home directory:
 `push!(LOAD_PATH, "~/Chess.jl/src")`
 
+Start julia, then execute `Chess.play()`, or `Chess.play960()`.
+
 
 ## Resources
 

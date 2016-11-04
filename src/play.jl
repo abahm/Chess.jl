@@ -51,9 +51,9 @@ function random_play_both_sides(ngames)
 end
 
 "Start chess game in REPL"
-function repl_loop()
+function repl_loop(chess960=false)
     depth = 2
-    board = new_game()
+    board = chess960?new_game_960():new_game()
     game_history = []  # store (move, board) every turn
     while true
         clear_repl()
@@ -101,7 +101,7 @@ function repl_loop()
         end
 
         if startswith(movestr,"new") || movestr=="n\n"
-            board = new_game()
+            board = chess960?new_game_960():new_game()
             game_history = []
             continue
         end
@@ -193,3 +193,6 @@ end
 
 "Start chess game in REPL"
 function play()   repl_loop()   end
+
+"Start chess960 game in REPL"
+function play960()   repl_loop(true)   end
