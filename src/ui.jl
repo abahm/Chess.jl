@@ -1,38 +1,6 @@
 # ui.jl
 
 
-function perft_old(board::Board, levels::Integer)
-    moves = generate_moves(board)
-    if levels<=1
-        return length(moves)
-    end
-
-    node_count = 0
-    for m in moves
-        test_board = deepcopy(board)
-        make_move!(test_board, m)
-        node_count = node_count + perft(test_board, levels-1)
-    end
-    return node_count
-end
-
-function perft(board::Board, levels::Integer)
-    moves = generate_moves(board)
-    if levels<=1
-        return length(moves)
-    end
-
-    node_count = 0
-    prior_castling_rights = board.castling_rights
-    prior_last_move_pawn_double_push = board.last_move_pawn_double_push
-    for m in moves
-        make_move!(board, m)
-        node_count = node_count + perft(board, levels-1)
-        unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
-    end
-    return node_count
-end
-
 function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game(), max_number_of_moves=1000)
     srand(seed)
     moves_made = Move[]
@@ -69,7 +37,8 @@ function random_play_both_sides(ngames)
     end
 end
 
-function play(depth=0)
+function play()
+    depth = 2
     board = new_game()
     game_history = []  # store (move, board) every turn
     while true
@@ -152,6 +121,14 @@ function play(depth=0)
             continue
         end
 
+        if startswith(movestr, "depth")
+            depth = parse(split(movestr)[2])
+            println("Depth set to: $depth")
+            println("Press <enter> to continue...")
+            readline()
+            continue
+        end
+
         if startswith(movestr,"analysis") || movestr=="a\n"
             function search_and_print(ply)
                 score,move,pv,nnodes,time_s = best_move_negamax(board, ply)
@@ -182,8 +159,11 @@ function play(depth=0)
             println(" type 'fen FEN' to load FEN position")
             println(" type 'analysis' or 'a' to analyze position")
             println(" type 'divide N' count nodes from this position")
+            println(" type 'depth N' set the plys to look ahead")
             println(" type 'quit' or 'q' to end")
-            sleep(2)
+            println()
+            println("Press <enter> to continue...")
+            readline()
             continue
         end
 

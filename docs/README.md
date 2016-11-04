@@ -36,3 +36,8 @@ I've also started running some games from the xboard UI, with a couple of bugs s
 ![ui snapshot from 29 Oct 2016](2016-10-29-chess.png)
 
 Additionally, the negamax search is now being used to search the whole tree to requested depth, and is returning score, number of nodes visited, time, and principal variation.
+
+
+### 2016 November 3 - v0.28
+Added undo_move which reduces memory churn and speeds up thinking.
+![ui snapshot from 3 Nov 2016](2016-11-03-chess.png)

@@ -2,7 +2,7 @@
 
 module Chess
 
-const version = "Julia Chess, v0.35"
+const version = "Julia Chess, v0.36"
 const author = "Alan Bahm"
 
 
@@ -29,16 +29,13 @@ include("protocols/xboard.jl")
 include("protocols/uci.jl")
 
 
-
-#=
 if "-uci" ∈ ARGS
     uci_loop()
 elseif "-xboard" ∈ ARGS
     xboard_loop()
 else
-    depth = 2
-    play(depth)
+    play()
 end
-=#
+
 
 end
