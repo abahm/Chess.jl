@@ -28,6 +28,10 @@ In windows:
 
 
 
+## Developers
+As it is during development, to run the code, you will have to add the path to your
+.juliarc.jl in your home directory:
+`push!(LOAD_PATH, "~/Chess.jl/src")`
 
 
 ## Resources

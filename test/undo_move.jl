@@ -5,6 +5,7 @@ function test_undo_move()
     ngames = 500
     max_number_of_moves_per_game = 100
     for i in 1:ngames
+        print("game $i    ")
         b = new_game()
         for j in 1:max_number_of_moves_per_game
             moves = generate_moves(b)

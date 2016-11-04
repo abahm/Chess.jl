@@ -92,4 +92,4 @@ function test_no_castling_in_check()
 end
 
 test_no_castling_in_check()
-perft_runs()
+test_perft_runs()

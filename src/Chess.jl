@@ -11,10 +11,9 @@ export KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN
 export A, B, C, D, E, F, G, H
 export square
 export CASTLING_RIGHTS_ALL
-export generate_moves, make_move!
-export print_algebraic
-export Board, set!, new_game, read_fen, printbd
-export perft, perft_data
+export generate_moves, make_move!, unmake_move!
+export print_algebraic, algebraic_move
+export Board, set!, new_game, read_fen, write_fen, printbd
 export play, random_play_both_sides
 
 include("constants.jl")
