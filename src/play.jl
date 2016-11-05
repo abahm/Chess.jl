@@ -1,5 +1,24 @@
 # play.jl
 
+
+"Count number of legal moves to a given depth"
+function perft(board::Board, levels::Integer)
+    moves = generate_moves(board)
+    if levels<=1
+        return length(moves)
+    end
+
+    node_count = 0
+    prior_castling_rights = board.castling_rights
+    prior_last_move_pawn_double_push = board.last_move_pawn_double_push
+    for m in moves
+        make_move!(board, m)
+        node_count = node_count + perft(board, levels-1)
+        unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
+    end
+    return node_count
+end
+
 "Print formated move output  1. ♞c3 	♘c6"
 function print_move_history(moves::Array{Move,1})
     nmoves = length(moves)
@@ -78,6 +97,20 @@ function repl_loop()
 
         if startswith(movestr,"quit") || movestr=="q\n"
             return
+        end
+
+        if startswith(movestr,"list") || movestr=="l\n"
+            moves = generate_moves(board)
+            for (i,m) in enumerate(moves)
+                print(algebraic_move(m) * " ")
+                if i%10==0
+                    println()
+                end
+            end
+            println()
+            println("Press <enter> to continue...")
+            readline()
+            continue
         end
 
         if startswith(movestr,"go") || movestr=="\n"
@@ -174,6 +207,7 @@ function repl_loop()
 
         if users_move==nothing
             println(" type your moves like 'e2e4' or 'h7h8q'")
+            println(" type 'list' or 'l' to list legal moves")
             println(" type 'go' or <enter> to have computer move")
             println(" type 'undo' or 'u' to go back a move")
             println(" type 'new' or 'n' to start a new game")

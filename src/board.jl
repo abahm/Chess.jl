@@ -14,8 +14,13 @@ type Board   # known as "dense Board representation"
     side_to_move::UInt8
     castling_rights::UInt8
     last_move_pawn_double_push::UInt64
+
+    game_chess960::Bool
+    game_kings_starting_column::UInt8
+    game_queen_rook_starting_column::UInt8
+    game_king_rook_starting_column::UInt8
 end
-Board() = Board(0,0, 0,0,0, 0,0,0, NONE, 0x0F,0)
+Board() = Board(0,0, 0,0,0, 0,0,0, NONE, 0x0F,0, false, 5, 1, 8)
 
 import Base.deepcopy
 Base.deepcopy(b::Board) = Board(b.white_pieces, b.black_pieces,
@@ -23,7 +28,11 @@ Base.deepcopy(b::Board) = Board(b.white_pieces, b.black_pieces,
                                 b.bishops, b.knights, b.pawns,
                                 b.side_to_move,
                                 b.castling_rights,
-                                b.last_move_pawn_double_push)
+                                b.last_move_pawn_double_push,
+                                b.game_chess960,
+                                b.game_kings_starting_column,
+                                b.game_queen_rook_starting_column,
+                                b.game_king_rook_starting_column)
 
 function Base.show(io::IO, b::Board)
     print(io, "\n")
@@ -142,7 +151,12 @@ end
 
 "Creates a new standard chess board"
 function new_game()
-    read_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    b = read_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    b.game_chess960 = false
+    b.game_kings_starting_column = 5
+    b.game_queen_rook_starting_column = 1
+    b.game_king_rook_starting_column = 8
+    b
 end
 
 """
@@ -191,7 +205,12 @@ function new_game_960()
     set!(b, WHITE, ROOK, open_files[3], 1)
     set!(b, BLACK, ROOK, open_files[3], 8)
 
+    b.game_queen_rook_starting_column = open_files[1]
+    b.game_kings_starting_column = open_files[2]
+    b.game_king_rook_starting_column = open_files[3]
+
     b.side_to_move = WHITE
+    b.game_chess960 = true
     b
 end
 

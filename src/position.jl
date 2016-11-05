@@ -127,22 +127,29 @@ function generate_moves(b::Board; only_attacking_moves=false)
                 add_move!(moves, b, my_color, KING, sqr, new_sqr)
             end
 
-            # castling kingside
+            # castling kingside (allows for chess960 castling too)
             if !king_in_check && !only_attacking_moves
                 kings_travel_sqrs = []
                 rooks_travel_sqrs = []
-                if my_color == WHITE
-                    # check for castling rights
-                    if b.castling_rights & CASTLING_RIGHTS_WHITE_KINGSIDE > 0
-                        kings_travel_sqrs = [SQUARE_F1, SQUARE_G1]
-                        rooks_travel_sqrs = [SQUARE_G1]
-                    end
-                elseif my_color == BLACK
-                    # check for castling rights
-                    if b.castling_rights & CASTLING_RIGHTS_BLACK_KINGSIDE > 0
-                        kings_travel_sqrs = [SQUARE_F8, SQUARE_G8]
-                        rooks_travel_sqrs = [SQUARE_G8]
-                    end
+
+                #  first figure out what squares the pieces move through
+                castling_type = (my_color == WHITE ? CASTLING_RIGHTS_WHITE_KINGSIDE : CASTLING_RIGHTS_BLACK_KINGSIDE)
+                if b.castling_rights & castling_type > 0
+                    r = (my_color == WHITE ? 1 : 8)
+                    # to accomodate chess960, we check the games setup
+                    c1 = min(b.game_kings_starting_column, G)
+                    c2 = max(b.game_kings_starting_column, G)
+                    rng = c1:c2
+                    kings_travel_sqrs = UInt64[square(c,r) for c in rng]
+                    # remove the kings own square from travel path
+                    filter!(e->e∉square(b.game_kings_starting_column,r),kings_travel_sqrs)
+
+                    c1 = min(b.game_king_rook_starting_column, F)
+                    c2 = max(b.game_king_rook_starting_column, F)
+                    rng = c1:c2
+                    rooks_travel_sqrs = UInt64[square(c,r) for c in rng]
+                    # remove the rooks own square from travel path
+                    filter!(e->e∉square(b.game_king_rook_starting_column,r),rooks_travel_sqrs)
                 end
 
                 if length(kings_travel_sqrs)>0 &&
@@ -152,25 +159,31 @@ function generate_moves(b::Board; only_attacking_moves=false)
                     reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in rooks_travel_sqrs]) &&
                     # check that king's traversal squares are not attacked
                     reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
-                        push!(moves, Move(my_color, KING, sqr, kings_travel_sqrs[end],
-                                          castling=CASTLING_RIGHTS_WHITE_KINGSIDE) )
+                        push!(moves, Move(my_color, KING, sqr, square(G,r), castling=castling_type) )
                 end
 
+                kings_travel_sqrs = []  # must now reset this array!
+
                 # castling queenside (allows for chess960 castling too)
-                kings_travel_sqrs = []
-                if my_color == WHITE
-                    # check for castling rights
-                    if b.castling_rights & CASTLING_RIGHTS_WHITE_QUEENSIDE > 0
-                        kings_travel_sqrs = [SQUARE_D1, SQUARE_C1]
-                        rooks_travel_sqrs = [SQUARE_B1, SQUARE_C1]
-                    end
-                elseif my_color == BLACK
-                    # check for castling rights
-                    if b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE > 0
-                        kings_travel_sqrs = [SQUARE_D8, SQUARE_C8]
-                        rooks_travel_sqrs = [SQUARE_B8, SQUARE_C8]
-                    end
+                castling_type = (my_color == WHITE ? CASTLING_RIGHTS_WHITE_QUEENSIDE : CASTLING_RIGHTS_BLACK_QUEENSIDE)
+                if b.castling_rights & castling_type > 0
+                    r = (my_color == WHITE ? 1 : 8)
+                    # to accomodate chess960, we check the games setup
+                    c1 = min(b.game_kings_starting_column, C)
+                    c2 = max(b.game_kings_starting_column, C)
+                    rng = c1:c2
+                    kings_travel_sqrs = UInt64[square(c,r) for c in rng]
+                    # remove the kings own square from travel path
+                    filter!(e->e∉square(b.game_kings_starting_column,r),kings_travel_sqrs)
+
+                    c1 = min(b.game_queen_rook_starting_column, D)
+                    c2 = max(b.game_queen_rook_starting_column, D)
+                    rng = c1:c2
+                    rooks_travel_sqrs = UInt64[square(c,r) for c in rng]
+                    # remove the rooks own square from travel path
+                    filter!(e->e∉square(b.game_queen_rook_starting_column,r),rooks_travel_sqrs)
                 end
+
                 if length(kings_travel_sqrs)>0 &&
                     # check that the kings travel squares are empty
                     reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in kings_travel_sqrs]) &&
@@ -178,8 +191,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
                     reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in rooks_travel_sqrs]) &&
                     # check that king's traversal squares are not attacked
                     reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
-                        push!(moves, Move(my_color, KING, sqr, kings_travel_sqrs[end],
-                                          castling=CASTLING_RIGHTS_WHITE_QUEENSIDE )  )
+                        push!(moves, Move(my_color, KING, sqr, square(C,r), castling=castling_type )  )
                 end
             end # castling moves
         end # king

@@ -33,10 +33,9 @@ export square
 export CASTLING_RIGHTS_ALL
 export generate_moves, make_move!, unmake_move!
 export Move, algebraic_move
-export Board, set!, new_game, new_game960
+export Board, set!, new_game, new_game_960
 export read_fen, write_fen, printbd
-export play, random_play_both_sides
+export play, random_play_both_sides, perft
 
-printbd(new_game_960())
 
 end

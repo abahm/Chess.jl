@@ -14,38 +14,6 @@ const perft_data = [
 ]
 
 
-function perft_old(board::Board, levels::Integer)
-    moves = generate_moves(board)
-    if levels<=1
-        return length(moves)
-    end
-
-    node_count = 0
-    for m in moves
-        test_board = deepcopy(board)
-        make_move!(test_board, m)
-        node_count = node_count + perft(test_board, levels-1)
-    end
-    return node_count
-end
-
-function perft(board::Board, levels::Integer)
-    moves = generate_moves(board)
-    if levels<=1
-        return length(moves)
-    end
-
-    node_count = 0
-    prior_castling_rights = board.castling_rights
-    prior_last_move_pawn_double_push = board.last_move_pawn_double_push
-    for m in moves
-        make_move!(board, m)
-        node_count = node_count + perft(board, levels-1)
-        unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
-    end
-    return node_count
-end
-
 function test_perft_runs()
     println("Checking perft_runs() ...")
     for pd in perft_data

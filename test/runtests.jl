@@ -7,7 +7,7 @@
 
 # load the Chess.jl module for testing
 using Chess
-using Base.Tests
+using Base.Test
 
 tic()
 
