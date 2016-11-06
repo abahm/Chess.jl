@@ -1,5 +1,8 @@
 # search.jl
 
+function best_move_search(board, depth)
+    best_move_negamax(board, depth)
+end
 
 """
 Find best move by negamax algorithm, returns:
@@ -20,7 +23,7 @@ function best_move_negamax(board, depth)
 
         value, pv, nnodes = negaMax(test_board, depth)
         value *= -1
-        #@show value, algebraic_move(m)
+        #@show value, algebraic_format(m)
         if best_value < value
             best_value = value
             best_move = m
@@ -86,7 +89,7 @@ function best_move_alphabeta()
         make_move!(test_board, m)
 
         value = multiplier*αβMax(test_board, -Inf, Inf, depth)
-        #@show value, algebraic_move(m)
+        #@show value, algebraic_format(m)
         if best_value < value
             best_value = value
             best_move = m

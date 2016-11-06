@@ -97,15 +97,15 @@ function xboard_loop()
 
         if "go" ∈ tokens
             # send xboard reply move
-            best_value, best_move, pv, nodes, time_s = best_move_negamax(board, ply)
+            score, move, pv, nodes, time_s = best_move_search(board, ply)
             if chess_engine_show_thinking
                 score = evaluate(board)
-                xboard_writeline("\t $ply\t $score\t $time_s\t $nodes\t $(long_algebraic_move(pv))")
+                xboard_writeline("\t $ply\t $score\t $time_s\t $nodes\t $(long_algebraic_format(pv))")
             end
-            if best_move!=nothing
-                bestmovestr = long_algebraic_move(best_move)
+            if move!=nothing
+                bestmovestr = long_algebraic_format(move)
                 xboard_writeline("move $bestmovestr")
-                make_move!(board, best_move)
+                make_move!(board, move)
             end
         end
 
@@ -115,14 +115,14 @@ function xboard_loop()
             make_move(board, movestr)
 
             # think of best reply
-            score, best_move, pv, nodes, time_s = best_move_negamax(board, ply)
+            score, move, pv, nodes, time_s = best_move_search(board, ply)
             if chess_engine_show_thinking
-                xboard_writeline("\t $ply\t $score\t $time_s\t $nodes\t $(long_algebraic_move(pv))")
+                xboard_writeline("\t $ply\t $score\t $time_s\t $nodes\t $(long_algebraic_format(pv))")
             end
-            if best_move!=nothing
-                bestmovestr = long_algebraic_move(best_move)
+            if move!=nothing
+                bestmovestr = long_algebraic_format(move)
                 xboard_writeline("move $bestmovestr")
-                make_move!(board, best_move)
+                make_move!(board, move)
             end
         end
 

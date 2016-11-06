@@ -52,7 +52,7 @@ function uci_loop()
                     movestr = tokens[idx]
                     moves = generate_moves(board)
                     for m in moves
-                        if long_algebraic_move(m)==movestr
+                        if long_algebraic_format(m)==movestr
                             make_move!(board,m)
                             break
                         end
@@ -76,7 +76,7 @@ function uci_loop()
                 end
             end
 
-            bestmovestr = long_algebraic_move(best_move)
+            bestmovestr = long_algebraic_format(best_move)
             println("bestmove $bestmovestr")
         end
 

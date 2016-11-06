@@ -102,7 +102,7 @@ function repl_loop()
         if startswith(movestr,"list") || movestr=="l\n"
             moves = generate_moves(board)
             for (i,m) in enumerate(moves)
-                print(algebraic_move(m) * " ")
+                print(algebraic_format(m) * " ")
                 if i%10==0
                     println()
                 end
@@ -114,9 +114,9 @@ function repl_loop()
         end
 
         if startswith(movestr,"go") || movestr=="\n"
-            best_value, best_move, pv, number_nodes_visited, time_s = best_move_negamax(board, depth)
-            push!(game_history, (best_move,deepcopy(board)))
-            make_move!(board, best_move)
+            score, move, pv, number_nodes_visited, time_s = best_move_search(board, depth)
+            push!(game_history, (move, deepcopy(board)))
+            make_move!(board, move)
             continue
         end
 
@@ -165,7 +165,7 @@ function repl_loop()
                                           prior_last_move_pawn_double_push)
 
                 total_count += node_count
-                println("$(long_algebraic_move(move)) $node_count")
+                println("$(long_algebraic_format(move)) $node_count")
             end
             println("Nodes: $total_count")
             println("Moves: $(length(moves))")
@@ -184,9 +184,9 @@ function repl_loop()
 
         if startswith(movestr,"analysis") || movestr=="a\n"
             function search_and_print(ply)
-                score,move,pv,nnodes,time_s = best_move_negamax(board, ply)
+                score,move,pv,nnodes,time_s = best_move_search(board, ply)
                 # $ply $score $time_s $nodes $pv
-                println("$ply\t $(round(score,3))\t $(round(time_s,2))\t $nnodes\t $move\t $(algebraic_move(pv))")
+                println("$ply\t $(round(score,3))\t $(round(time_s,2))\t $nnodes\t $move\t $(algebraic_format(pv))")
                 print("      ")
             end
             for analysis_depth in 0:3
@@ -199,7 +199,7 @@ function repl_loop()
 
         users_move = nothing
         for move in moves
-            if startswith(movestr,long_algebraic_move(move))
+            if startswith(movestr,long_algebraic_format(move))
                 users_move = move
                 break
             end
@@ -227,9 +227,9 @@ function repl_loop()
         make_move!(board, users_move)
 
         # make answering move
-        best_value, best_move, pv, nodes, time_s = best_move_negamax(board, depth)
-        push!(game_history, (best_move,deepcopy(board)))
-        make_move!(board, best_move)
+        score, move, pv, nodes, time_s = best_move_search(board, depth)
+        push!(game_history, (move,deepcopy(board)))
+        make_move!(board, move)
     end   # while true
 end
 

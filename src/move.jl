@@ -23,12 +23,12 @@ Move(color::UInt8, piece_moving::UInt8, src::UInt64, dest::UInt64; piece_taken::
 
 
 function Base.show(io::IO, move::Move)
-    print(io, algebraic_move(move))
+    print(io, algebraic_format(move))
 end
 
 
 "Generate an ascii string for move, e2e4, or h7h8q, for xboard and UCI protocols"
-function long_algebraic_move(m::Move)
+function long_algebraic_format(m::Move)
     uci_move = square_name(m.sqr_src)
     uci_move *= square_name(m.sqr_dest)
     if m.promotion_to==QUEEN   uci_move *= "q"  end
@@ -39,16 +39,16 @@ function long_algebraic_move(m::Move)
 end
 
 "Generate an ascii string for moves, e2e4, or h7h8q, for xboard and UCI protocols"
-function long_algebraic_move(moves::Array{Move,1})
+function long_algebraic_format(moves::Array{Move,1})
     moves_str = ""
     for m in moves
-        moves_str = moves_str * long_algebraic_move(m) * " "
+        moves_str = moves_str * long_algebraic_format(m) * " "
     end
     moves_str
 end
 
 "Generate a unicode string, ♘c6"
-function algebraic_move(m::Move)
+function algebraic_format(m::Move)
     if m.castling & CASTLING_RIGHTS_WHITE_KINGSIDE > 0 ||
        m.castling & CASTLING_RIGHTS_BLACK_KINGSIDE > 0
         return "⚬-⚬ " #"○-○" #"o-o"
@@ -72,10 +72,10 @@ function algebraic_move(m::Move)
 end
 
 "Generate a unicode string, ♘c6"
-function algebraic_move(moves::Array{Move,1})
+function algebraic_format(moves::Array{Move,1})
     moves_str = ""
     for m in moves
-        moves_str = moves_str * algebraic_move(m) * " "
+        moves_str = moves_str * algebraic_format(m) * " "
     end
     moves_str
 end

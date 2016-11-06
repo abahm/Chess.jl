@@ -12,12 +12,12 @@ using Base.Test
 tic()
 
 function print_algebraic(m::Move)
-    println(algebraic_move(m) * " ")
+    println(algebraic_format(m) * " ")
 end
 
 function print_algebraic(moves::Array{Move,1})
     for (i,m) in enumerate(moves)
-        print(algebraic_move(m) * " ")
+        print(algebraic_format(m) * " ")
         if i%10==0
             println()
         end

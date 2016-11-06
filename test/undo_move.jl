@@ -16,16 +16,16 @@ function test_undo_move()
                                             b.last_move_pawn_double_push)
                 if write_fen(test_board)!=write_fen(b)
                     printbd(b)
-                    println(algebraic_move(m))
+                    println(algebraic_format(m))
                     printbd(test_board)
-                    @assert false "$(algebraic_move(m)) not correctly undone"
+                    @assert false "$(algebraic_format(m)) not correctly undone"
                 end
             end
             if length(moves)==0
                 break
             end
             m = moves[rand(1:length(moves))]
-            print(algebraic_move(m) * " ")
+            print(algebraic_format(m) * " ")
             make_move!(b, m)
         end
         println()

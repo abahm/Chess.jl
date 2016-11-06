@@ -393,7 +393,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
             for reply_move in reply_moves
                 #@show reply_move
                 if reply_move.sqr_dest == kings_new_square
-                    #println(" filtering illegal mv  $(algebraic_move(m))")
+                    #println(" filtering illegal mv  $(algebraic_format(m))")
                     push!(illegal_moves, move)
                     break
                 end
@@ -415,7 +415,7 @@ function make_move!(b::Board, movestr::String)
     move = nothing
     moves = generate_moves(b)
     for m in moves
-        if long_algebraic_move(m)==movestr
+        if long_algebraic_format(m)==movestr
             make_move!(b,m)
             move = m
             break
