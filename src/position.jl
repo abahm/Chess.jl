@@ -159,7 +159,6 @@ function generate_moves(b::Board; only_attacking_moves=false)
                 end
 
                 if length(kings_travel_sqrs)>0 &&
-                    # TODO: check that square is empty or occupied by rook
                     # check that the king's travel squares are empty
                     reduce(&, Bool[clear_for_castling(b, s) for s in kings_travel_sqrs]) &&
                     # check that the rook's travel squares are empty
@@ -381,7 +380,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
         #       remove it from the list
         illegal_moves = []
         for move in moves
-            # TODO: start to make use of unmake_move here
+            # TODO: generate_moves() for speed, make use of unmake_move here
             test_board = deepcopy(b)
             make_move!(test_board,move)
             kings_new_square = test_board.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
@@ -403,9 +402,9 @@ function generate_moves(b::Board; only_attacking_moves=false)
     end
 
 
-    # TODO: order moves by captures first
+    # TODO: generate_moves() order moves by captures first
 
-    # TODO: order moves so that a capture of last moved piece is first
+    # TODO: generate_moves() order moves so that a capture of last moved piece is first
 
     moves
 end
