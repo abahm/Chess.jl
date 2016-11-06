@@ -18,12 +18,12 @@ function best_move_negamax(board, depth)
     best_move = nothing
     principal_variation = Move[]
     number_nodes_visited = 0
+    prior_castling_rights = board.castling_rights
+    prior_last_move_pawn_double_push = board.last_move_pawn_double_push
     for m in moves
-        # TODO: best_move_negamax() switch to undo here for speed
-        test_board = deepcopy(board)
-        make_move!(test_board, m)
+        make_move!(board, m)
 
-        value, pv, nnodes = negaMax(test_board, depth)
+        value, pv, nnodes = negaMax(board, depth)
         value *= -1
         if best_value < value
             best_value = value
@@ -31,6 +31,8 @@ function best_move_negamax(board, depth)
             principal_variation = pv
         end
         number_nodes_visited += nnodes
+
+        unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
     end
     reverse!(principal_variation)
     best_value, best_move, principal_variation, number_nodes_visited, toq()
@@ -45,15 +47,12 @@ function negaMax(board, depth)
     max_move = nothing
     principal_variation = Move[]
     number_nodes_visited = 0
-    #prior_castling_rights = board.castling_rights
-    #prior_last_move_pawn_double_push = board.last_move_pawn_double_push
+    prior_castling_rights = board.castling_rights
+    prior_last_move_pawn_double_push = board.last_move_pawn_double_push
     for m in generate_moves(board)
-        test_board = deepcopy(board)
-        make_move!(test_board, m)
-        score, pv, nnodes = negaMax(test_board, depth - 1 )
-        #make_move!(board, m)
-        #score, pv, nnodes = negaMax(board, depth - 1 )
-        #unmake_move!(board, m, board.castling_rights, board.last_move_pawn_double_push)
+        make_move!(board, m)
+        score, pv, nnodes = negaMax(board, depth - 1 )
+        unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
         score *= -1
         if( score > max_value )
             max_value = score

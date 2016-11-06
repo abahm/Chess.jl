@@ -182,7 +182,7 @@ function repl_loop()
             continue
         end
 
-        if startswith(movestr,"analysis") || startswith(movestr,"a")
+        if startswith(movestr,"analysis") || startswith(movestr,"a ") || startswith(movestr,"a\n")
             function search_and_print(ply)
                 score,move,pv,nnodes,time_s = best_move_search(board, ply)
                 #println("$ply\t$(round(nnodes/(time_s*1000),2)) kn/s")

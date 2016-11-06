@@ -84,7 +84,6 @@ function generate_moves(b::Board; only_attacking_moves=false)
     assert( kings_square > 0 ) # can't find the king!
     king_in_check = kings_square ∈ attacked_squares
     my_color_str = my_color==WHITE?"WHITE":"BLACK"
-    #@show my_color_str, king_in_check
 
     for square_index in 1:64
         sqr = UInt64(1) << (square_index-1)
