@@ -1,8 +1,9 @@
-# chess.jl
+# Chess.jl
 
 module Chess
 
-const version = "Julia Chess, v0.37"
+
+const version = "Julia Chess, v0.38"
 const author = "Alan Bahm"
 
 
@@ -25,6 +26,7 @@ elseif "-xboard" ∈ ARGS
 elseif "-repl" ∈ ARGS
     repl_loop()
 end
+
 
 export WHITE, BLACK
 export KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN

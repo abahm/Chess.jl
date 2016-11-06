@@ -18,6 +18,12 @@ end
     return NONE
 end
 
+@inline function clear_for_castling(b::Board, sqr::UInt64)
+    (b.queens & sqr)==0 && (b.bishops & sqr)==0 &&
+     (b.knights & sqr)==0 && (b.pawns & sqr)==0
+end
+
+
 # handle adding sliding moves of QUEEN, ROOK, BISHOP
 #  which end by being BLOCKED or capturing an enemy piece
 const UNBLOCKED = UInt8(0)
@@ -153,10 +159,11 @@ function generate_moves(b::Board; only_attacking_moves=false)
                 end
 
                 if length(kings_travel_sqrs)>0 &&
+                    # TODO: check that square is empty or occupied by rook
                     # check that the king's travel squares are empty
-                    reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in kings_travel_sqrs]) &&
+                    reduce(&, Bool[clear_for_castling(b, s) for s in kings_travel_sqrs]) &&
                     # check that the rook's travel squares are empty
-                    reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in rooks_travel_sqrs]) &&
+                    reduce(&, Bool[clear_for_castling(b, s) for s in rooks_travel_sqrs]) &&
                     # check that king's traversal squares are not attacked
                     reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
                         push!(moves, Move(my_color, KING, sqr, square(G,r), castling=castling_type) )
@@ -186,9 +193,9 @@ function generate_moves(b::Board; only_attacking_moves=false)
 
                 if length(kings_travel_sqrs)>0 &&
                     # check that the kings travel squares are empty
-                    reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in kings_travel_sqrs]) &&
+                    reduce(&, Bool[clear_for_castling(b, s) for s in kings_travel_sqrs]) &&
                     # check that the rook's travel squares are empty
-                    reduce(&, Bool[piece_type_on_sqr(b, s)==NONE for s in rooks_travel_sqrs]) &&
+                    reduce(&, Bool[clear_for_castling(b, s) for s in rooks_travel_sqrs]) &&
                     # check that king's traversal squares are not attacked
                     reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
                         push!(moves, Move(my_color, KING, sqr, square(C,r), castling=castling_type )  )
@@ -374,6 +381,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
         #       remove it from the list
         illegal_moves = []
         for move in moves
+            # TODO: start to make use of unmake_move here
             test_board = deepcopy(b)
             make_move!(test_board,move)
             kings_new_square = test_board.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
@@ -503,17 +511,25 @@ function make_move!(b::Board, m::Move)
     # castling - move rook in addition to the king
     if m.castling > 0
         if sqr_dest == SQUARE_C1
-            b.rooks = (b.rooks & ~SQUARE_A1) | SQUARE_D1
-            b.white_pieces = (b.white_pieces & ~SQUARE_A1)  | SQUARE_D1
+            rook_sqr_src = square(b.game_queen_rook_starting_column, 1)
+            rook_sqr_dest = SQUARE_D1  # for both chess and chess960
+            b.rooks = (b.rooks & ~rook_sqr_src) | rook_sqr_dest
+            b.white_pieces = (b.white_pieces & ~rook_sqr_src)  | rook_sqr_dest
         elseif sqr_dest == SQUARE_G1
-            b.rooks = (b.rooks & ~SQUARE_H1) | SQUARE_F1
-            b.white_pieces = (b.white_pieces & ~SQUARE_H1) | SQUARE_F1
+            rook_sqr_src = square(b.game_king_rook_starting_column, 1)
+            rook_sqr_dest = SQUARE_F1  # for both chess and chess960
+            b.rooks = (b.rooks & ~rook_sqr_src) | rook_sqr_dest
+            b.white_pieces = (b.white_pieces & ~rook_sqr_src) | rook_sqr_dest
         elseif sqr_dest == SQUARE_C8
-            b.rooks = (b.rooks & ~SQUARE_A8) | SQUARE_D8
-            b.black_pieces = (b.black_pieces & ~SQUARE_A8) | SQUARE_D8
+            rook_sqr_src = square(b.game_queen_rook_starting_column, 8)
+            rook_sqr_dest = SQUARE_D8  # for both chess and chess960
+            b.rooks = (b.rooks & ~rook_sqr_src) | rook_sqr_dest
+            b.black_pieces = (b.black_pieces & ~rook_sqr_src) | rook_sqr_dest
         elseif sqr_dest == SQUARE_G8
-            b.rooks = (b.rooks & ~SQUARE_H8) | SQUARE_F8
-            b.black_pieces = (b.black_pieces & ~SQUARE_H8) | SQUARE_F8
+            rook_sqr_src = square(b.game_king_rook_starting_column, 8)
+            rook_sqr_dest = SQUARE_F8  # for both chess and chess960
+            b.rooks = (b.rooks & ~rook_sqr_src) | rook_sqr_dest
+            b.black_pieces = (b.black_pieces & ~rook_sqr_src) | rook_sqr_dest
         end
     end
 
@@ -609,17 +625,21 @@ function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_
     # castling - move rook in addition to the king
     if m.castling > 0
         if sqr_dest == SQUARE_C1
-            b.rooks = (b.rooks | SQUARE_A1) & ~SQUARE_D1
-            b.white_pieces = (b.white_pieces | SQUARE_A1) & ~SQUARE_D1
+            rook_sqr_src = square(b.game_queen_rook_starting_column, 1)
+            b.rooks = (b.rooks | rook_sqr_src) & ~SQUARE_D1
+            b.white_pieces = (b.white_pieces | rook_sqr_src) & ~SQUARE_D1
         elseif sqr_dest == SQUARE_G1
-            b.rooks = (b.rooks | SQUARE_H1) & ~SQUARE_F1
-            b.white_pieces = (b.white_pieces | SQUARE_H1) & ~SQUARE_F1
+            rook_sqr_src = square(b.game_king_rook_starting_column, 1)
+            b.rooks = (b.rooks | rook_sqr_src) & ~SQUARE_F1
+            b.white_pieces = (b.white_pieces | rook_sqr_src) & ~SQUARE_F1
         elseif sqr_dest == SQUARE_C8
-            b.rooks = (b.rooks | SQUARE_A8) & ~SQUARE_D8
-            b.black_pieces = (b.black_pieces | SQUARE_A8) & ~SQUARE_D8
+            rook_sqr_src = square(b.game_queen_rook_starting_column, 8)
+            b.rooks = (b.rooks | rook_sqr_src) & ~SQUARE_D8
+            b.black_pieces = (b.black_pieces | rook_sqr_src) & ~SQUARE_D8
         elseif sqr_dest == SQUARE_G8
-            b.rooks = (b.rooks | SQUARE_H8) & ~SQUARE_F8
-            b.black_pieces = (b.black_pieces | SQUARE_H8) & ~SQUARE_F8
+            rook_sqr_src = square(b.game_king_rook_starting_column, 8)
+            b.rooks = (b.rooks | rook_sqr_src) & ~SQUARE_F8
+            b.black_pieces = (b.black_pieces | rook_sqr_src) & ~SQUARE_F8
         end
     end
 
