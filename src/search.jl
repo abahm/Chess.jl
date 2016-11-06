@@ -1,14 +1,15 @@
 # search.jl
 
-function best_move_search(board, depth)
-    best_move_negamax(board, depth)
-end
-
 """
-Find best move by negamax algorithm, returns:
+Find best move, returns:
     score, best move, principal variation,
     number of nodes visited, time in seconds
 """
+function best_move_search(board, depth)
+    best_move_negamax(board, depth)
+    #best_move_alphabeta(board, depth)
+end
+
 function best_move_negamax(board, depth)
     tic()
     moves = generate_moves(board)
@@ -18,12 +19,12 @@ function best_move_negamax(board, depth)
     principal_variation = Move[]
     number_nodes_visited = 0
     for m in moves
+        # TODO: best_move_negamax() switch to undo here for speed
         test_board = deepcopy(board)
         make_move!(test_board, m)
 
         value, pv, nnodes = negaMax(test_board, depth)
         value *= -1
-        #@show value, algebraic_format(m)
         if best_value < value
             best_value = value
             best_move = m
@@ -78,6 +79,7 @@ end
 
 "Find best move by alpha-beta algorithm"
 function best_move_alphabeta()
+    tic()
     moves = generate_moves(board)
 
     best_value = -Inf
@@ -96,7 +98,7 @@ function best_move_alphabeta()
         end
     end
 
-    best_move
+    best_value, best_move, principal_variation, number_nodes_visited, toq()
 end
 
 "Called only by best_move_alphabeta"

@@ -1,7 +1,6 @@
 # board.jl
 
 
-# take the intersection of white_pieces with queens to find white's queen...
 type Board   # known as "dense Board representation"
     white_pieces::UInt64
     black_pieces::UInt64

@@ -71,8 +71,8 @@ end
 
 "Start chess game in REPL"
 function repl_loop()
-    depth = 2
-    board = new_game()
+    depth = 3          # default, user can change
+    board = new_game() # default, user can load FEN, or choose chess960
     game_history = []  # store (move, board) every turn
     while true
         clear_repl()
@@ -139,7 +139,7 @@ function repl_loop()
             continue
         end
 
-        if startswith(movestr,"new") || movestr=="\n"
+        if startswith(movestr,"new") || movestr=="n\n"
             board = new_game()
             game_history = []
             continue
@@ -182,14 +182,17 @@ function repl_loop()
             continue
         end
 
-        if startswith(movestr,"analysis") || movestr=="a\n"
+        if startswith(movestr,"analysis") || startswith(movestr,"a")
             function search_and_print(ply)
                 score,move,pv,nnodes,time_s = best_move_search(board, ply)
-                # $ply $score $time_s $nodes $pv
-                println("$ply\t $(round(score,3))\t $(round(time_s,2))\t $nnodes\t $move\t $(algebraic_format(pv))")
-                print("      ")
+                #println("$ply\t$(round(nnodes/(time_s*1000),2)) kn/s")
+                print("$ply\t$(round(nnodes/(time_s*1000),2)) kn/s\t $(round(score,3))\t $(round(time_s,2))\t $nnodes\t $move\t ")
             end
-            for analysis_depth in 0:3
+            d = depth
+            if length(split(movestr))>1
+                d = parse(split(movestr)[2])
+            end
+            for analysis_depth in 0:d
                 @time search_and_print(analysis_depth)
             end
             println("Press <enter> to continue...")
@@ -213,7 +216,8 @@ function repl_loop()
             println(" type 'new' or 'n' to start a new game")
             println(" type 'new960' or 'n960' to start a new chess960 game")
             println(" type 'fen FEN' to load FEN position")
-            println(" type 'analysis' or 'a' to analyze position")
+            println(" type 'analysis' or 'a' to analyze position to current depth")
+            println(" type 'analysis N' or 'a N' to analyze position to depth N")
             println(" type 'divide N' count nodes from this position")
             println(" type 'depth N' set the plys to look ahead")
             println(" type 'quit' or 'q' to end")
