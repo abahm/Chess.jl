@@ -21,11 +21,21 @@ end
 
 Move(color::UInt8, piece_moving::UInt8, src::UInt64, dest::UInt64; piece_taken::UInt8=UInt8(0), castling::UInt8=UInt8(0), sqr_ep::UInt64=UInt64(0), promotion_to::UInt8=UInt8(0)) = Move(color, piece_moving, src, dest, piece_taken, castling, sqr_ep, promotion_to)
 
-
 function Base.show(io::IO, move::Move)
     print(io, algebraic_format(move))
 end
 
+"Generate a verbose readable string for move, `pawn on e2 to e4`"
+function verbose_format(m::Move)
+    movestr = piece_name(m.moving_piece) * " on "
+    movestr *= square_name(m.sqr_src) * " to "
+    movestr *= square_name(m.sqr_dest)
+    if m.promotion_to==QUEEN   movestr *= "q"  end
+    if m.promotion_to==KNIGHT  movestr *= "n"  end
+    if m.promotion_to==BISHOP  movestr *= "b"  end
+    if m.promotion_to==ROOK    movestr *= "r"  end
+    movestr
+end
 
 "Generate an ascii string for move, e2e4, or h7h8q, for xboard and UCI protocols"
 function long_algebraic_format(m::Move)

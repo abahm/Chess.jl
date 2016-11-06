@@ -3,6 +3,7 @@
 # Symbols for drawing chess board in REPL
 #const CHARACTERS = ['k','q','r','b','n','p']
 const CHARACTERS = ['♔','♕','♖','♗','♘','♙']
+const PIECE_NAMES = ["king", "queen", "rook", "bishop", "knight", "pawn"]
 const CHARACTER_SQUARE_ATTACKED = '•'
 const CHARACTER_SQUARE_CAPTURE = 'x'  #'∘'
 #const CHARACTER_SQUARE_EMPTY = '⋅'

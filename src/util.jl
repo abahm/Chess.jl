@@ -55,6 +55,15 @@ function square_name(sqrs::Array{UInt64,1})
 end
 
 "Returns the display unicode character of the colored piece"
+function piece_name(piece)
+    if piece==0
+        return ""
+    end
+
+    PIECE_NAMES[piece]
+end
+
+"Returns the display unicode character of the colored piece"
 function character_for_piece(color, piece)
     if piece==0
         return CHARACTER_SQUARE_EMPTY
