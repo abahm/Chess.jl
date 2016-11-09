@@ -37,7 +37,8 @@ elseif "-repl" ∈ ARGS
     repl_loop()
 end
 
-
+#=
+# timing test from a new game
 board = new_game()
 function search_and_print(ply)
     score,move,pv,nnodes,time_s = best_move_search(board, ply)
@@ -47,7 +48,7 @@ end
 for analysis_depth in 0:4
     @time search_and_print(analysis_depth)
 end
-
+=#
 
 
 export WHITE, BLACK

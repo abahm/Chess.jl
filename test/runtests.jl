@@ -27,10 +27,10 @@ end
 
 
 
+include("mates.jl")
 include("undo_move.jl")
 include("generate_moves.jl")
 include("pinned.jl")
-include("mates.jl")
 
 println("Tests complete!")
 toc()
