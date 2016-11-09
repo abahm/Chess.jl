@@ -2,14 +2,24 @@
 
 module Chess
 
+# Why use Julia for a chess engine?
+#
+# advantages of Julia:
+#  1 metaprogramming, ability to reduce repeated code by macros
+#  2 mulitiple dispatch, ability to create functs distinguished by signature
+#  3 designed for parallelism, multicore
+#
+#  4 ... at big picture level, experiment with larger ideas easily
+#
 
-const version = "Julia Chess, v0.40"
+const version = "Julia Chess, v0.41"
 const author = "Alan Bahm"
 
 
 include("constants.jl")
 include("util.jl")
 include("move.jl")
+include("movelist.jl")
 include("board.jl")
 include("position.jl")
 include("evaluation.jl")
@@ -26,6 +36,18 @@ elseif "-xboard" ∈ ARGS
 elseif "-repl" ∈ ARGS
     repl_loop()
 end
+
+
+board = new_game()
+function search_and_print(ply)
+    score,move,pv,nnodes,time_s = best_move_search(board, ply)
+    #println("$ply\t$(round(nnodes/(time_s*1000),2)) kn/s")
+    print("$ply\t$(round(nnodes/(time_s*1000),2)) kn/s\t $(round(score,3))\t $(round(time_s,2))\t $nnodes\t $move\t ")
+end
+for analysis_depth in 0:4
+    @time search_and_print(analysis_depth)
+end
+
 
 
 export WHITE, BLACK

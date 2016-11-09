@@ -33,7 +33,7 @@ function print_move_history(moves::Array{Move,1})
 end
 
 "Play a random chess game in REPL"
-function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game(), max_number_of_moves=1000)
+function random_play_both_sides(seed, show_move_history, delay=0.001, board=new_game(), max_number_of_moves=1000)
     srand(seed)
     moves_made = Move[]
     for i in 1:max_number_of_moves
@@ -41,21 +41,21 @@ function random_play_both_sides(seed, show_move_history, delay=0.001, b=new_game
             clear_repl()
         end
         println()
-        printbd(b)
+        printbd(board)
 
         if show_move_history
             print_move_history(moves_made)
             println()
         end
 
-        moves = generate_moves(b)
+        moves = generate_moves(board)
         if length(moves)==0
             break
         end
         r = rand(1:length(moves))
         m = moves[r]
 
-        make_move!(b, m)
+        make_move!(board, m)
         push!(moves_made, m)
 
         sleep(delay)
@@ -74,6 +74,7 @@ function repl_loop()
     depth = 3          # default, user can change
     board = new_game() # default, user can load FEN, or choose chess960
     game_history = []  # store (move, board) every turn
+    moves = 
     while true
         clear_repl()
         println()

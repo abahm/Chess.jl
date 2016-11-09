@@ -42,6 +42,7 @@ Additionally, the negamax search is now being used to search the whole tree to r
 Added undo_move which reduces memory churn and speeds up thinking slightly.
 ![ui snapshot from 3 Nov 2016](2016-11-03-chess.png)
 
+
 ### 2016 November 6 - v0.40
 Added chess960 support in playing, speed a little slower.
 ![ui snapshot from 6 Nov 2016](2016-11-06-chess.png)
