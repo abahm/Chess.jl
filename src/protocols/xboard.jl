@@ -112,7 +112,7 @@ function xboard_loop()
         if "usermove" ∈ tokens
             # translate and make user's move
             movestr = tokens[2]
-            make_move(board, movestr)
+            make_move!(board, String(movestr))
 
             # think of best reply
             score, move, pv, nodes, time_s = best_move_search(board, ply)
