@@ -121,7 +121,6 @@ function αβMax(board, α, β, depth)
         make_move!(board, m)
         score, pv, nnodes = αβMin( board, α, β, depth - 1 )
         unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
-        score *= -1
         if( score >= β )
             return β, principal_variation, number_nodes_visited   # fail hard β-cutoff
         end
@@ -134,7 +133,7 @@ function αβMax(board, α, β, depth)
     end
 
     if max_move == nothing
-        # no moves available - it is either a draw or a mate
+        # no legal moves available - it is either a draw or a mate
         if is_king_in_check(board)
             max_value = MATE_SCORE + depth  # add depth to define mate in N moves
         else
@@ -162,7 +161,6 @@ function αβMin(board, α, β, depth)
         make_move!(board, m)
         score, pv, nnodes =  αβMax( board, α, β, depth - 1 )
         unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
-        score *= -1
         if( score <= α )
             return α, principal_variation, number_nodes_visited # fail hard α-cutoff
         end
@@ -175,7 +173,7 @@ function αβMin(board, α, β, depth)
     end
 
     if max_move == nothing
-        # no moves available - it is either a draw or a mate
+        # no legal moves available - it is either a draw or a mate
         if is_king_in_check(board)
             max_value = MATE_SCORE + depth  # add depth to define mate in N moves
         else
