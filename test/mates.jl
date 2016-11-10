@@ -6,7 +6,7 @@ mate_info = [
 ("2bqkbn1/2pppp2/np2N3/r3P1p1/p2N2B1/5Q2/PPPPKPP1/RNB2r2 w KQkq - 0 1", 3, "f3f7"),
 ("8/6K1/1p1B1RB1/8/2Q5/2n1kP1N/3b4/4n3 w - - 0 1", 3, "d6a3"),
 ("B7/K1B1p1Q1/5r2/7p/1P1kp1bR/3P3R/1P1NP3/2n5 w - - 0 1", 3, "a8c6"),
-("8/8/8/8/8/7k/6rr/K7 b  -", 2, "g2g1")
+("8/8/8/8/8/7k/6rr/K7 b  -", 1, "g2g1")
 ]
 
 function mates()

@@ -37,19 +37,6 @@ elseif "-repl" ∈ ARGS
     repl_loop()
 end
 
-#=
-# timing test from a new game
-board = new_game()
-function search_and_print(ply)
-    score,move,pv,nnodes,time_s = best_move_search(board, ply)
-    #println("$ply\t$(round(nnodes/(time_s*1000),2)) kn/s")
-    print("$ply\t$(round(nnodes/(time_s*1000),2)) kn/s\t $(round(score,3))\t $(round(time_s,2))\t $nnodes\t $move\t ")
-end
-for analysis_depth in 0:4
-    @time search_and_print(analysis_depth)
-end
-=#
-
 
 export WHITE, BLACK
 export KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN

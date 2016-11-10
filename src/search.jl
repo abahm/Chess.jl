@@ -22,7 +22,6 @@ function best_move_negamax(board, depth)
     prior_last_move_pawn_double_push = board.last_move_pawn_double_push
     for m in moves
         make_move!(board, m)
-
         value, pv, nnodes = negaMax(board, depth)
         value *= -1
         if best_value < value
@@ -89,11 +88,10 @@ function best_move_alphabeta(board, depth)
     prior_last_move_pawn_double_push = board.last_move_pawn_double_push
     for m in moves
         make_move!(board, m)
-
-        value, pv, nnodes = αβMax(board, -Inf, Inf, depth)
-        value *= -1
-        if best_value < value
-            best_value = value
+        score, pv, nnodes = αβMax(board, -Inf, Inf, depth)
+        score *= -1
+        if best_value < score
+            best_value = score
             best_move = m
             principal_variation = pv
         end
@@ -135,9 +133,9 @@ function αβMax(board, α, β, depth)
     if max_move == nothing
         # no legal moves available - it is either a draw or a mate
         if is_king_in_check(board)
-            max_value = MATE_SCORE + depth  # add depth to define mate in N moves
+            α = MATE_SCORE + depth  # add depth to define mate in N moves
         else
-            max_value = DRAW_SCORE
+            α = DRAW_SCORE
         end
     else
         push!(principal_variation, max_move)
@@ -175,9 +173,9 @@ function αβMin(board, α, β, depth)
     if max_move == nothing
         # no legal moves available - it is either a draw or a mate
         if is_king_in_check(board)
-            max_value = MATE_SCORE + depth  # add depth to define mate in N moves
+            β = MATE_SCORE + depth  # add depth to define mate in N moves
         else
-            max_value = DRAW_SCORE
+            β = DRAW_SCORE
         end
     else
         push!(principal_variation, max_move)
