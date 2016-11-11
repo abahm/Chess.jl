@@ -409,17 +409,18 @@ function generate_moves(b::Board, moves::Movelist; only_attacking_moves=false)
         # OR,
         #       simply run the ply, make each move, and if the enemy response allows king capture,
         #       remove it from the list
+        prior_castling_rights = b.castling_rights
+        prior_last_move_pawn_double_push = b.last_move_pawn_double_push
         illegal_moves = []
         for move in moves
-            # TODO: generate_moves() for speed, make use of unmake_move here
-            test_board = deepcopy(b)
-            make_move!(test_board,move)
-            kings_new_square = test_board.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
+            make_move!(b,move)
+            kings_new_square = b.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
             if move.piece_moving==KING
                 kings_new_square = move.sqr_dest
             end
             #println("Checking $(m) for pins against KING on $(square_name(kings_new_square))")
-            reply_moves = generate_moves(test_board, only_attacking_moves=true)
+            reply_moves = generate_moves(b, only_attacking_moves=true)
+            unmake_move!(b, move, prior_castling_rights, prior_last_move_pawn_double_push)
             for reply_move in reply_moves
                 #@show reply_move
                 if reply_move.sqr_dest == kings_new_square
@@ -757,17 +758,18 @@ function generate_moves(b::Board; only_attacking_moves=false)
         # OR,
         #       simply run the ply, make each move, and if the enemy response allows king capture,
         #       remove it from the list
+        prior_castling_rights = b.castling_rights
+        prior_last_move_pawn_double_push = b.last_move_pawn_double_push
         illegal_moves = []
         for move in moves
-            # TODO: generate_moves() for speed, make use of unmake_move here
-            test_board = deepcopy(b)
-            make_move!(test_board,move)
-            kings_new_square = test_board.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
+            make_move!(b,move)
+            kings_new_square = b.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
             if move.piece_moving==KING
                 kings_new_square = move.sqr_dest
             end
             #println("Checking $(m) for pins against KING on $(square_name(kings_new_square))")
-            reply_moves = generate_moves(test_board, only_attacking_moves=true)
+            reply_moves = generate_moves(b, only_attacking_moves=true)
+            unmake_move!(b, move, prior_castling_rights, prior_last_move_pawn_double_push)
             for reply_move in reply_moves
                 #@show reply_move
                 if reply_move.sqr_dest == kings_new_square

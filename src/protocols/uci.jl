@@ -62,14 +62,16 @@ function uci_loop()
         end
 
         if "go" ∈ tokens
+            prior_castling_rights = b.castling_rights
+            prior_last_move_pawn_double_push = b.last_move_pawn_double_push
             moves = generate_moves(board)
             multiplier = (board.side_to_move==WHITE ? 1 : -1)
             best_value = -Inf
             best_move = nothing
             for m in moves
-                test_board = deepcopy(board)
-                make_move!(test_board, m)
-                value = multiplier*evaluate(test_board)
+                make_move!(board, m)
+                value = multiplier*evaluate(board)
+                unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
                 if best_value < value
                     best_value = value
                     best_move = m

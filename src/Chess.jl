@@ -30,6 +30,7 @@ include("protocols/uci.jl")
 
 
 if "-uci" ∈ ARGS
+    # not yet supported...
     uci_loop()
 elseif "-xboard" ∈ ARGS
     xboard_loop()
