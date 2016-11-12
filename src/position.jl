@@ -60,6 +60,92 @@ const CAPTURE = UInt8(2)
     return UNBLOCKED
 end
 
+@inline function add_rook_moves!(moves, sqr, b, my_color, my_piece)
+    for i in 1:7
+        new_sqr = sqr>>i
+        if new_sqr & FILE_H > 0
+            break
+        end
+        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+            break
+        end
+    end
+    for i in 1:7
+        new_sqr = sqr<<i
+        if new_sqr & FILE_A > 0
+            break
+        end
+        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+            break
+        end
+    end
+    for i in 1:7
+        new_sqr = sqr>>(i*8)
+        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+            break
+        end
+    end
+    for i in 1:7
+        new_sqr = sqr<<(i*8)
+        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+            break
+        end
+    end
+end
+
+@inline function add_bishop_moves!(moves, sqr, b, my_color, my_piece)
+    for i in 1:7
+        new_sqr = sqr>>(i*9)
+        if new_sqr & FILE_H > 0
+            break
+        end
+        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+            break
+        end
+    end
+    for i in 1:7
+        new_sqr = sqr>>(i*7)
+        if new_sqr & FILE_A > 0
+            break
+        end
+        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+            break
+        end
+    end
+    for i in 1:7
+        new_sqr = sqr<<(i*7)
+        if new_sqr & FILE_H > 0
+            break
+        end
+        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+            break
+        end
+    end
+    for i in 1:7
+        new_sqr = sqr<<(i*9)
+        if new_sqr & FILE_A > 0
+            break
+        end
+        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+            break
+        end
+    end
+end
+
+@inline function add_knight_moves!(moves, sqr, b, my_color)
+    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_A)>>17)
+    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_AB)>>10)
+    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_AB)<<6)
+    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_A)<<15)
+
+    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_H)>>15)
+    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_GH)<<10)
+    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_GH)>>6)
+    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_H)<<17)
+end
+
+
+
 "Generate all legal moves on the board, optionally only attacking moves (no castling)"
 function generate_moves(b::Board; only_attacking_moves=false)
     my_color = b.side_to_move
@@ -206,92 +292,20 @@ function generate_moves(b::Board; only_attacking_moves=false)
         rook = sqr & b.rooks
         my_piece = queen > 0 ? QUEEN : ROOK
         if rook > 0 || queen > 0
-            for i in 1:7
-                new_sqr = sqr>>i
-                if new_sqr & FILE_H > 0
-                    break
-                end
-                if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
-                    break
-                end
-            end
-            for i in 1:7
-                new_sqr = sqr<<i
-                if new_sqr & FILE_A > 0
-                    break
-                end
-                if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
-                    break
-                end
-            end
-            for i in 1:7
-                new_sqr = sqr>>(i*8)
-                if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
-                    break
-                end
-            end
-            for i in 1:7
-                new_sqr = sqr<<(i*8)
-                if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
-                    break
-                end
-            end
+            add_rook_moves!(moves, sqr, b, my_color, my_piece)
         end
 
         # bishop moves
         bishop = sqr & b.bishops
         my_piece = queen > 0 ? QUEEN : BISHOP
         if bishop > 0 || queen > 0
-            for i in 1:7
-                new_sqr = sqr>>(i*9)
-                if new_sqr & FILE_H > 0
-                    break
-                end
-                if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
-                    break
-                end
-            end
-            for i in 1:7
-                new_sqr = sqr>>(i*7)
-                if new_sqr & FILE_A > 0
-                    break
-                end
-                if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
-                    break
-                end
-            end
-            for i in 1:7
-                new_sqr = sqr<<(i*7)
-                if new_sqr & FILE_H > 0
-                    break
-                end
-                if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
-                    break
-                end
-            end
-            for i in 1:7
-                new_sqr = sqr<<(i*9)
-                if new_sqr & FILE_A > 0
-                    break
-                end
-                if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
-                    break
-                end
-            end
+            add_bishop_moves!(moves, sqr, b, my_color, my_piece)
         end
 
         # knight moves
         knight = sqr & b.knights
         if knight > 0
-            add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_A)>>17)
-            add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_AB)>>10)
-            add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_AB)<<6)
-            add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_A)<<15)
-
-            add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_H)>>15)
-            add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_GH)<<10)
-            add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_GH)>>6)
-            add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_H)<<17)
+            add_knight_moves!(moves, sqr, b, my_color)
         end
 
         # pawn moves
