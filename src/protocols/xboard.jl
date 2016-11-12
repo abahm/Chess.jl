@@ -64,6 +64,9 @@ function xboard_loop()
             # specify options that we can change in the user interface
             xboard_writeline("feature option=\"Depth -spin $ply 0 4\"")
             xboard_readline()
+            # specify that we can play chess960
+            xboard_writeline("feature variants=fischerandom")
+            xboard_readline()
             # done sending commands
             xboard_writeline("feature done=1")
             xboard_readline()
