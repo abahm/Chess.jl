@@ -26,6 +26,8 @@ end
 function xboard_loop()
     chess_engine_debug_mode = true
     chess_engine_show_thinking = true
+    opponent_is_computer = false
+    force_mode = false
     my_time = Inf
     opp_time = Inf
     ply = 2
@@ -83,6 +85,10 @@ function xboard_loop()
             xboard_writeline("pong $(tokens[2])")
         end
 
+        if "computer" ∈ tokens
+            opponent_is_computer = true
+        end
+
         if "nopost" ∈ tokens
             chess_engine_show_thinking = false
         end
@@ -95,7 +101,12 @@ function xboard_loop()
             opp_time = parse(tokens[2])
         end
 
+        if "force" ∈ tokens
+            force_mode = true
+        end
+
         if "go" ∈ tokens
+            force_mode = false
             # send xboard reply move
             score, move, pv, nodes, time_s = best_move_search(board, ply)
             if chess_engine_show_thinking
@@ -114,15 +125,17 @@ function xboard_loop()
             movestr = tokens[2]
             make_move!(board, String(movestr))
 
-            # think of best reply
-            score, move, pv, nodes, time_s = best_move_search(board, ply)
-            if chess_engine_show_thinking
-                xboard_writeline("\t $ply\t $score\t $time_s\t $nodes\t $(long_algebraic_format(pv))")
-            end
-            if move!=nothing
-                bestmovestr = long_algebraic_format(move)
-                xboard_writeline("move $bestmovestr")
-                make_move!(board, move)
+            if force_mode==false
+                # think of best reply
+                score, move, pv, nodes, time_s = best_move_search(board, ply)
+                if chess_engine_show_thinking
+                    xboard_writeline("\t $ply\t $score\t $time_s\t $nodes\t $(long_algebraic_format(pv))")
+                end
+                if move!=nothing
+                    bestmovestr = long_algebraic_format(move)
+                    xboard_writeline("move $bestmovestr")
+                    make_move!(board, move)
+                end
             end
         end
 

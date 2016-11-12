@@ -91,10 +91,9 @@ end
 end
 
 "Generate all legal moves on the board, optionally only attacking moves (no castling)
-   The moves array must be pre-allocated and passed into this function for speed.
-   The length of the elements filled in the array is returned."
+   The moves array are be pre-allocated and passed into this function for speed."
 function generate_moves(b::Board, moves::Movelist; only_attacking_moves=false)
-    moves.number_of_moves_in_array = 0
+    moves.position = 0
     my_color = b.side_to_move
     assert(my_color==WHITE || my_color==BLACK)
     enemy_color = opposite_color(my_color)
@@ -438,7 +437,7 @@ function generate_moves(b::Board, moves::Movelist; only_attacking_moves=false)
 
     # TODO: generate_moves() order moves so that a capture of last moved piece is first
 
-    number_of_moves_in_array
+    position
 end
 
 "Generate all legal moves on the board, optionally only attacking moves (no castling)"
