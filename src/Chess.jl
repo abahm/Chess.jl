@@ -38,7 +38,7 @@ elseif "-repl" ∈ ARGS
     repl_loop()
 end
 
-#=
+
 board = new_game()
 function search_and_print(ply)
     score,move,pv,nnodes,time_s = best_move_search(board, ply)
@@ -49,7 +49,7 @@ d = 4
 for analysis_depth in 0:d
     @time search_and_print(analysis_depth)
 end
-=#
+
 
 export WHITE, BLACK
 export KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN

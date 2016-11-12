@@ -60,6 +60,32 @@ const CAPTURE = UInt8(2)
     return UNBLOCKED
 end
 
+@inline function add_king_moves!(moves, sqr, b, my_color)
+    new_sqr = (sqr>>9) & ~FILE_H
+    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+
+    new_sqr = (sqr>>8)
+    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+
+    new_sqr = (sqr>>7) & ~FILE_A
+    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+
+    new_sqr = (sqr>>1) & ~FILE_H
+    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+
+    new_sqr = (sqr<<1) & ~FILE_A
+    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+
+    new_sqr = (sqr<<7) & ~FILE_H
+    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+
+    new_sqr = (sqr<<8)
+    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+
+    new_sqr = (sqr<<9) & ~FILE_A
+    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+end
+
 @inline function add_rook_moves!(moves, sqr, b, my_color, my_piece)
     for i in 1:7
         new_sqr = sqr>>i
@@ -144,8 +170,6 @@ end
     add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_H)<<17)
 end
 
-
-
 "Generate all legal moves on the board, optionally only attacking moves (no castling)"
 function generate_moves(b::Board; only_attacking_moves=false)
     my_color = b.side_to_move
@@ -185,38 +209,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
         # kings moves
         king = sqr & b.kings
         if king > 0
-            new_sqr = (sqr>>9) & ~FILE_H
-            if new_sqr ∉ attacked_squares  # can't move into check
-                add_move!(moves, b, my_color, KING, sqr, new_sqr)
-            end
-            new_sqr = (sqr>>8)
-            if new_sqr ∉ attacked_squares  # can't move into check
-                add_move!(moves, b, my_color, KING, sqr, new_sqr)
-            end
-            new_sqr = (sqr>>7) & ~FILE_A
-            if new_sqr ∉ attacked_squares  # can't move into check
-                add_move!(moves, b, my_color, KING, sqr, new_sqr)
-            end
-            new_sqr = (sqr>>1) & ~FILE_H
-            if new_sqr ∉ attacked_squares  # can't move into check
-                add_move!(moves, b, my_color, KING, sqr, new_sqr)
-            end
-            new_sqr = (sqr<<1) & ~FILE_A
-            if new_sqr ∉ attacked_squares  # can't move into check
-                add_move!(moves, b, my_color, KING, sqr, new_sqr)
-            end
-            new_sqr = (sqr<<7) & ~FILE_H
-            if new_sqr ∉ attacked_squares  # can't move into check
-                add_move!(moves, b, my_color, KING, sqr, new_sqr)
-            end
-            new_sqr = (sqr<<8)
-            if new_sqr ∉ attacked_squares  # can't move into check
-                add_move!(moves, b, my_color, KING, sqr, new_sqr)
-            end
-            new_sqr = (sqr<<9) & ~FILE_A
-            if new_sqr ∉ attacked_squares  # can't move into check
-                add_move!(moves, b, my_color, KING, sqr, new_sqr)
-            end
+            add_king_moves!(moves, sqr, b, my_color)
 
             # castling kingside (allows for chess960 castling too)
             if !king_in_check && !only_attacking_moves
