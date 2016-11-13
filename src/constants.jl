@@ -2,8 +2,8 @@
 
 # Symbols for drawing chess board in REPL
 #const CHARACTERS = ['k','q','r','b','n','p']
-const CHARACTERS = ['♔','♕','♖','♗','♘','♙']
-const PIECE_NAMES = ["king", "queen", "rook", "bishop", "knight", "pawn"]
+const CHARACTERS = ['♙','♘','♗','♖','♕','♔']
+const PIECE_NAMES = ["pawn", "knight", "bishop", "rook", "queen", "king"]
 const CHARACTER_SQUARE_ATTACKED = '•'
 const CHARACTER_SQUARE_CAPTURE = 'x'  #'∘'
 #const CHARACTER_SQUARE_EMPTY = '⋅'
@@ -24,12 +24,12 @@ const SMALL_NUMBERS = ['₁','₂','₃','₄','₅','₆','₇','₈']
 
 const NONE = UInt8(0)
 
-const KING = UInt8(1)
-const QUEEN = UInt8(2)
-const ROOK = UInt8(3)
-const BISHOP = UInt8(4)
-const KNIGHT = UInt8(5)
-const PAWN = UInt8(6)
+const PAWN = UInt8(1)
+const KNIGHT = UInt8(2)
+const BISHOP = UInt8(3)
+const ROOK = UInt8(4)
+const QUEEN = UInt8(5)
+const KING = UInt8(6)
 
 const WHITE = UInt8(1)
 const BLACK = UInt8(2)

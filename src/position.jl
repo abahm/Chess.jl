@@ -408,8 +408,8 @@ function generate_moves(b::Board; only_attacking_moves=false)
         filter!(mv -> mv ∉ illegal_moves, moves)
     end
 
-
-    # TODO: generate_moves() order moves by captures first
+    # order moves by biggest captures first
+    moves = sort(moves, by=move->move.piece_taken, rev=true)
 
     # TODO: generate_moves() order moves so that a capture of last moved piece is first
 
