@@ -1,6 +1,6 @@
 module Zobrist
 
-export ZobristHash , same_zobrist, update_zobrist
+export ZobristHash , same_zobrist, update_zobrist, copy_zobrist
 
 """
 ZobristHash()
@@ -110,6 +110,29 @@ function init_zobrist_hash(x::ZobristHash, seed::UInt32, num_pieces::UInt16, num
 
 	return x
 end
+
+"""
+copy_zobrist(dst::ZobristHash,src::ZobristHash)
+
+deep copy all members of src to dst
+
+# Return
+  * True if copy successful
+  * False otherwise
+
+"""
+function copy_zobrist(dst::ZobristHash,src::ZobristHash)
+	if size(dst.H) != size(src.H)
+		return false
+	end
+	dst.pieces     = src.pieces
+	dst.positions  = src.positions
+	dst.seed       = src.seed
+	dst.H          = deepcopy(src.H)
+
+	return true
+end
+
 
 """
 same_zobrist(x::ZobristHash,y::ZobristHash)
