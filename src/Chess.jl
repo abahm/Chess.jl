@@ -12,10 +12,11 @@ module Chess
 #  4 ... at big picture level, experiment with larger ideas easily
 #
 
-const version = "Julia Chess, v0.45"
+const version = "Julia Chess, v0.46"
 const author = "Alan Bahm"
 
 
+include("Zobrist.jl")
 include("constants.jl")
 include("util.jl")
 include("move.jl")

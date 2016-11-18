@@ -18,8 +18,9 @@ type Board   # known as "dense Board representation"
     game_kings_starting_column::UInt8
     game_queen_rook_starting_column::UInt8
     game_king_rook_starting_column::UInt8
+    game_zobrist::ZobristHash
 end
-Board() = Board(0,0, 0,0,0, 0,0,0, NONE, 0x0F,0, false, 5, 1, 8)
+Board() = Board(0,0, 0,0,0, 0,0,0, NONE, 0x0F,0, false, 5, 1, 8, ZobristHash())
 
 import Base.deepcopy
 Base.deepcopy(b::Board) = Board(b.white_pieces, b.black_pieces,
@@ -31,7 +32,8 @@ Base.deepcopy(b::Board) = Board(b.white_pieces, b.black_pieces,
                                 b.game_chess960,
                                 b.game_kings_starting_column,
                                 b.game_queen_rook_starting_column,
-                                b.game_king_rook_starting_column)
+                                b.game_king_rook_starting_column,
+                                b.game_zobrist)
 
 function Base.show(io::IO, b::Board)
     print(io, "\n")
@@ -210,13 +212,31 @@ function new_game_960()
 
     b.side_to_move = WHITE
     b.game_chess960 = true
+    b.game_zobrist = ZobristHash()
     b
+end
+
+@inline function update_zobrist(v::UInt64, board::Board)
+	for square_index in 1:64
+        sqr = UInt64(1) << (square_index-1)
+
+		piece = piece_type_on_sqr(board, sqr)
+		if piece == NONE
+			continue
+		end
+
+		color = piece_color_on_sqr(board, sqr)
+
+		v = update_zobrist(board.game_zobrist, v, piece*color, UInt8(square_index))
+	end
+	v
 end
 
 "Pretty print the chess board in the REPL"
 function printbd(b::Board, io=STDOUT, moves=nothing)
     println("$(version)")
     println("FEN $(write_fen(b))")
+    println("   hash $(update_zobrist(UInt64(0), b))")
     print(io, "       ")
     if b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE > 0
         print(io, CHARACTER_CASTLING_AVAILABLE)
@@ -331,6 +351,7 @@ function read_fen(fen::String)
         b.last_move_pawn_double_push = square(splitfen[4])
     end
 
+    b.game_zobrist = ZobristHash()
     b
 end
 
