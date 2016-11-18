@@ -26,7 +26,7 @@ function print_algebraic(moves::Array{Move,1})
 end
 
 
-
+include("search.jl")
 include("mates.jl")
 include("undo_move.jl")
 include("generate_moves.jl")

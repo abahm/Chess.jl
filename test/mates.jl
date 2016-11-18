@@ -9,6 +9,7 @@ mate_info = [
 ("8/8/8/8/8/7k/6rr/K7 b  -", 1, "g2g1")
 ]
 
+
 function mates()
     for mate in mate_info
         b = read_fen(mate[1])
