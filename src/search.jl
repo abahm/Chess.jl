@@ -91,7 +91,7 @@ function best_move_alphabeta(board, depth)
     prior_last_move_pawn_double_push = board.last_move_pawn_double_push
     for m in moves
         make_move!(board, m)
-        score, pv, nnodes = αβMax(board, -Inf, Inf, depth)
+        score, pv, nnodes = αβSearch(board, -Inf, Inf, depth)
         score *= -1
         if best_value < score
             best_value = score
@@ -108,7 +108,7 @@ function best_move_alphabeta(board, depth)
 end
 
 "Called only by best_move_alphabeta"
-function αβMax(board, α, β, depth)
+function αβSearch(board, α, β, depth)
     if depth == 0
         return quiescence(board, α, β)
     end
@@ -120,12 +120,17 @@ function αβMax(board, α, β, depth)
     prior_last_move_pawn_double_push = board.last_move_pawn_double_push
     for m in generate_moves(board)
         make_move!(board, m)
-        score, pv, nnodes = αβMin( board, α, β, depth - 1 )
+        score, pv, nnodes = αβSearch( board, -β, -α, depth - 1 )
+        score *= -1
         unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
+        # So at all times when searching, you know that you can do no worse than alpha, and that you can do no better than beta.  Anything outside of these bounds you can ignore.
         if( score >= β )
+            # beta is the worst-case scenario for the opponent.
+            # If the search finds something that returns a score of beta or better, it's too good, so the side to move is not going to get a chance to use this strategy.
             return β, principal_variation, number_nodes_visited   # fail hard β-cutoff
         end
         if( score > α )
+            # alpha, which is the best score that can be forced by some means.
             α = score # α acts like max in MiniMax
             max_move = m
             principal_variation = pv
@@ -147,49 +152,8 @@ function αβMax(board, α, β, depth)
     α, principal_variation, number_nodes_visited
 end
 
-"Called only by best_move_alphabeta"
-function αβMin(board, α, β, depth)
-    if ( depth == 0 )
-        v, pv, nn = quiescence(board, α, β)
-        return -v, pv, nn
-    end
-
-    max_move = nothing
-    principal_variation = Move[]
-    number_nodes_visited = 0
-    prior_castling_rights = board.castling_rights
-    prior_last_move_pawn_double_push = board.last_move_pawn_double_push
-    for m in generate_moves(board)
-        make_move!(board, m)
-        score, pv, nnodes =  αβMax( board, α, β, depth - 1 )
-        unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
-        if( score <= α )
-            return α, principal_variation, number_nodes_visited # fail hard α-cutoff
-        end
-        if( score < β )
-            β = score # β acts like min in MiniMax
-            max_move = m
-            principal_variation = pv
-        end
-        number_nodes_visited += nnodes
-    end
-
-    if max_move == nothing
-        # no legal moves available - it is either a draw or a mate
-        if is_king_in_check(board)
-            β = MATE_SCORE + depth  # add depth to define mate in N moves
-        else
-            β = DRAW_SCORE
-        end
-    else
-        push!(principal_variation, max_move)
-    end
-
-    β, principal_variation, number_nodes_visited
-end
-
 
 function quiescence(board, α, β)
-    #return -evaluate(board), Move[], 1
     return (board.side_to_move==WHITE?1:-1)*evaluate(board), Move[], 1
+    #return evaluate(board), Move[], 1
 end
