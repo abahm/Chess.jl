@@ -161,7 +161,7 @@ function new_game()
 end
 
 """
-Creates a new FisherChess 960 chess board
+Creates a new FischerChess 960 chess board
 Note that pieces aren't truly random:
   the bishops must be placed on opposite-color squares.
   the king must be placed on a square between the rooks.
@@ -216,7 +216,9 @@ function new_game_960()
     b
 end
 
-@inline function update_zobrist(v::UInt64, board::Board)
+"Compute the Zobrish hash on the chess position"
+@inline function compute_hash(board::Board)
+    hash = UInt64(0)
 	for square_index in 1:64
         sqr = UInt64(1) << (square_index-1)
 
@@ -227,16 +229,16 @@ end
 
 		color = piece_color_on_sqr(board, sqr)
 
-		v = update_zobrist(board.game_zobrist, v, piece*color, UInt8(square_index))
+		hash = update_hash(board.game_zobrist, hash, piece*color, UInt8(square_index))
 	end
-	v
+	hash
 end
 
 "Pretty print the chess board in the REPL"
 function printbd(b::Board, io=STDOUT, moves=nothing)
     println("$(version)")
     println("FEN $(write_fen(b))")
-    println("   hash $(update_zobrist(UInt64(0), b))")
+    println("   hash $(compute_hash(b))")
     print(io, "       ")
     if b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE > 0
         print(io, CHARACTER_CASTLING_AVAILABLE)

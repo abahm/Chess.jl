@@ -51,6 +51,6 @@ export Move, algebraic_format, long_algebraic_format
 export Board, set!, new_game, new_game_960
 export read_fen, write_fen, printbd
 export play, random_play_both_sides, perft
-export best_move_search
+export best_move_search, best_move_negamax, best_move_alphabeta
 
 end

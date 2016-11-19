@@ -1,77 +1,19 @@
+# zobrist.jl
 
-"""
-ZobristHash()
 
-Initialize a two dimensional hash (e.g. chessboard state)
-
-# Members
-```
-	seed::UInt32
-	H::Array{UInt64,2}
-```
-
-# Methods
-
-  * ZobristHash()
-  * ZobristHash(seed)
-    + Will seed the RNG for debugging purposes
-
-# Return
-  * A randomly initialized two dimensional Hash
-"""
 type ZobristHash
-	seed::UInt32
-	H::Array{UInt64,2}
-	ZobristHash()     = init_zobrist_hash!(new())
-	ZobristHash(seed) = init_zobrist_hash!(new(), seed)
-end
+	hashtable::Array{UInt64,2}  # 12 pieces by 64 squares
+	# TODO: add castling_rights
+	# TODO: add enpassant option
 
-"""
-init_zobrist_hash!()
-Create a default 12 x 64 Zobrist Hash
-
-# Arguments
-  * x::ZobristHash
-# Return
-  * An initialized hash array
-"""
-function init_zobrist_hash!(x::ZobristHash)
-	x.H = Array{UInt64}(12,64)
-	rng = MersenneTwister()
-
-	# Initialize random array
-	for a in eachindex(x.H)
-		x.H[a] = rand(rng, UInt64)
+	function ZobristHash(seed=0)
+		# if no seed, MersenneTwister() internally uses 0
+		rng = MersenneTwister(seed)
+		new([rand(rng, UInt64) for i in 1:12, j in 1:64])
 	end
-
-	return x
 end
 
-"""
-init_zobrist_hash!(random_seed)
-
-# Arguments
-  * x::ZobristHash
-  * `seed::UInt32`: Initialize the RNG with a seed
-
-# Return
-  * An initialized ZobristHash
-"""
-function init_zobrist_hash!(x::ZobristHash, seed::UInt32)
-  	x.seed      = seed
-	x.H         = Array{UInt64}(12, 64)
-	rng         = MersenneTwister(x.seed)
-
-	# Initialize random array
-	for a in eachindex(x.H)
-		x.H[a] = rand(rng, UInt64)
-	end
-
-	return x
-end
-
-
-
-@inline function update_zobrist(x::ZobristHash, v::UInt64, piece::UInt8, position::UInt8)
-	x.H[piece, position] $ v
+@inline function update_hash(z::ZobristHash, hash::UInt64, piece::UInt8, position::UInt8)
+	# XOR looked up pre-determined random number with the input hash
+	z.hashtable[piece, position] $ hash
 end
