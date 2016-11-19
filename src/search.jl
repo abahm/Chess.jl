@@ -6,8 +6,8 @@ Find best move, returns:
     number of nodes visited, time in seconds
 """
 function best_move_search(board, depth)
-    #best_move_alphabeta(board, depth)
-    best_move_negamax(board, depth)
+    best_move_alphabeta(board, depth)
+    #best_move_negamax(board, depth)
 end
 
 
@@ -150,7 +150,8 @@ end
 "Called only by best_move_alphabeta"
 function αβMin(board, α, β, depth)
     if ( depth == 0 )
-        return quiescence(board, α, β)
+        v, pv, nn = quiescence(board, α, β)
+        return -v, pv, nn
     end
 
     max_move = nothing
@@ -189,5 +190,6 @@ end
 
 
 function quiescence(board, α, β)
+    #return -evaluate(board), Move[], 1
     return (board.side_to_move==WHITE?1:-1)*evaluate(board), Move[], 1
 end
