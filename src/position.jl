@@ -189,7 +189,8 @@ function generate_moves(b::Board; only_attacking_moves=false)
     # is king in check?
     kings_square = b.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
     if kings_square == UInt64(0)
-        warn("$(COLOR_NAMES[my_color]) king missing from board.")
+        #warn("$(COLOR_NAMES[my_color]) king missing from board.")
+        # king can be missing due to quiescence search...
         return moves # empty list
     end
     assert( kings_square > 0 ) # can't find the king!

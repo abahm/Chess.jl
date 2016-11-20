@@ -7,14 +7,14 @@ printbd(b)
 
 
 
-println("Testing best_move_alphabeta ...")
+println("Testing best_move_alphabeta + quiescence ...")
 bv, m, pv, nnodes, time_s = best_move_alphabeta(b, 0)
 println(" 0\t $m\t $nnodes\t $time_s\t $(round(bv,5))\t $m $(algebraic_format(pv))")
 assert(long_algebraic_format(m) == "b2c3")
 
 bv, m, pv, nnodes, time_s = best_move_alphabeta(b, 1)
 println(" 1\t $m\t $nnodes\t $time_s\t $(round(bv,5))\t $m $(algebraic_format(pv))")
-assert(long_algebraic_format(m) == "b2c3")
+assert(long_algebraic_format(m) == "d5d8")
 
 bv, m, pv, nnodes, time_s = best_move_alphabeta(b, 2)
 println(" 2\t $m\t $nnodes\t $time_s\t $(round(bv,5))\t $m $(algebraic_format(pv))")
