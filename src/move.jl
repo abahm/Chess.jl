@@ -27,14 +27,29 @@ end
 
 "Generate a verbose readable string for move, `pawn on e2 to e4`"
 function verbose_format(m::Move)
-    movestr = piece_name(m.moving_piece) * " on "
+    movestr = piece_name(m.piece_moving) * " on "
     movestr *= square_name(m.sqr_src) * " to "
     movestr *= square_name(m.sqr_dest)
     if m.promotion_to==QUEEN   movestr *= "q"  end
     if m.promotion_to==KNIGHT  movestr *= "n"  end
     if m.promotion_to==BISHOP  movestr *= "b"  end
     if m.promotion_to==ROOK    movestr *= "r"  end
+    if m.piece_taken==KING     movestr *= " capturing king"   end
+    if m.piece_taken==QUEEN    movestr *= " capturing queen"  end
+    if m.piece_taken==ROOK     movestr *= " capturing rook"   end
+    if m.piece_taken==BISHOP   movestr *= " capturing bishop" end
+    if m.piece_taken==KNIGHT   movestr *= " capturing knight" end
+    if m.piece_taken==PAWN     movestr *= " capturing pawn"   end
     movestr
+end
+
+"Generate a verbose readable string for moves, `pawn on e2 to e4`"
+function verbose_format(moves::Array{Move,1})
+    moves_str = ""
+    for m in moves
+        moves_str = moves_str * verbose_format(m) * "\t "
+    end
+    moves_str
 end
 
 "Generate an ascii string for move, e2e4, or h7h8q, for xboard and UCI protocols"

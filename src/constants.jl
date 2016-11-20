@@ -4,6 +4,7 @@
 #const CHARACTERS = ['k','q','r','b','n','p']
 const CHARACTERS = ['♙','♘','♗','♖','♕','♔']
 const PIECE_NAMES = ["pawn", "knight", "bishop", "rook", "queen", "king"]
+const COLOR_NAMES = ["white", "black"]
 const CHARACTER_SQUARE_ATTACKED = '•'
 const CHARACTER_SQUARE_CAPTURE = 'x'  #'∘'
 #const CHARACTER_SQUARE_EMPTY = '⋅'

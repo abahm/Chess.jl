@@ -39,7 +39,7 @@ function best_move_negamax(board, depth)
     best_value, best_move, principal_variation, number_nodes_visited, toq()
 end
 
-"Called only by best_move_negamax"
+"Called only by best_move_negamax (no quiescence evaluation)"
 function negaMax(board, depth)
     if depth == 0
         return (board.side_to_move==WHITE?1:-1)*evaluate(board), Move[], 1
@@ -110,7 +110,7 @@ end
 "Called only by best_move_alphabeta"
 function αβSearch(board, α, β, depth)
     if depth == 0
-        return quiescence(board, α, β)
+        return quiescence(board, α, β), Move[], 1
     end
 
     max_move = nothing
@@ -154,6 +154,29 @@ end
 
 
 function quiescence(board, α, β)
-    return (board.side_to_move==WHITE?1:-1)*evaluate(board), Move[], 1
-    #return evaluate(board), Move[], 1
+    #return (board.side_to_move==WHITE?1:-1)*evaluate(board)
+
+    score = (board.side_to_move==WHITE?1:-1)*evaluate(board)
+    if score >= β
+        return β
+    end
+    if score > α
+        α = score
+    end
+
+    moves = generate_captures(board)
+    prior_castling_rights = board.castling_rights
+    prior_last_move_pawn_double_push = board.last_move_pawn_double_push
+    for m in moves
+        make_move!(board, m)
+        score = -quiescence(board, -β, -α)
+        unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
+        if score >= β
+            return β
+        end
+        if score > α
+            α = score
+        end
+    end
+    α
 end

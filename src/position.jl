@@ -189,6 +189,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
     # is king in check?
     kings_square = b.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
     if kings_square == UInt64(0)
+        warn("$(COLOR_NAMES[my_color]) king missing from board.")
         return moves # empty list
     end
     assert( kings_square > 0 ) # can't find the king!
@@ -416,6 +417,13 @@ function generate_moves(b::Board; only_attacking_moves=false)
     moves
 end
 
+"Generate all moves that result in a capture (used in quiescence searching)"
+function generate_captures(b::Board)
+    moves = generate_moves(b, only_attacking_moves=true)
+    filter!(m->m.piece_taken!=NONE,moves)
+    moves
+end
+
 "Make move described by string, e2e4, on board"
 function make_move!(b::Board, movestr::String)
     move = nothing
@@ -609,6 +617,7 @@ function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_
 
     # add back any piece taken square
     if taken_piece != NONE
+        if taken_piece == KING    b.kings = b.kings | sqr_dest  end
         if taken_piece == QUEEN   b.queens = b.queens | sqr_dest  end
         if taken_piece == ROOK    b.rooks = b.rooks | sqr_dest  end
         if taken_piece == BISHOP  b.bishops = b.bishops | sqr_dest  end
