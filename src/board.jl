@@ -19,8 +19,9 @@ type Board   # known as "dense Board representation"
     game_queen_rook_starting_column::UInt8
     game_king_rook_starting_column::UInt8
     game_zobrist::ZobristHash
+    game_movelist::Movelist
 end
-Board() = Board(0,0, 0,0,0, 0,0,0, NONE, 0x0F,0, false, 5, 1, 8, ZobristHash())
+Board() = Board(0,0, 0,0,0, 0,0,0, NONE, 0x0F,0, false, 5, 1, 8, ZobristHash(), Movelist())
 
 import Base.deepcopy
 Base.deepcopy(b::Board) = Board(b.white_pieces, b.black_pieces,
@@ -33,7 +34,8 @@ Base.deepcopy(b::Board) = Board(b.white_pieces, b.black_pieces,
                                 b.game_kings_starting_column,
                                 b.game_queen_rook_starting_column,
                                 b.game_king_rook_starting_column,
-                                b.game_zobrist)
+                                b.game_zobrist,
+                                b.game_movelist)
 
 function Base.show(io::IO, b::Board)
     print(io, "\n")
