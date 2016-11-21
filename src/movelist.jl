@@ -8,7 +8,8 @@ type Movelist
     move_n::UInt8          # index i into moves
     ply_n::UInt8           # index j into moves
 
-    attacking_moves::Array{Move,1}
+    attacking_moves::Array{Move, 1}
+    attacked_squares::Array{UInt64, 1}
 end
 
 function Movelist()
@@ -16,5 +17,9 @@ function Movelist()
     for i in 1:MAX_PLYS_CAN_LOOK
         push!(moves, Array(Move, MAX_MOVES_PER_TURN))
     end
-    Movelist(moves, UInt8(1), UInt8(1), Array(Move, MAX_MOVES_PER_TURN))
+    move_n = UInt8(1)
+    ply_n = UInt8(1)
+    attacking_moves = Array(Move, MAX_MOVES_PER_TURN)
+    attacked_squares = Array(UInt64, MAX_MOVES_PER_TURN)
+    Movelist(moves, move_n, ply_n, attacking_moves, attacked_squares)
 end
