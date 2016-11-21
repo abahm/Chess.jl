@@ -173,7 +173,6 @@ end
 "Generate all legal moves on the board, optionally only attacking moves (no castling)"
 function generate_moves(b::Board; only_attacking_moves=false)
     my_color = b.side_to_move
-    #assert(my_color==WHITE || my_color==BLACK)
     enemy_color = opposite_color(my_color)
     moves = Move[]
 
@@ -193,9 +192,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
         # king can be missing due to quiescence search...
         return moves # empty list
     end
-    assert( kings_square > 0 ) # can't find the king!
     king_in_check = kings_square ∈ attacked_squares
-    my_color_str = my_color==WHITE?"WHITE":"BLACK"
 
     for square_index in 1:64
         sqr = UInt64(1) << (square_index-1)
@@ -205,7 +202,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
             continue
         end
 
-        # n.b. ÷ gives integer quotient like div()
+        # note: ÷ gives integer quotient, a.k.a. div()
         row = (square_index-1)÷8 + 1
 
         # kings moves
