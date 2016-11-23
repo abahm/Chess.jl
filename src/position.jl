@@ -483,10 +483,10 @@ function generate_moves(b::Board; no_checking_for_pins=false)
                 LAST_RANK = 2
                 bitshift_direction = >>
             end
-            
+
             # step one or two squares forward onto empty square
             new_sqr = bitshift_direction(sqr, ONE_SQUARE_FORWARD)
-            if piece_color_on_sqr(b, new_sqr) == NONE #&& !no_checking_for_pins
+            if piece_color_on_sqr(b, new_sqr) == NONE
                 if row == LAST_RANK
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
@@ -506,7 +506,7 @@ function generate_moves(b::Board; no_checking_for_pins=false)
             # take a piece forward left
             new_sqr = bitshift_direction(sqr, TAKE_LEFT) & ~FILE_H
             new_sqr_piece_color = piece_color_on_sqr(b, new_sqr)
-            if new_sqr_piece_color == enemy_color #|| no_checking_for_pins
+            if new_sqr_piece_color == enemy_color
                 if row == LAST_RANK
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
@@ -530,7 +530,7 @@ function generate_moves(b::Board; no_checking_for_pins=false)
             # take a piece forward right
             new_sqr = bitshift_direction(sqr, TAKE_RIGHT) & ~FILE_A
             new_sqr_piece_color = piece_color_on_sqr(b, new_sqr)
-            if new_sqr_piece_color == enemy_color #|| no_checking_for_pins
+            if new_sqr_piece_color == enemy_color
                 if row == LAST_RANK
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
                     add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
