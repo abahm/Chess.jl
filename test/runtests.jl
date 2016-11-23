@@ -25,10 +25,10 @@ function print_algebraic(moves::Array{Move,1})
     println()
 end
 
-include("search.jl")
+include("generate_moves.jl")
 include("mates.jl")
 include("undo_move.jl")
-include("generate_moves.jl")
+include("search.jl")
 include("pinned.jl")
 
 println("Tests complete!")

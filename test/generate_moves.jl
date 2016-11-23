@@ -13,6 +13,9 @@ const perft_data = [
 ("perft_fen6", "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10", [46, 2079, 89890, 3894594, 164075551]),
 ]
 
+# r3k2r/p1ppqpb1/bn2Pnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq -
+# r3k2r/p1pp1pb1/bn1qPnp1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -
+# r3k2r/p1ppPpb1/bn1q1np1/4N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq -
 
 function test_perft_runs()
     println("Checking perft_runs() ...")

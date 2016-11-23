@@ -171,7 +171,7 @@ end
 end
 
 "Generate all legal moves on the board, optionally only attacking moves (no castling)"
-function generate_moves(b::Board; only_attacking_moves=false)
+function generate_moves_original(b::Board; only_attacking_moves=false)
     my_color = b.side_to_move
     enemy_color = opposite_color(my_color)
     moves = Move[]
@@ -197,8 +197,8 @@ function generate_moves(b::Board; only_attacking_moves=false)
     for square_index in 1:64
         sqr = UInt64(1) << (square_index-1)
 
-        occupied = piece_color_on_sqr(b,sqr)
-        if occupied==NONE || occupied==enemy_color
+        moving_pieces_color = piece_color_on_sqr(b,sqr)
+        if moving_pieces_color==NONE || moving_pieces_color==enemy_color
             continue
         end
 
@@ -415,9 +415,289 @@ function generate_moves(b::Board; only_attacking_moves=false)
     moves
 end
 
+"Generate all legal moves on the board"
+function generate_moves(b::Board; no_checking_for_pins=false)
+    moves = Move[]
+
+    # create a list of moves by all pieces (both black and white)
+    for square_index in 1:64
+        sqr = UInt64(1) << (square_index-1)
+
+        # skip empty squares, else determine piece color
+        moving_pieces_color = piece_color_on_sqr(b,sqr)
+        if moving_pieces_color==NONE
+            continue
+        elseif moving_pieces_color==b.side_to_move
+            my_color = b.side_to_move
+            enemy_color = opposite_color(b.side_to_move)
+        else
+            my_color = opposite_color(b.side_to_move)
+            enemy_color = b.side_to_move
+        end
+
+        # note: ÷ gives integer quotient, a.k.a. div()
+        row = (square_index-1)÷8 + 1
+
+        # kings moves
+        king = sqr & b.kings
+        if king > 0
+            add_king_moves!(moves, sqr, b, my_color)
+        end # king
+
+        # rook moves
+        queen = sqr & b.queens
+        rook = sqr & b.rooks
+        my_piece = queen > 0 ? QUEEN : ROOK
+        if rook > 0 || queen > 0
+            add_rook_moves!(moves, sqr, b, my_color, my_piece)
+        end
+
+        # bishop moves
+        bishop = sqr & b.bishops
+        my_piece = queen > 0 ? QUEEN : BISHOP
+        if bishop > 0 || queen > 0
+            add_bishop_moves!(moves, sqr, b, my_color, my_piece)
+        end
+
+        # knight moves
+        knight = sqr & b.knights
+        if knight > 0
+            add_knight_moves!(moves, sqr, b, my_color)
+        end
+
+        # pawn moves
+        pawn = sqr & b.pawns
+        my_piece = PAWN
+        if pawn > 0
+            ONE_SQUARE_FORWARD = 8
+            TWO_SQUARE_FORWARD = 16
+            TAKE_LEFT = 7
+            TAKE_RIGHT = 9
+            START_RANK = 2
+            LAST_RANK = 7
+            bitshift_direction = <<
+            if my_color==BLACK
+                TAKE_LEFT = 9
+                TAKE_RIGHT = 7
+                START_RANK = 7
+                LAST_RANK = 2
+                bitshift_direction = >>
+            end
+            
+            # step one or two squares forward onto empty square
+            new_sqr = bitshift_direction(sqr, ONE_SQUARE_FORWARD)
+            if piece_color_on_sqr(b, new_sqr) == NONE #&& !no_checking_for_pins
+                if row == LAST_RANK
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=BISHOP)
+                else
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
+                end
+                if row == START_RANK
+                    new_sqr = bitshift_direction(sqr, TWO_SQUARE_FORWARD)
+                    if piece_color_on_sqr(b, new_sqr) == NONE
+                        add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
+                    end
+                end
+            end
+
+            # take a piece forward left
+            new_sqr = bitshift_direction(sqr, TAKE_LEFT) & ~FILE_H
+            new_sqr_piece_color = piece_color_on_sqr(b, new_sqr)
+            if new_sqr_piece_color == enemy_color #|| no_checking_for_pins
+                if row == LAST_RANK
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=BISHOP)
+                else
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
+                end
+            end
+            # add enemy pawn threat to list for "attacking" moves
+            if new_sqr_piece_color == NONE && moving_pieces_color != b.side_to_move
+                add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
+            end
+            # en passant to left
+            if b.last_move_pawn_double_push > 0 &&
+                new_sqr == bitshift_direction(b.last_move_pawn_double_push, ONE_SQUARE_FORWARD) &&
+                !no_checking_for_pins
+                add_move!(moves, b, my_color, PAWN, sqr, new_sqr, en_passant_sqr=b.last_move_pawn_double_push)
+            end
+
+            # take a piece forward right
+            new_sqr = bitshift_direction(sqr, TAKE_RIGHT) & ~FILE_A
+            new_sqr_piece_color = piece_color_on_sqr(b, new_sqr)
+            if new_sqr_piece_color == enemy_color #|| no_checking_for_pins
+                if row == LAST_RANK
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=BISHOP)
+                else
+                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
+                end
+            end
+            # add enemy pawn threat to list for "attacking" moves
+            if new_sqr_piece_color == NONE && moving_pieces_color != b.side_to_move
+                add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
+            end
+            # en passant to right
+            if b.last_move_pawn_double_push > 0 &&
+                new_sqr == bitshift_direction(b.last_move_pawn_double_push, ONE_SQUARE_FORWARD) &&
+                !no_checking_for_pins
+                add_move!(moves, b, my_color, PAWN, sqr, new_sqr, en_passant_sqr=b.last_move_pawn_double_push)
+            end
+        end  #  if pawn > 0
+    end # for square_index in 1:64
+
+    my_color = b.side_to_move
+    enemy_color = opposite_color(my_color)
+    attacking_moves = filter(m->m.color_moving==enemy_color, moves)
+    attacked_squares = [m.sqr_dest for m in attacking_moves]
+    moves = filter!(m->m.color_moving==my_color, moves)
+
+    # is king in check?
+    kings_square = b.kings & (b.side_to_move==WHITE ? b.white_pieces : b.black_pieces)
+    if kings_square == UInt64(0)
+        #warn("$(COLOR_NAMES[my_color]) king missing from board.")
+        # king can be missing due to quiescence search...
+        return moves # empty list
+    end
+    king_in_check = kings_square ∈ attacked_squares
+
+
+
+    # castling kingside (allows for chess960 castling too)
+    if !king_in_check
+        kings_travel_sqrs = []
+        rooks_travel_sqrs = []
+
+        #  first figure out what squares the pieces move through
+        castling_type = (my_color == WHITE ? CASTLING_RIGHTS_WHITE_KINGSIDE : CASTLING_RIGHTS_BLACK_KINGSIDE)
+        if b.castling_rights & castling_type > 0
+            r = (my_color == WHITE ? 1 : 8)
+            # to accomodate chess960, we check the games setup
+            c1 = min(b.game_kings_starting_column, G)
+            c2 = max(b.game_kings_starting_column, G)
+            rng = c1:c2
+            kings_travel_sqrs = UInt64[square(c,r) for c in rng]
+            # remove the kings own square from travel path
+            filter!(e->e∉square(b.game_kings_starting_column,r),kings_travel_sqrs)
+
+            c1 = min(b.game_king_rook_starting_column, F)
+            c2 = max(b.game_king_rook_starting_column, F)
+            rng = c1:c2
+            rooks_travel_sqrs = UInt64[square(c,r) for c in rng]
+            # remove the rooks own square from travel path
+            filter!(e->e∉square(b.game_king_rook_starting_column,r),rooks_travel_sqrs)
+        end
+
+        # add kingside castling if it is allowed
+        if length(kings_travel_sqrs)>0 &&
+            # check that the king's travel squares are empty
+            reduce(&, Bool[clear_for_castling(b, s) for s in kings_travel_sqrs]) &&
+            # check that the rook's travel squares are empty
+            reduce(&, Bool[clear_for_castling(b, s) for s in rooks_travel_sqrs]) &&
+            # check that king's traversal squares are not attacked
+            reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
+                push!(moves, Move(my_color, KING, square(b.game_kings_starting_column,r), square(G,r), castling=castling_type) )
+        end
+
+        kings_travel_sqrs = []  # must now reset this array!
+
+        # castling queenside (allows for chess960 castling too)
+        castling_type = (my_color == WHITE ? CASTLING_RIGHTS_WHITE_QUEENSIDE : CASTLING_RIGHTS_BLACK_QUEENSIDE)
+        if b.castling_rights & castling_type > 0
+            r = (my_color == WHITE ? 1 : 8)
+            # to accomodate chess960, we check the games setup
+            c1 = min(b.game_kings_starting_column, C)
+            c2 = max(b.game_kings_starting_column, C)
+            rng = c1:c2
+            kings_travel_sqrs = UInt64[square(c,r) for c in rng]
+            # remove the kings own square from travel path
+            filter!(e->e∉square(b.game_kings_starting_column,r),kings_travel_sqrs)
+
+            c1 = min(b.game_queen_rook_starting_column, D)
+            c2 = max(b.game_queen_rook_starting_column, D)
+            rng = c1:c2
+            rooks_travel_sqrs = UInt64[square(c,r) for c in rng]
+            # remove the rooks own square from travel path
+            filter!(e->e∉square(b.game_queen_rook_starting_column,r),rooks_travel_sqrs)
+        end
+
+        # add queenside castling if it is allowed
+        if length(kings_travel_sqrs)>0 &&
+            # check that the kings travel squares are empty
+            reduce(&, Bool[clear_for_castling(b, s) for s in kings_travel_sqrs]) &&
+            # check that the rook's travel squares are empty
+            reduce(&, Bool[clear_for_castling(b, s) for s in rooks_travel_sqrs]) &&
+            # check that king's traversal squares are not attacked
+            reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
+                push!(moves, Move(my_color, KING, square(b.game_kings_starting_column,r), square(C,r), castling=castling_type )  )
+        end
+    end # castling moves
+
+
+
+
+
+    if(no_checking_for_pins==false)
+        # PINNED pieces
+        # check for pieces pinned to the king
+        #   and remove any moves by them
+        # PLAN: find king's unique square
+        #       find any enemy queens,rooks,bishops on same file/columm/diagonal as king
+        #       check if there is only an interposing mycolor piece
+        #       remove any moves by that piece away from that file/columm/diagonal
+        # OR, (implemented)
+        #       simply run the ply, make each move, and if the enemy response allows king capture,
+        #       remove it from the list
+        prior_castling_rights = b.castling_rights
+        prior_last_move_pawn_double_push = b.last_move_pawn_double_push
+        illegal_moves = []
+        for move in moves
+            make_move!(b,move)
+            kings_new_square = b.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
+            if move.piece_moving==KING
+                kings_new_square = move.sqr_dest
+            end
+            #println("Checking $(m) for pins against KING on $(square_name(kings_new_square))")
+            reply_moves = generate_moves(b, no_checking_for_pins=true)
+            unmake_move!(b, move, prior_castling_rights, prior_last_move_pawn_double_push)
+            for reply_move in reply_moves
+                #@show reply_move
+                if reply_move.sqr_dest == kings_new_square
+                    #println(" filtering illegal mv  $(algebraic_format(m))")
+                    push!(illegal_moves, move)
+                    break
+                end
+            end
+        end
+        filter!(mv -> mv ∉ illegal_moves, moves)
+    end
+
+
+    # order moves by biggest captures first
+    moves = sort(moves, by=move->move.piece_taken, rev=true)
+
+    # TODO: generate_moves() order moves so that a capture of last moved piece is first
+
+    moves
+end
+
 "Generate all moves that result in a capture (used in quiescence searching)"
-function generate_captures(b::Board)
-    moves = generate_moves(b, only_attacking_moves=true)
+function generate_captures_original(board::Board)
+    moves = generate_moves(board, only_attacking_moves=true)
+    filter!(m->m.piece_taken!=NONE,moves)
+    moves
+end
+
+"Generate all moves that result in a capture (used in quiescence searching)"
+function generate_captures(board::Board)
+    moves = generate_moves(board, no_checking_for_pins=true)
     filter!(m->m.piece_taken!=NONE,moves)
     moves
 end
@@ -559,10 +839,27 @@ function make_move!(b::Board, m::Move)
 end
 
 "Return true if side to move's king is in check"
+function is_king_in_check_original(b::Board)
+    # generate enemies attacking moves
+    b.side_to_move = opposite_color(b.side_to_move)
+    moves = generate_moves(b, checking_for_pins=false)
+    b.side_to_move = opposite_color(b.side_to_move)
+
+    # check if any enemy piece can capture the king
+    kings_square = b.kings & (b.side_to_move==WHITE ? b.white_pieces : b.black_pieces)
+    for m in moves
+        if m.sqr_dest == kings_square
+            return true  # king taken!
+        end
+    end
+    return false
+end
+
+"Return true if side to move's king is in check"
 function is_king_in_check(b::Board)
     # generate enemies attacking moves
     b.side_to_move = opposite_color(b.side_to_move)
-    moves = generate_moves(b, only_attacking_moves=true)
+    moves = generate_moves(b)
     b.side_to_move = opposite_color(b.side_to_move)
 
     # check if any enemy piece can capture the king
