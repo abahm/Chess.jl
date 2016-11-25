@@ -28,8 +28,7 @@ end
 const UNBLOCKED = UInt8(0)
 const BLOCKED = UInt8(1)
 const CAPTURE = UInt8(2)
-"Called only by generate_moves to check if move can be added to list"
-@inline function add_move!(moves::Array{Move,1}, b::Board,
+@inline function add_move!(b::Board,
                            my_color::UInt8, my_piece::UInt8,
                            src_sqr::UInt64, dest_sqr::UInt64;
                            promotion_to::UInt8=NONE,
@@ -47,52 +46,73 @@ const CAPTURE = UInt8(2)
     end
 
     # move is a capturing move
+    move = b.game_movelist.moves[b.game_movelist.ply_n][b.game_movelist.move_n]
     if o!=NONE
-        m = Move(my_color, my_piece, src_sqr, dest_sqr, piece_taken=piece_type_on_sqr(b,dest_sqr), promotion_to=promotion_to)
-        push!(moves, m)
+        if my_color == b.side_to_move
+            b.game_movelist.move_n += 1
+        else  # put the move on the attacking moves list from the opponent
+            move = b.game_movelist.attacking_moves[b.game_movelist.attack_move_n]
+            b.game_movelist.attack_move_n += 1
+        end
+        move.color_moving = my_color
+        move.piece_moving = my_piece
+        move.sqr_src = src_sqr
+        move.sqr_dest = dest_sqr
+        move.piece_taken = piece_type_on_sqr(b,dest_sqr)
+        move.promotion_to = promotion_to
         return BLOCKED
     end
 
     # move to an empty square
-    m = Move(my_color, my_piece, src_sqr, dest_sqr, promotion_to=promotion_to, sqr_ep=en_passant_sqr)
-    push!(moves, m)
+    if my_color == b.side_to_move
+        b.game_movelist.move_n += 1
+    else  # put the move on the attacking moves list from the opponent
+        move = b.game_movelist.attacking_moves[b.game_movelist.attack_move_n]
+        b.game_movelist.attack_move_n += 1
+    end
+    move.color_moving = my_color
+    move.piece_moving = my_piece
+    move.sqr_src = src_sqr
+    move.sqr_dest = dest_sqr
+    move.promotion_to = promotion_to
+    move.sqr_ep = en_passant_sqr
 
     return UNBLOCKED
 end
 
-@inline function add_king_moves!(moves, sqr, b, my_color)
+@inline function add_king_moves!(sqr, b, my_color)
     new_sqr = (sqr>>9) & ~FILE_H
-    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+    add_move!(b, my_color, KING, sqr, new_sqr)
 
     new_sqr = (sqr>>8)
-    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+    add_move!(b, my_color, KING, sqr, new_sqr)
 
     new_sqr = (sqr>>7) & ~FILE_A
-    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+    add_move!(b, my_color, KING, sqr, new_sqr)
 
     new_sqr = (sqr>>1) & ~FILE_H
-    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+    add_move!(b, my_color, KING, sqr, new_sqr)
 
     new_sqr = (sqr<<1) & ~FILE_A
-    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+    add_move!(b, my_color, KING, sqr, new_sqr)
 
     new_sqr = (sqr<<7) & ~FILE_H
-    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+    add_move!(b, my_color, KING, sqr, new_sqr)
 
     new_sqr = (sqr<<8)
-    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+    add_move!(b, my_color, KING, sqr, new_sqr)
 
     new_sqr = (sqr<<9) & ~FILE_A
-    add_move!(moves, b, my_color, KING, sqr, new_sqr)
+    add_move!(b, my_color, KING, sqr, new_sqr)
 end
 
-@inline function add_rook_moves!(moves, sqr, b, my_color, my_piece)
+@inline function add_rook_moves!(sqr, b, my_color, my_piece)
     for i in 1:7
         new_sqr = sqr>>i
         if new_sqr & FILE_H > 0
             break
         end
-        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+        if add_move!(b, my_color, my_piece, sqr, new_sqr) == BLOCKED
             break
         end
     end
@@ -101,31 +121,31 @@ end
         if new_sqr & FILE_A > 0
             break
         end
-        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+        if add_move!(b, my_color, my_piece, sqr, new_sqr) == BLOCKED
             break
         end
     end
     for i in 1:7
         new_sqr = sqr>>(i*8)
-        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+        if add_move!(b, my_color, my_piece, sqr, new_sqr) == BLOCKED
             break
         end
     end
     for i in 1:7
         new_sqr = sqr<<(i*8)
-        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+        if add_move!(b, my_color, my_piece, sqr, new_sqr) == BLOCKED
             break
         end
     end
 end
 
-@inline function add_bishop_moves!(moves, sqr, b, my_color, my_piece)
+@inline function add_bishop_moves!(sqr, b, my_color, my_piece)
     for i in 1:7
         new_sqr = sqr>>(i*9)
         if new_sqr & FILE_H > 0
             break
         end
-        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+        if add_move!(b, my_color, my_piece, sqr, new_sqr) == BLOCKED
             break
         end
     end
@@ -134,7 +154,7 @@ end
         if new_sqr & FILE_A > 0
             break
         end
-        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+        if add_move!(b, my_color, my_piece, sqr, new_sqr) == BLOCKED
             break
         end
     end
@@ -143,7 +163,7 @@ end
         if new_sqr & FILE_H > 0
             break
         end
-        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+        if add_move!(b, my_color, my_piece, sqr, new_sqr) == BLOCKED
             break
         end
     end
@@ -152,272 +172,28 @@ end
         if new_sqr & FILE_A > 0
             break
         end
-        if add_move!(moves, b, my_color, my_piece, sqr, new_sqr) == BLOCKED
+        if add_move!(b, my_color, my_piece, sqr, new_sqr) == BLOCKED
             break
         end
     end
 end
 
-@inline function add_knight_moves!(moves, sqr, b, my_color)
-    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_A)>>17)
-    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_AB)>>10)
-    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_AB)<<6)
-    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_A)<<15)
+@inline function add_knight_moves!(sqr, b, my_color)
+    add_move!(b, my_color, KNIGHT, sqr, (sqr & ~FILE_A)>>17)
+    add_move!(b, my_color, KNIGHT, sqr, (sqr & ~FILE_AB)>>10)
+    add_move!(b, my_color, KNIGHT, sqr, (sqr & ~FILE_AB)<<6)
+    add_move!(b, my_color, KNIGHT, sqr, (sqr & ~FILE_A)<<15)
 
-    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_H)>>15)
-    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_GH)<<10)
-    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_GH)>>6)
-    add_move!(moves, b, my_color, KNIGHT, sqr, (sqr & ~FILE_H)<<17)
-end
-
-"Generate all legal moves on the board, optionally only attacking moves (no castling)"
-function generate_moves_original(b::Board; only_attacking_moves=false)
-    my_color = b.side_to_move
-    enemy_color = opposite_color(my_color)
-    moves = Move[]
-
-    attacking_moves = Move[]
-    attacked_squares = UInt64[]
-    if !only_attacking_moves
-        b.side_to_move = enemy_color
-        attacking_moves = generate_moves(b, only_attacking_moves=true)
-        b.side_to_move = my_color
-        attacked_squares = [m.sqr_dest for m in attacking_moves]
-    end
-
-    # is king in check?
-    kings_square = b.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
-    if kings_square == UInt64(0)
-        #warn("$(COLOR_NAMES[my_color]) king missing from board.")
-        # king can be missing due to quiescence search...
-        return moves # empty list
-    end
-    king_in_check = kings_square ∈ attacked_squares
-
-    for square_index in 1:64
-        sqr = UInt64(1) << (square_index-1)
-
-        moving_pieces_color = piece_color_on_sqr(b,sqr)
-        if moving_pieces_color==NONE || moving_pieces_color==enemy_color
-            continue
-        end
-
-        # note: ÷ gives integer quotient, a.k.a. div()
-        row = (square_index-1)÷8 + 1
-
-        # kings moves
-        king = sqr & b.kings
-        if king > 0
-            add_king_moves!(moves, sqr, b, my_color)
-
-            # castling kingside (allows for chess960 castling too)
-            if !king_in_check && !only_attacking_moves
-                kings_travel_sqrs = []
-                rooks_travel_sqrs = []
-
-                #  first figure out what squares the pieces move through
-                castling_type = (my_color == WHITE ? CASTLING_RIGHTS_WHITE_KINGSIDE : CASTLING_RIGHTS_BLACK_KINGSIDE)
-                if b.castling_rights & castling_type > 0
-                    r = (my_color == WHITE ? 1 : 8)
-                    # to accomodate chess960, we check the games setup
-                    c1 = min(b.game_kings_starting_column, G)
-                    c2 = max(b.game_kings_starting_column, G)
-                    rng = c1:c2
-                    kings_travel_sqrs = UInt64[square(c,r) for c in rng]
-                    # remove the kings own square from travel path
-                    filter!(e->e∉square(b.game_kings_starting_column,r),kings_travel_sqrs)
-
-                    c1 = min(b.game_king_rook_starting_column, F)
-                    c2 = max(b.game_king_rook_starting_column, F)
-                    rng = c1:c2
-                    rooks_travel_sqrs = UInt64[square(c,r) for c in rng]
-                    # remove the rooks own square from travel path
-                    filter!(e->e∉square(b.game_king_rook_starting_column,r),rooks_travel_sqrs)
-                end
-
-                if length(kings_travel_sqrs)>0 &&
-                    # check that the king's travel squares are empty
-                    reduce(&, Bool[clear_for_castling(b, s) for s in kings_travel_sqrs]) &&
-                    # check that the rook's travel squares are empty
-                    reduce(&, Bool[clear_for_castling(b, s) for s in rooks_travel_sqrs]) &&
-                    # check that king's traversal squares are not attacked
-                    reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
-                        push!(moves, Move(my_color, KING, sqr, square(G,r), castling=castling_type) )
-                end
-
-                kings_travel_sqrs = []  # must now reset this array!
-
-                # castling queenside (allows for chess960 castling too)
-                castling_type = (my_color == WHITE ? CASTLING_RIGHTS_WHITE_QUEENSIDE : CASTLING_RIGHTS_BLACK_QUEENSIDE)
-                if b.castling_rights & castling_type > 0
-                    r = (my_color == WHITE ? 1 : 8)
-                    # to accomodate chess960, we check the games setup
-                    c1 = min(b.game_kings_starting_column, C)
-                    c2 = max(b.game_kings_starting_column, C)
-                    rng = c1:c2
-                    kings_travel_sqrs = UInt64[square(c,r) for c in rng]
-                    # remove the kings own square from travel path
-                    filter!(e->e∉square(b.game_kings_starting_column,r),kings_travel_sqrs)
-
-                    c1 = min(b.game_queen_rook_starting_column, D)
-                    c2 = max(b.game_queen_rook_starting_column, D)
-                    rng = c1:c2
-                    rooks_travel_sqrs = UInt64[square(c,r) for c in rng]
-                    # remove the rooks own square from travel path
-                    filter!(e->e∉square(b.game_queen_rook_starting_column,r),rooks_travel_sqrs)
-                end
-
-                if length(kings_travel_sqrs)>0 &&
-                    # check that the kings travel squares are empty
-                    reduce(&, Bool[clear_for_castling(b, s) for s in kings_travel_sqrs]) &&
-                    # check that the rook's travel squares are empty
-                    reduce(&, Bool[clear_for_castling(b, s) for s in rooks_travel_sqrs]) &&
-                    # check that king's traversal squares are not attacked
-                    reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
-                        push!(moves, Move(my_color, KING, sqr, square(C,r), castling=castling_type )  )
-                end
-            end # castling moves
-        end # king
-
-        # rook moves
-        queen = sqr & b.queens
-        rook = sqr & b.rooks
-        my_piece = queen > 0 ? QUEEN : ROOK
-        if rook > 0 || queen > 0
-            add_rook_moves!(moves, sqr, b, my_color, my_piece)
-        end
-
-        # bishop moves
-        bishop = sqr & b.bishops
-        my_piece = queen > 0 ? QUEEN : BISHOP
-        if bishop > 0 || queen > 0
-            add_bishop_moves!(moves, sqr, b, my_color, my_piece)
-        end
-
-        # knight moves
-        knight = sqr & b.knights
-        if knight > 0
-            add_knight_moves!(moves, sqr, b, my_color)
-        end
-
-        # pawn moves
-        pawn = sqr & b.pawns
-        my_piece = PAWN
-        if pawn > 0
-            ONE_SQUARE_FORWARD = 8
-            TWO_SQUARE_FORWARD = 16
-            TAKE_LEFT = 7
-            TAKE_RIGHT = 9
-            START_RANK = 2
-            LAST_RANK = 7
-            bitshift_direction = <<
-            if my_color==BLACK
-                TAKE_LEFT = 9
-                TAKE_RIGHT = 7
-                START_RANK = 7
-                LAST_RANK = 2
-                bitshift_direction = >>
-            end
-            new_sqr = bitshift_direction(sqr, ONE_SQUARE_FORWARD)
-            if piece_color_on_sqr(b, new_sqr) == NONE  && !only_attacking_moves
-                if row == LAST_RANK
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=BISHOP)
-                else
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
-                end
-                if row == START_RANK
-                    new_sqr = bitshift_direction(sqr, TWO_SQUARE_FORWARD)
-                    if piece_color_on_sqr(b, new_sqr) == NONE
-                        add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
-                    end
-                end
-            end
-            new_sqr = bitshift_direction(sqr, TAKE_LEFT) & ~FILE_H
-            if piece_color_on_sqr(b, new_sqr) == enemy_color || only_attacking_moves
-                if row == LAST_RANK
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=BISHOP)
-                else
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
-                end
-            end
-            # en passant
-            if b.last_move_pawn_double_push > 0 &&
-                new_sqr == bitshift_direction(b.last_move_pawn_double_push, ONE_SQUARE_FORWARD) &&
-                !only_attacking_moves
-                add_move!(moves, b, my_color, PAWN, sqr, new_sqr, en_passant_sqr=b.last_move_pawn_double_push)
-            end
-            new_sqr = bitshift_direction(sqr, TAKE_RIGHT) & ~FILE_A
-            if piece_color_on_sqr(b, new_sqr) == enemy_color || only_attacking_moves
-                if row == LAST_RANK
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=BISHOP)
-                else
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
-                end
-            end
-            # en passant
-            if b.last_move_pawn_double_push > 0 &&
-                new_sqr == bitshift_direction(b.last_move_pawn_double_push, ONE_SQUARE_FORWARD) &&
-                !only_attacking_moves
-                add_move!(moves, b, my_color, PAWN, sqr, new_sqr, en_passant_sqr=b.last_move_pawn_double_push)
-            end
-        end  #  if pawn > 0
-    end # for square_index in 1:64
-
-    if !only_attacking_moves
-        # PINNED pieces
-        # check for pieces pinned to the king
-        #   and remove any moves by them
-        # PLAN: find king's unique square
-        #       find any enemy queens,rooks,bishops on same file/columm/diagonal as king
-        #       check if there is only an interposing mycolor piece
-        #       remove any moves by that piece away from that file/columm/diagonal
-        # OR,
-        #       simply run the ply, make each move, and if the enemy response allows king capture,
-        #       remove it from the list
-        prior_castling_rights = b.castling_rights
-        prior_last_move_pawn_double_push = b.last_move_pawn_double_push
-        illegal_moves = []
-        for move in moves
-            make_move!(b,move)
-            kings_new_square = b.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
-            if move.piece_moving==KING
-                kings_new_square = move.sqr_dest
-            end
-            #println("Checking $(m) for pins against KING on $(square_name(kings_new_square))")
-            reply_moves = generate_moves(b, only_attacking_moves=true)
-            unmake_move!(b, move, prior_castling_rights, prior_last_move_pawn_double_push)
-            for reply_move in reply_moves
-                #@show reply_move
-                if reply_move.sqr_dest == kings_new_square
-                    #println(" filtering illegal mv  $(algebraic_format(m))")
-                    push!(illegal_moves, move)
-                    break
-                end
-            end
-        end
-        filter!(mv -> mv ∉ illegal_moves, moves)
-    end
-
-    # order moves by biggest captures first
-    moves = sort(moves, by=move->move.piece_taken, rev=true)
-
-    # TODO: generate_moves() order moves so that a capture of last moved piece is first
-
-    moves
+    add_move!(b, my_color, KNIGHT, sqr, (sqr & ~FILE_H)>>15)
+    add_move!(b, my_color, KNIGHT, sqr, (sqr & ~FILE_GH)<<10)
+    add_move!(b, my_color, KNIGHT, sqr, (sqr & ~FILE_GH)>>6)
+    add_move!(b, my_color, KNIGHT, sqr, (sqr & ~FILE_H)<<17)
 end
 
 "Generate all legal moves on the board"
 function generate_moves(b::Board; no_checking_for_pins=false)
-    moves = Move[]
+    b.game_movelist.move_n = 1
+    b.game_movelist.attack_move_n = 1
 
     # create a list of moves by all pieces (both black and white)
     for square_index in 1:64
@@ -441,7 +217,7 @@ function generate_moves(b::Board; no_checking_for_pins=false)
         # kings moves
         king = sqr & b.kings
         if king > 0
-            add_king_moves!(moves, sqr, b, my_color)
+            add_king_moves!(sqr, b, my_color)
         end # king
 
         # rook moves
@@ -449,20 +225,20 @@ function generate_moves(b::Board; no_checking_for_pins=false)
         rook = sqr & b.rooks
         my_piece = queen > 0 ? QUEEN : ROOK
         if rook > 0 || queen > 0
-            add_rook_moves!(moves, sqr, b, my_color, my_piece)
+            add_rook_moves!(sqr, b, my_color, my_piece)
         end
 
         # bishop moves
         bishop = sqr & b.bishops
         my_piece = queen > 0 ? QUEEN : BISHOP
         if bishop > 0 || queen > 0
-            add_bishop_moves!(moves, sqr, b, my_color, my_piece)
+            add_bishop_moves!(sqr, b, my_color, my_piece)
         end
 
         # knight moves
         knight = sqr & b.knights
         if knight > 0
-            add_knight_moves!(moves, sqr, b, my_color)
+            add_knight_moves!(sqr, b, my_color)
         end
 
         # pawn moves
@@ -488,17 +264,17 @@ function generate_moves(b::Board; no_checking_for_pins=false)
             new_sqr = bitshift_direction(sqr, ONE_SQUARE_FORWARD)
             if piece_color_on_sqr(b, new_sqr) == NONE
                 if row == LAST_RANK
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=BISHOP)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr, promotion_to=BISHOP)
                 else
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr)
                 end
                 if row == START_RANK
                     new_sqr = bitshift_direction(sqr, TWO_SQUARE_FORWARD)
                     if piece_color_on_sqr(b, new_sqr) == NONE
-                        add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
+                        add_move!(b, my_color, PAWN, sqr, new_sqr)
                     end
                 end
             end
@@ -508,23 +284,23 @@ function generate_moves(b::Board; no_checking_for_pins=false)
             new_sqr_piece_color = piece_color_on_sqr(b, new_sqr)
             if new_sqr_piece_color == enemy_color
                 if row == LAST_RANK
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=BISHOP)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr, promotion_to=BISHOP)
                 else
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr)
                 end
             end
             # add enemy pawn threat to list for "attacking" moves
             if new_sqr_piece_color == NONE && moving_pieces_color != b.side_to_move
-                add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
+                add_move!(b, my_color, PAWN, sqr, new_sqr)
             end
             # en passant to left
             if b.last_move_pawn_double_push > 0 &&
                 new_sqr == bitshift_direction(b.last_move_pawn_double_push, ONE_SQUARE_FORWARD) &&
                 !no_checking_for_pins
-                add_move!(moves, b, my_color, PAWN, sqr, new_sqr, en_passant_sqr=b.last_move_pawn_double_push)
+                add_move!(b, my_color, PAWN, sqr, new_sqr, en_passant_sqr=b.last_move_pawn_double_push)
             end
 
             # take a piece forward right
@@ -532,32 +308,29 @@ function generate_moves(b::Board; no_checking_for_pins=false)
             new_sqr_piece_color = piece_color_on_sqr(b, new_sqr)
             if new_sqr_piece_color == enemy_color
                 if row == LAST_RANK
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr, promotion_to=BISHOP)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr, promotion_to=QUEEN)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr, promotion_to=KNIGHT)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr, promotion_to=ROOK)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr, promotion_to=BISHOP)
                 else
-                    add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
+                    add_move!(b, my_color, PAWN, sqr, new_sqr)
                 end
             end
             # add enemy pawn threat to list for "attacking" moves
             if new_sqr_piece_color == NONE && moving_pieces_color != b.side_to_move
-                add_move!(moves, b, my_color, PAWN, sqr, new_sqr)
+                add_move!(b, my_color, PAWN, sqr, new_sqr)
             end
             # en passant to right
             if b.last_move_pawn_double_push > 0 &&
                 new_sqr == bitshift_direction(b.last_move_pawn_double_push, ONE_SQUARE_FORWARD) &&
                 !no_checking_for_pins
-                add_move!(moves, b, my_color, PAWN, sqr, new_sqr, en_passant_sqr=b.last_move_pawn_double_push)
+                add_move!(b, my_color, PAWN, sqr, new_sqr, en_passant_sqr=b.last_move_pawn_double_push)
             end
         end  #  if pawn > 0
     end # for square_index in 1:64
 
     my_color = b.side_to_move
     enemy_color = opposite_color(my_color)
-    attacking_moves = filter(m->m.color_moving==enemy_color, moves)
-    attacked_squares = [m.sqr_dest for m in attacking_moves]
-    moves = filter!(m->m.color_moving==my_color, moves)
 
     # is king in check?
     kings_square = b.kings & (b.side_to_move==WHITE ? b.white_pieces : b.black_pieces)
@@ -566,9 +339,15 @@ function generate_moves(b::Board; no_checking_for_pins=false)
         # king can be missing due to quiescence search...
         return moves # empty list
     end
-    king_in_check = kings_square ∈ attacked_squares
 
+    #@show b.game_movelist.moves[b.game_movelist.ply_n]
+    #@show b.game_movelist.attacking_moves
+    #@show b.game_movelist.move_n
 
+    for i in 1:b.game_movelist.attack_move_n
+        b.game_movelist.attacked_squares[i] = b.game_movelist.attacking_moves[i].sqr_dest
+    end
+    king_in_check = kings_square ∈ b.game_movelist.attacked_squares
 
     # castling kingside (allows for chess960 castling too)
     if !king_in_check
@@ -603,7 +382,7 @@ function generate_moves(b::Board; no_checking_for_pins=false)
             reduce(&, Bool[clear_for_castling(b, s) for s in rooks_travel_sqrs]) &&
             # check that king's traversal squares are not attacked
             reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
-                push!(moves, Move(my_color, KING, square(b.game_kings_starting_column,r), square(G,r), castling=castling_type) )
+                push!(moves,Move(my_color, KING, square(b.game_kings_starting_column,r), square(G,r), castling=castling_type) )
         end
 
         kings_travel_sqrs = []  # must now reset this array!
@@ -636,7 +415,7 @@ function generate_moves(b::Board; no_checking_for_pins=false)
             reduce(&, Bool[clear_for_castling(b, s) for s in rooks_travel_sqrs]) &&
             # check that king's traversal squares are not attacked
             reduce(&, Bool[s ∉ attacked_squares for s in kings_travel_sqrs])
-                push!(moves, Move(my_color, KING, square(b.game_kings_starting_column,r), square(C,r), castling=castling_type )  )
+                push!(moves,Move(my_color, KING, square(b.game_kings_starting_column,r), square(C,r), castling=castling_type )  )
         end
     end # castling moves
 
@@ -658,14 +437,18 @@ function generate_moves(b::Board; no_checking_for_pins=false)
         prior_castling_rights = b.castling_rights
         prior_last_move_pawn_double_push = b.last_move_pawn_double_push
         illegal_moves = []
-        for move in moves
+        for move in b.game_movelist.moves[b.game_movelist.ply_n]
             make_move!(b,move)
             kings_new_square = b.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
             if move.piece_moving==KING
                 kings_new_square = move.sqr_dest
             end
             #println("Checking $(m) for pins against KING on $(square_name(kings_new_square))")
+            tmp = b.game_movelist.move_n
+            b.game_movelist.ply_n += 1
             reply_moves = generate_moves(b, no_checking_for_pins=true)
+            b.game_movelist.ply_n -= 1
+            b.game_movelist.move_n = tmp
             unmake_move!(b, move, prior_castling_rights, prior_last_move_pawn_double_push)
             for reply_move in reply_moves
                 #@show reply_move
@@ -676,23 +459,16 @@ function generate_moves(b::Board; no_checking_for_pins=false)
                 end
             end
         end
-        filter!(mv -> mv ∉ illegal_moves, moves)
+        filter!(mv -> mv ∉ illegal_moves, b.game_movelist.moves[b.game_movelist.ply_n])
     end
 
 
     # order moves by biggest captures first
-    moves = sort(moves, by=move->move.piece_taken, rev=true)
+    sort!(b.game_movelist.moves[b.game_movelist.ply_n], by=move->move.piece_taken, rev=true)
 
     # TODO: generate_moves() order moves so that a capture of last moved piece is first
 
-    moves
-end
-
-"Generate all moves that result in a capture (used in quiescence searching)"
-function generate_captures_original(board::Board)
-    moves = generate_moves(board, only_attacking_moves=true)
-    filter!(m->m.piece_taken!=NONE,moves)
-    moves
+    b.game_movelist.moves[b.game_movelist.ply_n]
 end
 
 "Generate all moves that result in a capture (used in quiescence searching)"
