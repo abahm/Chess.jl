@@ -19,7 +19,15 @@ type Move
     #   bits 9-10: castling
 end
 
-Move(color::UInt8, piece_moving::UInt8, src::UInt64, dest::UInt64; piece_taken::UInt8=UInt8(0), castling::UInt8=UInt8(0), sqr_ep::UInt64=UInt64(0), promotion_to::UInt8=UInt8(0)) = Move(color, piece_moving, src, dest, piece_taken, castling, sqr_ep, promotion_to)
+Move(color::UInt8, piece_moving::UInt8, src::UInt64, dest::UInt64;
+     piece_taken::UInt8=UInt8(0),
+     castling::UInt8=UInt8(0),
+     sqr_ep::UInt64=UInt64(0),
+     promotion_to::UInt8=UInt8(0)) = Move(color, piece_moving, src, dest,
+                                          piece_taken,
+                                          castling,
+                                          sqr_ep, 
+                                          promotion_to)
 
 function Base.show(io::IO, move::Move)
     print(io, algebraic_format(move))

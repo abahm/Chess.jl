@@ -12,7 +12,7 @@ module Chess
 #  4 ... at big picture level, experiment with larger ideas easily
 #
 
-const version = "Julia Chess, v0.51"
+const version = "Julia Chess, v0.52"
 const author = "Alan Bahm"
 
 
@@ -22,9 +22,11 @@ include("util.jl")
 include("move.jl")
 include("movelist.jl")
 include("board.jl")
+#include("position_original.jl")
 include("position.jl")
 include("evaluation.jl")
 include("search.jl")
+#include("play_original.jl")
 include("play.jl")
 include("protocols/xboard.jl")
 include("protocols/uci.jl")
@@ -38,6 +40,46 @@ elseif "-xboard" ∈ ARGS
 elseif "-repl" ∈ ARGS
     repl_loop()
 end
+
+
+
+
+println()
+b = new_game()
+printbd(b)
+moves = generate_moves(b)
+for (i,move) in enumerate(moves)
+    if i > number_of_moves(b.game_movelist)
+        break
+    end
+    println(algebraic_format(move))
+end
+
+println()
+node_count = perft(b, 3)
+println(node_count)
+println()
+
+
+move = moves[1]
+
+prior_castling_rights = b.castling_rights
+prior_last_move_pawn_double_push = b.last_move_pawn_double_push
+make_move!(b, move)
+#node_count = perft(b, levels)
+unmake_move!(b, move, prior_castling_rights,
+                      prior_last_move_pawn_double_push)
+
+
+printbd(b)
+moves = generate_moves(b)
+for (i,move) in enumerate(moves)
+    if i > number_of_moves(b.game_movelist)
+        break
+    end
+    println(algebraic_format(move))
+end
+
 
 
 

@@ -4,21 +4,16 @@
 "Count number of legal moves to a given depth"
 function perft(board::Board, levels::Integer)
     moves = generate_moves(board)
-    if levels <= 1
-        return number_of_moves(board.game_movelist)
+    if levels<=1
+        return length(moves)
     end
 
     node_count = 0
     prior_castling_rights = board.castling_rights
     prior_last_move_pawn_double_push = board.last_move_pawn_double_push
-    for (i,m) in enumerate(moves)
-        if i > number_of_moves(board.game_movelist)
-            break
-        end
+    for m in moves
         make_move!(board, m)
-        increment_ply_count(b.game_movelist)
         node_count = node_count + perft(board, levels-1)
-        decrement_ply_count(b.game_movelist)
         unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
     end
     return node_count
@@ -57,7 +52,7 @@ function random_play_both_sides(seed, show_move_history, delay=0.001, board=new_
         if length(moves)==0
             break
         end
-        r = rand(1:(number_of_moves(board.game_movelist)))
+        r = rand(1:length(moves))
         m = moves[r]
 
         make_move!(board, m)
@@ -106,10 +101,8 @@ function repl_loop()
         end
 
         if startswith(movestr,"list") || movestr=="l\n"
+            moves = generate_moves(board)
             for (i,m) in enumerate(moves)
-                if i > number_of_moves(board.game_movelist)
-                    break
-                end
                 print(algebraic_format(m) * " ")
                 if i%10==0
                     println()
@@ -164,16 +157,11 @@ function repl_loop()
         if startswith(movestr, "divide")
             levels = parse(split(movestr)[2]) - 1
             total_count = 0
-            for (i,move) in enumerate(moves)
-                if i > number_of_moves(board.game_movelist)
-                    break
-                end
+            for move in moves
                 prior_castling_rights = board.castling_rights
                 prior_last_move_pawn_double_push = board.last_move_pawn_double_push
                 make_move!(board, move)
-                increment_ply_count(b.game_movelist)
                 node_count = perft(board, levels)
-                decrement_ply_count(b.game_movelist)
                 unmake_move!(board, move, prior_castling_rights,
                                           prior_last_move_pawn_double_push)
 
@@ -181,7 +169,7 @@ function repl_loop()
                 println("$(long_algebraic_format(move)) $node_count")
             end
             println("Nodes: $total_count")
-            println("Moves: $(number_of_moves(board.game_movelist))")
+            println("Moves: $(length(moves))")
             println("Press <enter> to continue...")
             readline()
             continue
