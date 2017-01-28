@@ -43,44 +43,54 @@ end
 
 
 
+function test_refactor()
+    println()
+    b = new_game()
+    #b = read_fen("k7/8/8/8/8/8/8/K7 w - - 0 1")
+    println()
+    printbd(b)
+    @show b.game_movelist
 
-println()
-b = new_game()
-printbd(b)
-moves = generate_moves(b)
-for (i,move) in enumerate(moves)
-    if i > number_of_moves(b.game_movelist)
-        break
+    moves = generate_moves(b)
+    #@show b.game_movelist
+
+    node_count = perft(b, 4)
+    println(node_count)
+    println()
+    printbd(b)
+
+    #=
+    moves = generate_moves(b)
+    for (i,move) in enumerate(moves)
+        if i > number_of_moves(b.game_movelist)
+            break
+        end
+        println(algebraic_format(move))
     end
-    println(algebraic_format(move))
+
+
+    move = moves[1]
+
+    prior_castling_rights = b.castling_rights
+    prior_last_move_pawn_double_push = b.last_move_pawn_double_push
+    make_move!(b, move)
+    #node_count = perft(b, levels)
+    unmake_move!(b, move, prior_castling_rights,
+                          prior_last_move_pawn_double_push)
+
+
+    printbd(b)
+    moves = generate_moves(b)
+    for (i,move) in enumerate(moves)
+        if i > number_of_moves(b.game_movelist)
+            break
+        end
+        println(algebraic_format(move))
+    end
+    =#
 end
 
-println()
-node_count = perft(b, 3)
-println(node_count)
-println()
-
-
-move = moves[1]
-
-prior_castling_rights = b.castling_rights
-prior_last_move_pawn_double_push = b.last_move_pawn_double_push
-make_move!(b, move)
-#node_count = perft(b, levels)
-unmake_move!(b, move, prior_castling_rights,
-                      prior_last_move_pawn_double_push)
-
-
-printbd(b)
-moves = generate_moves(b)
-for (i,move) in enumerate(moves)
-    if i > number_of_moves(b.game_movelist)
-        break
-    end
-    println(algebraic_format(move))
-end
-
-
+test_refactor()
 
 
 export WHITE, BLACK

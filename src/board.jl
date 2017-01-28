@@ -240,7 +240,7 @@ end
 function printbd(b::Board, io=STDOUT, moves=nothing)
     println("$(version)")
     println("FEN $(write_fen(b))")
-    println("   hash $(compute_hash(b))")
+    println("   hash $(hex(compute_hash(b)))")
     print(io, "       ")
     if b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE > 0
         print(io, CHARACTER_CASTLING_AVAILABLE)

@@ -24,7 +24,7 @@ end
 
 "Returns string name of square e4"
 function square_name(sqr::UInt64)
-    file_character = ' '
+    file_character = '.'
     if sqr & FILE_A > 0  file_character = 'a'  end
     if sqr & FILE_B > 0  file_character = 'b'  end
     if sqr & FILE_C > 0  file_character = 'c'  end
@@ -33,7 +33,7 @@ function square_name(sqr::UInt64)
     if sqr & FILE_F > 0  file_character = 'f'  end
     if sqr & FILE_G > 0  file_character = 'g'  end
     if sqr & FILE_H > 0  file_character = 'h'  end
-    rank_character = ' '
+    rank_character = '.'
     if sqr & RANK_1 > 0  rank_character = '1'  end
     if sqr & RANK_2 > 0  rank_character = '2'  end
     if sqr & RANK_3 > 0  rank_character = '3'  end
@@ -76,6 +76,8 @@ function character_for_piece(color, piece)
     s
 end
 
+
+# TODO: replace this with the built in - count_ones()
 "Counts the ones in a bit representation of the UInt64"
 @inline function Base.count(bit_mask::UInt64)
     count(i->i=='1', bits(bit_mask))

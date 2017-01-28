@@ -456,18 +456,21 @@ function generate_moves(b::Board; no_checking_for_pins=false)
         prior_castling_rights = b.castling_rights
         prior_last_move_pawn_double_push = b.last_move_pawn_double_push
         illegal_moves = []
-        for move in get_list_of_moves(b.game_movelist)
+        for (i,move) in enumerate(get_list_of_moves(b.game_movelist))
+            if i > number_of_moves(b.game_movelist)
+                break
+            end
             make_move!(b,move)
             kings_new_square = b.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
             if move.piece_moving==KING
                 kings_new_square = move.sqr_dest
             end
             #println("Checking $(m) for pins against KING on $(square_name(kings_new_square))")
-            tmp = b.game_movelist.move_n  # TODO: not sure how this works anymore, is it needed?
+            #tmp = b.game_movelist.move_n  # TODO: not sure how this works anymore, is it needed?
             increment_ply_count(b.game_movelist)
             reply_moves = generate_moves(b, no_checking_for_pins=true)
             decrement_ply_count(b.game_movelist)
-            b.game_movelist.move_n = tmp  # TODO: not sure how this works anymore, is it needed?
+            #b.game_movelist.move_n = tmp  # TODO: not sure how this works anymore, is it needed?
             unmake_move!(b, move, prior_castling_rights, prior_last_move_pawn_double_push)
             for reply_move in reply_moves
                 #@show reply_move
@@ -514,6 +517,11 @@ end
 
 "Make move on board"
 function make_move!(b::Board, m::Move)
+    #println("make_move($m)")
+
+    assert(m.sqr_src > 0)
+    assert(m.sqr_dest > 0)
+
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest
     sqr_move = sqr_src | sqr_dest
@@ -670,6 +678,11 @@ end
 
 "Undo move on board"
 function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_pawn_double_push)
+    #println("unmake_move($m)")
+
+    assert(m.sqr_src > 0)
+    assert(m.sqr_dest > 0)
+
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest
     color = m.color_moving

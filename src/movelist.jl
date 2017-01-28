@@ -1,14 +1,14 @@
 # movelist.jl
 
 const MAX_MOVES_PER_TURN = 100
-const MAX_PLYS_CAN_LOOK = 100
+const MAX_PLYS_CAN_LOOK = 10
 
 # TODO: create my own iteration structure to make the transition easier
 type Movelist
     # TODO: make this a solid matrix, not a ragged list, for efficiency
     moves::Array{Array{Move, 1}, 1}  # (MAX_PLYS_CAN_LOOK x MAX_MOVES_PER_TURN)
     ply_n::UInt8                     # index i into moves
-    move_n::Array{UInt8, 1}          # ith index j into moves
+    ply_move_index::Array{UInt8, 1}          # ith index j into moves
 
     attacking_moves::Array{Move, 1}
     attacked_squares::Array{UInt64, 1}
@@ -16,7 +16,7 @@ type Movelist
 end
 
 function Movelist()
-    move_n = zeros(UInt8, MAX_PLYS_CAN_LOOK)
+    ply_move_index = zeros(UInt8, MAX_PLYS_CAN_LOOK)
     moves = Array{Move, 1}[]
     for i in 1:MAX_PLYS_CAN_LOOK
         push!(moves, Array(Move, MAX_MOVES_PER_TURN))
@@ -31,30 +31,77 @@ function Movelist()
     end
     attacked_squares = zeros(UInt64, MAX_MOVES_PER_TURN)
     attack_move_n = UInt8(1)
-    Movelist(moves, ply_n, move_n, attacking_moves, attacked_squares, attack_move_n)
+    Movelist(moves, ply_n, ply_move_index, attacking_moves, attacked_squares, attack_move_n)
 end
+
+
+ml.ply_n = 0x05
+ml.ply_move_index = UInt8[0x15,0x15,0x17,0x1e,0x1a,0x00,0x00,0x00,0x00,0x00]
+length(ml.moves[ml.ply_n]) = 100
+
+ml.ply_n = 0x04
+ml.ply_move_index = UInt8[0x15,0x15,0x16,0x18,0x25,0x00,0x00,0x00,0x00,0x00]
+length(ml.moves[ml.ply_n]) = 23
+
+
+
+function Base.show(io::IO, ml::Movelist)
+    print(io, "\n")
+
+    print(io, "MAX_MOVES_PER_TURN $MAX_MOVES_PER_TURN\n")
+    print(io, "MAX_PLYS_CAN_LOOK  $MAX_PLYS_CAN_LOOK\n")
+    print(io, "\n")
+
+    print(io, "ply_n $(ml.ply_n) \n")
+    print(io, "ply_move_index $(ml.ply_move_index) \n")
+    print(io, "\n")
+
+    #print(io, "moves[] []\n")
+    for j in 1:MAX_PLYS_CAN_LOOK
+        print(io, "$(ml.moves[j]) \n")
+    end
+
+    print(io, "\n")
+
+    print(io, "attacking_moves $(ml.attacking_moves) \n")
+    print(io, "attacked_squares $(square_name(ml.attacked_squares)) \n")
+    print(io, "attack_move_n $(ml.attack_move_n) \n")
+
+    print(io, "\n")
+
+end
+
+
 
 # TODO: inline these for efficiency
 function number_of_moves(ml::Movelist)
-    ml.move_n[ml.ply_n] - 1
+    nmoves = ml.ply_move_index[ml.ply_n] - 1
 end
 
 function increment_move_count(ml::Movelist)
-    ml.move_n[ml.ply_n] += 1
+    ml.ply_move_index[ml.ply_n] += 1
 end
 function reset_move_count(ml::Movelist)
-    ml.move_n[ml.ply_n] = 1
+    ml.ply_move_index[ml.ply_n] = 1
     ml.attack_move_n = 1
 end
 function increment_ply_count(ml::Movelist)
     ml.ply_n += 1
+    reset_move_count(ml)
 end
 function decrement_ply_count(ml::Movelist)
     ml.ply_n -= 1
 end
 
 function get_move(ml::Movelist)
-    move = ml.moves[ml.ply_n][ml.move_n[ml.ply_n]]
+    if ml.ply_move_index[ml.ply_n] > length(ml.moves[ml.ply_n])
+        @show ml.ply_n
+        @show ml.ply_move_index
+        @show length(ml.moves[ml.ply_n])
+        println()
+    end
+
+    move = ml.moves[ml.ply_n][ml.ply_move_index[ml.ply_n]]
 end
 function get_attacking_move(ml::Movelist)
     move = ml.attacking_moves[ml.attack_move_n]
