@@ -3,18 +3,10 @@
 
 "Count number of legal moves to a given depth"
 function perft(board::Board, levels::Integer)
-    #println("=======================")
-    #println(" perft(b,$levels)")
-
     moves = generate_moves(board)
     if levels <= 1
         return number_of_moves(board.game_movelist)
     end
-
-    #println()
-    #println()
-    #printbd(board)
-    #@show board.game_movelist
 
     node_count = 0
     prior_castling_rights = board.castling_rights
@@ -24,9 +16,6 @@ function perft(board::Board, levels::Integer)
             break
         end
 
-        #println("-----------------------")
-        #println("   trying move ... $m")
-
         make_move!(board, m)
         increment_ply_count(board.game_movelist)
         node_count = node_count + perft(board, levels-1)
@@ -34,8 +23,6 @@ function perft(board::Board, levels::Integer)
         decrement_ply_count(board.game_movelist)
         unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
     end
-    #println()
-    #println()
 
     return node_count
 end

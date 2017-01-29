@@ -1,7 +1,7 @@
 # movelist.jl
 
 const MAX_MOVES_PER_TURN = 100
-const MAX_PLYS_CAN_LOOK = 10
+const MAX_PLYS_CAN_LOOK = 100
 
 # TODO: create my own iteration structure to make the transition easier
 type Movelist
@@ -107,8 +107,6 @@ function get_list_of_moves(ml::Movelist)
 end
 
 function filter_illegal_moves_out!(ml::Movelist, illegal_moves)
-    # TODO fix this so it doesn't remove nodes
-    #filter!(mv -> mv ∉ illegal_moves, ml.moves[ml.ply_n])
     for i in 1:MAX_MOVES_PER_TURN
         if ml.moves[ml.ply_n][i] ∈ illegal_moves
             for j in i+1:MAX_MOVES_PER_TURN

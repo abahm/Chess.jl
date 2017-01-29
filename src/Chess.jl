@@ -25,6 +25,7 @@ include("board.jl")
 #include("position_original.jl")
 include("position.jl")
 include("evaluation.jl")
+#include("search_original.jl")
 include("search.jl")
 #include("play_original.jl")
 include("play.jl")
@@ -90,7 +91,7 @@ function test_refactor()
     =#
 end
 
-test_refactor()
+#test_refactor()
 
 
 export WHITE, BLACK
