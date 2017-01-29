@@ -110,11 +110,14 @@ function quiescence(board, α, β)
         α = score
     end
 
-    moves = generate_captures(board)
+    moves = generate_moves(board, no_checking_for_pins=true)
     prior_castling_rights = board.castling_rights
     prior_last_move_pawn_double_push = board.last_move_pawn_double_push
     for (i,m) in enumerate(moves)
         if i > number_of_moves(board.game_movelist)
+            break
+        end
+        if m.piece_taken == NONE  # consider only captures
             break
         end
 

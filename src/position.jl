@@ -341,7 +341,7 @@ function generate_moves(b::Board; no_checking_for_pins=false)
     if kings_square == UInt64(0)
         #warn("$(COLOR_NAMES[my_color]) king missing from board.")
         # king can be missing due to quiescence search...
-        return moves # empty list
+        return get_list_of_moves(b.game_movelist) # empty list
     end
 
     record_attacked_squares(b.game_movelist)
@@ -391,7 +391,7 @@ function generate_moves(b::Board; no_checking_for_pins=false)
                 move.castling = castling_type
                 move.sqr_ep = UInt64(0)
                 move.promotion_to = NONE
-                b.game_movelist.move_n += 1
+                increment_move_count(b.game_movelist)
         end
 
         kings_travel_sqrs = []  # must now reset this array!
@@ -434,7 +434,7 @@ function generate_moves(b::Board; no_checking_for_pins=false)
                 move.castling = castling_type
                 move.sqr_ep = UInt64(0)
                 move.promotion_to = NONE
-                b.game_movelist.move_n += 1
+                increment_move_count(b.game_movelist)
         end
     end # castling moves
 
@@ -466,11 +466,9 @@ function generate_moves(b::Board; no_checking_for_pins=false)
                 kings_new_square = move.sqr_dest
             end
             #println("Checking $(m) for pins against KING on $(square_name(kings_new_square))")
-            #tmp = b.game_movelist.move_n  # TODO: not sure how this works anymore, is it needed?
             increment_ply_count(b.game_movelist)
             reply_moves = generate_moves(b, no_checking_for_pins=true)
             decrement_ply_count(b.game_movelist)
-            #b.game_movelist.move_n = tmp  # TODO: not sure how this works anymore, is it needed?
             unmake_move!(b, move, prior_castling_rights, prior_last_move_pawn_double_push)
             for reply_move in reply_moves
                 #@show reply_move
@@ -492,13 +490,6 @@ function generate_moves(b::Board; no_checking_for_pins=false)
 
     # TODO: caller must now iterate correctly over movelist structure
     get_list_of_moves(b.game_movelist)
-end
-
-"Generate all moves that result in a capture (used in quiescence searching)"
-function generate_captures(board::Board)
-    moves = generate_moves(board, no_checking_for_pins=true)
-    filter!(m->m.piece_taken!=NONE,moves)
-    moves
 end
 
 "Make move described by string, e2e4, on board"
