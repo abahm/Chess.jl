@@ -7,8 +7,8 @@ const MAX_PLYS_CAN_LOOK = 10
 type Movelist
     # TODO: make this a solid matrix, not a ragged list, for efficiency
     moves::Array{Array{Move, 1}, 1}  # (MAX_PLYS_CAN_LOOK x MAX_MOVES_PER_TURN)
-    ply_n::UInt8                     # index i into moves
-    ply_move_index::Array{UInt8, 1}          # ith index j into moves
+    ply_n::Int8                      # index i into moves
+    ply_move_index::Array{Int8, 1}   # ith index j into moves
 
     attacking_moves::Array{Move, 1}
     attacked_squares::Array{UInt64, 1}
@@ -33,15 +33,6 @@ function Movelist()
     attack_move_n = UInt8(1)
     Movelist(moves, ply_n, ply_move_index, attacking_moves, attacked_squares, attack_move_n)
 end
-
-
-ml.ply_n = 0x05
-ml.ply_move_index = UInt8[0x15,0x15,0x17,0x1e,0x1a,0x00,0x00,0x00,0x00,0x00]
-length(ml.moves[ml.ply_n]) = 100
-
-ml.ply_n = 0x04
-ml.ply_move_index = UInt8[0x15,0x15,0x16,0x18,0x25,0x00,0x00,0x00,0x00,0x00]
-length(ml.moves[ml.ply_n]) = 23
 
 
 
@@ -99,6 +90,7 @@ function get_move(ml::Movelist)
         @show ml.ply_move_index
         @show length(ml.moves[ml.ply_n])
         println()
+        @show ml
     end
 
     move = ml.moves[ml.ply_n][ml.ply_move_index[ml.ply_n]]
@@ -115,7 +107,16 @@ function get_list_of_moves(ml::Movelist)
 end
 
 function filter_illegal_moves_out!(ml::Movelist, illegal_moves)
-    filter!(mv -> mv ∉ illegal_moves, ml.moves[ml.ply_n])
+    # TODO fix this so it doesn't remove nodes
+    #filter!(mv -> mv ∉ illegal_moves, ml.moves[ml.ply_n])
+    for i in 1:MAX_MOVES_PER_TURN
+        if ml.moves[ml.ply_n][i] ∈ illegal_moves
+            for j in i+1:MAX_MOVES_PER_TURN
+                ml.moves[ml.ply_n][j-1] = ml.moves[ml.ply_n][j]
+            end
+            ml.ply_move_index[ml.ply_n] -= 1
+        end
+    end
 end
 
 function sort_moves_by_captures!(ml::Movelist)

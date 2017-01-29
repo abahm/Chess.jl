@@ -49,7 +49,7 @@ function test_refactor()
     #b = read_fen("k7/8/8/8/8/8/8/K7 w - - 0 1")
     println()
     printbd(b)
-    @show b.game_movelist
+    #@show b.game_movelist
 
     moves = generate_moves(b)
     #@show b.game_movelist
