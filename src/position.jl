@@ -425,7 +425,7 @@ function generate_moves(b::Board; no_checking_for_pins=false)
             # check that king's traversal squares are not attacked
             reduce(&, Bool[!is_square_attacked(b.game_movelist, s) for s in kings_travel_sqrs])
                 # add kingside castling move
-                move = get_move(b.movelist)
+                move = get_move(b.game_movelist)
                 move.color_moving = my_color
                 move.piece_moving = KING
                 move.sqr_src = square(b.game_kings_starting_column,r)
@@ -673,6 +673,8 @@ function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_
 
     assert(m.sqr_src > 0)
     assert(m.sqr_dest > 0)
+    assert(piece_type_on_sqr(b, m.sqr_src)==NONE)
+    assert(piece_color_on_sqr(b, m.sqr_src)==NONE)
 
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest

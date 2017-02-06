@@ -64,5 +64,5 @@ function test_no_castling_in_check()
     assert(number_of_moves(b.game_movelist)==4)
 end
 
-test_perft_runs()
 test_no_castling_in_check()
+test_perft_runs()

@@ -26,8 +26,18 @@ Move(color::UInt8, piece_moving::UInt8, src::UInt64, dest::UInt64;
      promotion_to::UInt8=UInt8(0)) = Move(color, piece_moving, src, dest,
                                           piece_taken,
                                           castling,
-                                          sqr_ep, 
+                                          sqr_ep,
                                           promotion_to)
+
+import Base.deepcopy
+Base.deepcopy(m::Move) = Move(m.color_moving,
+                              m.piece_moving,
+                              m.sqr_src,
+                              m.sqr_dest,
+                              m.piece_taken,
+                              m.castling,
+                              m.sqr_ep,
+                              m.promotion_to)
 
 function Base.show(io::IO, move::Move)
     print(io, algebraic_format(move))

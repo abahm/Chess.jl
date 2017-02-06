@@ -76,7 +76,6 @@ function character_for_piece(color, piece)
     s
 end
 
-
 # TODO: replace this with the built in - count_ones()
 "Counts the ones in a bit representation of the UInt64"
 @inline function Base.count(bit_mask::UInt64)

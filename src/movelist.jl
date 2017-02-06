@@ -84,6 +84,24 @@ function decrement_ply_count(ml::Movelist)
     ml.ply_n -= 1
 end
 
+function reset_movelist(ml::Movelist)
+    ml.ply_move_index = zeros(UInt8, MAX_PLYS_CAN_LOOK)
+    ml.moves = Array{Move, 1}[]
+    for i in 1:MAX_PLYS_CAN_LOOK
+        push!(ml.moves, Array(Move, MAX_MOVES_PER_TURN))
+        for j in 1:MAX_MOVES_PER_TURN
+            ml.moves[i][j] = Move(NONE, NONE, UInt64(0), UInt64(0))
+        end
+    end
+    ml.ply_n = UInt8(1)
+    ml.attacking_moves = Array(Move, MAX_MOVES_PER_TURN)
+    for j in 1:MAX_MOVES_PER_TURN
+        ml.attacking_moves[j] = Move(NONE, NONE, UInt64(0), UInt64(0))
+    end
+    ml.attacked_squares = zeros(UInt64, MAX_MOVES_PER_TURN)
+    ml.attack_move_n = UInt8(1)
+end
+
 function get_move(ml::Movelist)
     if ml.ply_move_index[ml.ply_n] > length(ml.moves[ml.ply_n])
         @show ml.ply_n
@@ -106,15 +124,22 @@ function get_list_of_moves(ml::Movelist)
     ml.moves[ml.ply_n]
 end
 
+# TODO: make illegal_moves type specified for clarity   illegal_moves::Array{Move,1}
 function filter_illegal_moves_out!(ml::Movelist, illegal_moves)
-    for i in 1:MAX_MOVES_PER_TURN
+    #@show ml
+    #@show illegal_moves
+    i = 1
+    while i <= MAX_MOVES_PER_TURN
         if ml.moves[ml.ply_n][i] ∈ illegal_moves
             for j in i+1:MAX_MOVES_PER_TURN
                 ml.moves[ml.ply_n][j-1] = ml.moves[ml.ply_n][j]
             end
             ml.ply_move_index[ml.ply_n] -= 1
+            #i = i - 1
         end
+        i = i + 1
     end
+    #@show ml
 end
 
 function sort_moves_by_captures!(ml::Movelist)

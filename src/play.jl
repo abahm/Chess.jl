@@ -84,7 +84,9 @@ function repl_loop()
     game_history = []  # store (move, board) every turn
     moves =
     while true
-        clear_repl()
+        #clear_repl()
+        println()
+        println()
         println()
         printbd(board)
         print_move_history(Move[mb[1] for mb in game_history])
@@ -126,7 +128,8 @@ function repl_loop()
 
         if startswith(movestr,"go") || movestr=="\n"
             score, move, pv, number_nodes_visited, time_s = best_move_search(board, depth)
-            push!(game_history, (move, deepcopy(board)))
+            push!(game_history, (deepcopy(move), deepcopy(board)))
+            @show "pushed", move
             make_move!(board, move)
             continue
         end
@@ -135,7 +138,10 @@ function repl_loop()
             if length(game_history)==0
                 continue
             end
+
             move, prior_board = pop!(game_history)
+            @show "popped", move
+            readline()
 
             # we could just copy the prior_board, but we use this to test unmake_move!()
             unmake_move!(board, move, prior_board.castling_rights,
@@ -174,9 +180,9 @@ function repl_loop()
                 prior_castling_rights = board.castling_rights
                 prior_last_move_pawn_double_push = board.last_move_pawn_double_push
                 make_move!(board, move)
-                increment_ply_count(b.game_movelist)
+                increment_ply_count(board.game_movelist)
                 node_count = perft(board, levels)
-                decrement_ply_count(b.game_movelist)
+                decrement_ply_count(board.game_movelist)
                 unmake_move!(board, move, prior_castling_rights,
                                           prior_last_move_pawn_double_push)
 
@@ -243,12 +249,27 @@ function repl_loop()
             continue
         end
 
-        push!(game_history, (users_move,deepcopy(board)))
+        push!(game_history, (deepcopy(users_move), deepcopy(board)))
+        @show "pushed", users_move
         make_move!(board, users_move)
+        #reset_movelist(board.game_movelist)
+
 
         # make answering move
-        score, move, pv, nodes, time_s = best_move_search(board, depth)
-        push!(game_history, (move,deepcopy(board)))
+        #score, move, pv, nodes, time_s = best_move_search(board, depth)
+moves = generate_moves(board)
+if length(moves)==0
+    if is_king_in_check(board)
+        println("Checkmate!")
+    else
+        println("Drawn game.")
+    end
+    break
+end
+move = moves[rand(1:number_of_moves(board.game_movelist))]
+
+        push!(game_history, (deepcopy(move), deepcopy(board)))
+        @show "pushed", move
         make_move!(board, move)
     end   # while true
 end

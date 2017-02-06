@@ -47,48 +47,21 @@ end
 function test_refactor()
     println()
     b = new_game()
-    #b = read_fen("k7/8/8/8/8/8/8/K7 w - - 0 1")
-    println()
-    printbd(b)
-    #@show b.game_movelist
-
-    moves = generate_moves(b)
-    #@show b.game_movelist
-
-    node_count = perft(b, 4)
-    println(node_count)
     println()
     printbd(b)
 
-    #=
     moves = generate_moves(b)
-    for (i,move) in enumerate(moves)
-        if i > number_of_moves(b.game_movelist)
-            break
-        end
-        println(algebraic_format(move))
-    end
-
-
-    move = moves[1]
+    move = moves[2]
+    println(move)
 
     prior_castling_rights = b.castling_rights
     prior_last_move_pawn_double_push = b.last_move_pawn_double_push
     make_move!(b, move)
-    #node_count = perft(b, levels)
+
     unmake_move!(b, move, prior_castling_rights,
                           prior_last_move_pawn_double_push)
 
-
     printbd(b)
-    moves = generate_moves(b)
-    for (i,move) in enumerate(moves)
-        if i > number_of_moves(b.game_movelist)
-            break
-        end
-        println(algebraic_format(move))
-    end
-    =#
 end
 
 #test_refactor()
@@ -100,6 +73,7 @@ export A, B, C, D, E, F, G, H
 export square
 export CASTLING_RIGHTS_ALL
 export generate_moves, make_move!, unmake_move!
+export number_of_moves
 export Move, algebraic_format, long_algebraic_format
 export Board, set!, new_game, new_game_960
 export read_fen, write_fen, printbd
