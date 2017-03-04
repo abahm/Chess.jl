@@ -28,7 +28,6 @@ function best_move_alphabeta(board, depth)
         end
 
         make_move!(board, m)
-        increment_ply_count(board.game_movelist)
         score, pv, nnodes = αβSearch(board, -Inf, Inf, depth)
         score *= -1
         if best_value < score
@@ -38,8 +37,6 @@ function best_move_alphabeta(board, depth)
         end
         number_nodes_visited += nnodes
 
-        reset_move_count(board.game_movelist)
-        decrement_ply_count(board.game_movelist)
         unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
     end
 
@@ -65,13 +62,12 @@ function αβSearch(board, α, β, depth)
         end
 
         make_move!(board, m)
-        increment_ply_count(board.game_movelist)
         score, pv, nnodes = αβSearch( board, -β, -α, depth - 1 )
         score *= -1
-        reset_move_count(board.game_movelist)
-        decrement_ply_count(board.game_movelist)
         unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
-        # So at all times when searching, you know that you can do no worse than alpha, and that you can do no better than beta.  Anything outside of these bounds you can ignore.
+        # so at all times when searching, you know that you can do no worse than alpha,
+        #  and that you can do no better than beta.
+        # Anything outside of these bounds you can ignore.
         if( score >= β )
             # beta is the worst-case scenario for the opponent.
             # If the search finds something that returns a score of beta or better, it's too good, so the side to move is not going to get a chance to use this strategy.
@@ -122,10 +118,7 @@ function quiescence(board, α, β)
         end
 
         make_move!(board, m)
-        increment_ply_count(board.game_movelist)
         score = -quiescence(board, -β, -α)
-        reset_move_count(board.game_movelist)
-        decrement_ply_count(board.game_movelist)
         unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
         if score >= β
             return β

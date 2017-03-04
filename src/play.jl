@@ -17,10 +17,7 @@ function perft(board::Board, levels::Integer)
         end
 
         make_move!(board, m)
-        increment_ply_count(board.game_movelist)
         node_count = node_count + perft(board, levels-1)
-        reset_move_count(board.game_movelist)
-        decrement_ply_count(board.game_movelist)
         unmake_move!(board, m, prior_castling_rights, prior_last_move_pawn_double_push)
     end
 
@@ -57,14 +54,14 @@ function random_play_both_sides(seed, show_move_history, delay=0.001, board=new_
         end
 
         moves = generate_moves(board)
-        if length(moves)==0
+        if number_of_moves(board.game_movelist) < 1
             break
         end
-        r = rand(1:(number_of_moves(board.game_movelist)))
+        r = rand(1:number_of_moves(board.game_movelist))
         m = moves[r]
 
         make_move!(board, m)
-        push!(moves_made, m)
+        push!(moves_made, deepcopy(m))
 
         sleep(delay)
     end
@@ -82,18 +79,15 @@ function repl_loop()
     depth = 3          # default, user can change
     board = new_game() # default, user can load FEN, or choose chess960
     game_history = []  # store (move, board) every turn
-    moves =
     while true
-        #clear_repl()
-        println()
-        println()
+        clear_repl()
         println()
         printbd(board)
         print_move_history(Move[mb[1] for mb in game_history])
         println()
 
         moves = generate_moves(board)
-        if length(moves)==0
+        if number_of_moves(board.game_movelist)==0
             if is_king_in_check(board)
                 println("Checkmate!")
             else
@@ -129,7 +123,6 @@ function repl_loop()
         if startswith(movestr,"go") || movestr=="\n"
             score, move, pv, number_nodes_visited, time_s = best_move_search(board, depth)
             push!(game_history, (deepcopy(move), deepcopy(board)))
-            @show "pushed", move
             make_move!(board, move)
             continue
         end
@@ -140,8 +133,6 @@ function repl_loop()
             end
 
             move, prior_board = pop!(game_history)
-            @show "popped", move
-            readline()
 
             # we could just copy the prior_board, but we use this to test unmake_move!()
             unmake_move!(board, move, prior_board.castling_rights,
@@ -180,9 +171,7 @@ function repl_loop()
                 prior_castling_rights = board.castling_rights
                 prior_last_move_pawn_double_push = board.last_move_pawn_double_push
                 make_move!(board, move)
-                increment_ply_count(board.game_movelist)
                 node_count = perft(board, levels)
-                decrement_ply_count(board.game_movelist)
                 unmake_move!(board, move, prior_castling_rights,
                                           prior_last_move_pawn_double_push)
 
@@ -250,13 +239,11 @@ function repl_loop()
         end
 
         push!(game_history, (deepcopy(users_move), deepcopy(board)))
-        @show "pushed", users_move
         make_move!(board, users_move)
-        #reset_movelist(board.game_movelist)
-
 
         # make answering move
-        #score, move, pv, nodes, time_s = best_move_search(board, depth)
+        score, move, pv, nodes, time_s = best_move_search(board, depth)
+#=
 moves = generate_moves(board)
 if length(moves)==0
     if is_king_in_check(board)
@@ -267,9 +254,8 @@ if length(moves)==0
     break
 end
 move = moves[rand(1:number_of_moves(board.game_movelist))]
-
+=#
         push!(game_history, (deepcopy(move), deepcopy(board)))
-        @show "pushed", move
         make_move!(board, move)
     end   # while true
 end

@@ -17,6 +17,7 @@ end
 
 function Movelist()
     ply_move_index = zeros(UInt8, MAX_PLYS_CAN_LOOK)
+    ply_move_index[1] = 1
     moves = Array{Move, 1}[]
     for i in 1:MAX_PLYS_CAN_LOOK
         push!(moves, Array(Move, MAX_MOVES_PER_TURN))
@@ -72,16 +73,21 @@ end
 function increment_move_count(ml::Movelist)
     ml.ply_move_index[ml.ply_n] += 1
 end
-function reset_move_count(ml::Movelist)
+function increment_ply_count(ml::Movelist)
+    ml.ply_n += 1
+
+    # reset move count
     ml.ply_move_index[ml.ply_n] = 1
     ml.attack_move_n = 1
 end
-function increment_ply_count(ml::Movelist)
-    ml.ply_n += 1
-    reset_move_count(ml)
-end
 function decrement_ply_count(ml::Movelist)
+    # reset move count
+    ml.ply_move_index[ml.ply_n] = 1
+    ml.attack_move_n = 1
+
     ml.ply_n -= 1
+
+    @assert ml.ply_n > 0
 end
 
 function reset_movelist(ml::Movelist)
@@ -103,7 +109,9 @@ function reset_movelist(ml::Movelist)
 end
 
 function get_move(ml::Movelist)
-    if ml.ply_move_index[ml.ply_n] > length(ml.moves[ml.ply_n])
+    # purely for debugging, show the
+    if ml.ply_move_index[ml.ply_n] > length(ml.moves[ml.ply_n]) ||
+        ml.ply_move_index[ml.ply_n] < 1
         @show ml.ply_n
         @show ml.ply_move_index
         @show length(ml.moves[ml.ply_n])
@@ -126,20 +134,25 @@ end
 
 # TODO: make illegal_moves type specified for clarity   illegal_moves::Array{Move,1}
 function filter_illegal_moves_out!(ml::Movelist, illegal_moves)
+    if length(illegal_moves) == 0
+        return
+    end
+
     #@show ml
-    #@show illegal_moves
+    @show illegal_moves
+
     i = 1
     while i <= MAX_MOVES_PER_TURN
         if ml.moves[ml.ply_n][i] ∈ illegal_moves
+            # copy all moves above this move down one slot
             for j in i+1:MAX_MOVES_PER_TURN
                 ml.moves[ml.ply_n][j-1] = ml.moves[ml.ply_n][j]
             end
             ml.ply_move_index[ml.ply_n] -= 1
-            #i = i - 1
+            @assert ml.ply_move_index[ml.ply_n] > 0
         end
         i = i + 1
     end
-    #@show ml
 end
 
 function sort_moves_by_captures!(ml::Movelist)

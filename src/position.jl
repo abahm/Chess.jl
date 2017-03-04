@@ -196,7 +196,6 @@ end
 
 "Generate all legal moves on the board"
 function generate_moves(b::Board; no_checking_for_pins=false)
-    reset_move_count(b.game_movelist)
     clear_attacked_squares!(b.game_movelist)
 
     # create a list of moves by all pieces (both black and white)
@@ -462,18 +461,21 @@ function generate_moves(b::Board; no_checking_for_pins=false)
             end
             make_move!(b,move)
             kings_new_square = b.kings & (my_color==WHITE ? b.white_pieces : b.black_pieces)
+
+            # TODO: this seems un-necessary
             if move.piece_moving==KING
                 kings_new_square = move.sqr_dest
             end
+
             #println("Checking $(m) for pins against KING on $(square_name(kings_new_square))")
-            increment_ply_count(b.game_movelist)
+            #increment_ply_count(b.game_movelist)
             reply_moves = generate_moves(b, no_checking_for_pins=true)
-            decrement_ply_count(b.game_movelist)
+            #decrement_ply_count(b.game_movelist)
             unmake_move!(b, move, prior_castling_rights, prior_last_move_pawn_double_push)
             for reply_move in reply_moves
                 #@show reply_move
                 if reply_move.sqr_dest == kings_new_square
-                    #println(" filtering illegal mv  $(algebraic_format(m))")
+                    #println("  move $(algebraic_format(move)) illegal because of reply $(algebraic_format(reply_move))")
                     push!(illegal_moves, move)
                     break
                 end
@@ -630,6 +632,8 @@ function make_move!(b::Board, m::Move)
 
     board_validation_checks(b)
 
+    increment_ply_count(b.game_movelist)
+
     nothing
 end
 
@@ -675,6 +679,8 @@ function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_
     assert(m.sqr_dest > 0)
     assert(piece_type_on_sqr(b, m.sqr_src)==NONE)
     assert(piece_color_on_sqr(b, m.sqr_src)==NONE)
+
+    decrement_ply_count(b.game_movelist)
 
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest
