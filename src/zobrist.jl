@@ -14,5 +14,5 @@ end
 
 @inline function update_hash(z::ZobristHash, hash::UInt64, piece::UInt8, position::UInt8)
 	# XOR looked up pre-determined random number with the input hash
-	z.hashtable[piece, position] $ hash
+	z.hashtable[piece, position] ⊻ hash
 end

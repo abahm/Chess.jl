@@ -459,12 +459,12 @@ function make_move!(b::Board, m::Move)
     end
 
     # move the moving piece (remove from src, add to dest)
-    if moving_piece == KING         b.kings = b.kings $ sqr_move
-    elseif moving_piece == QUEEN    b.queens = b.queens $ sqr_move
-    elseif moving_piece == ROOK     b.rooks = b.rooks $ sqr_move
-    elseif moving_piece == BISHOP   b.bishops = b.bishops $ sqr_move
-    elseif moving_piece == KNIGHT   b.knights = b.knights $ sqr_move
-    elseif moving_piece == PAWN     b.pawns = b.pawns $ sqr_move
+    if moving_piece == KING         b.kings = b.kings ⊻ sqr_move
+    elseif moving_piece == QUEEN    b.queens = b.queens ⊻ sqr_move
+    elseif moving_piece == ROOK     b.rooks = b.rooks ⊻ sqr_move
+    elseif moving_piece == BISHOP   b.bishops = b.bishops ⊻ sqr_move
+    elseif moving_piece == KNIGHT   b.knights = b.knights ⊻ sqr_move
+    elseif moving_piece == PAWN     b.pawns = b.pawns ⊻ sqr_move
     end
 
     # set en passant marker
@@ -476,10 +476,10 @@ function make_move!(b::Board, m::Move)
 
     # update the moving color (remove from src, add to dest)
     if (b.white_pieces & sqr_src) > 0
-        b.white_pieces = b.white_pieces $ sqr_move
+        b.white_pieces = b.white_pieces ⊻ sqr_move
     end
     if (b.black_pieces & sqr_src) > 0
-        b.black_pieces = b.black_pieces $ sqr_move
+        b.black_pieces = b.black_pieces ⊻ sqr_move
     end
 
     # en passant - remove any pawn taken by en passant

@@ -20,13 +20,13 @@ function Movelist()
     ply_move_index[1] = 1
     moves = Array{Move, 1}[]
     for i in 1:MAX_PLYS_CAN_LOOK
-        push!(moves, Array(Move, MAX_MOVES_PER_TURN))
+        push!(moves, Array{Move}(MAX_MOVES_PER_TURN))
         for j in 1:MAX_MOVES_PER_TURN
             moves[i][j] = Move(NONE, NONE, UInt64(0), UInt64(0))
         end
     end
     ply_n = UInt8(1)
-    attacking_moves = Array(Move, MAX_MOVES_PER_TURN)
+    attacking_moves = Array{Move}(MAX_MOVES_PER_TURN)
     for j in 1:MAX_MOVES_PER_TURN
         attacking_moves[j] = Move(NONE, NONE, UInt64(0), UInt64(0))
     end
