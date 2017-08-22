@@ -100,11 +100,11 @@ function repl_loop()
         print("Your move (? for help) ")
         movestr = readline()
 
-        if startswith(movestr,"quit") || movestr=="q\n"
+        if startswith(movestr,"quit") || movestr=="q"
             return
         end
 
-        if startswith(movestr,"list") || movestr=="l\n"
+        if startswith(movestr,"list") || movestr=="l"
             for (i,m) in enumerate(moves)
                 if i > number_of_moves(board.game_movelist)
                     break
@@ -120,14 +120,14 @@ function repl_loop()
             continue
         end
 
-        if startswith(movestr,"go") || movestr=="\n"
+        if startswith(movestr,"go") || movestr==""
             score, move, pv, number_nodes_visited, time_s = best_move_search(board, depth)
             push!(game_history, (deepcopy(move), deepcopy(board)))
             make_move!(board, move)
             continue
         end
 
-        if startswith(movestr,"undo") || movestr=="u\n"
+        if startswith(movestr,"undo") || movestr=="u"
             if length(game_history)==0
                 continue
             end
@@ -141,13 +141,13 @@ function repl_loop()
             continue
         end
 
-        if startswith(movestr,"new960") || movestr=="n960\n"
+        if startswith(movestr,"new960") || movestr=="n960"
             board = new_game_960()
             game_history = []
             continue
         end
 
-        if startswith(movestr,"new") || movestr=="n\n"
+        if startswith(movestr,"new") || movestr=="n"
             board = new_game()
             game_history = []
             continue
