@@ -38,7 +38,7 @@ end
 
 
 function Base.show(io::IO, ml::Movelist)
-    print(io, "\n")
+    print(io, "--------------------------------------- \n")
 
     print(io, "MAX_MOVES_PER_TURN $MAX_MOVES_PER_TURN\n")
     print(io, "MAX_PLYS_CAN_LOOK  $MAX_PLYS_CAN_LOOK\n")
@@ -49,7 +49,7 @@ function Base.show(io::IO, ml::Movelist)
     print(io, "\n")
 
     #print(io, "moves[] []\n")
-    for j in 1:MAX_PLYS_CAN_LOOK
+    for j in 1:3 # TODO set back to MAX_PLYS_CAN_LOOK
         print(io, "$(ml.moves[j]) \n")
     end
 
@@ -59,8 +59,7 @@ function Base.show(io::IO, ml::Movelist)
     print(io, "attacked_squares $(square_name(ml.attacked_squares)) \n")
     print(io, "attack_move_n $(ml.attack_move_n) \n")
 
-    print(io, "\n")
-
+    print(io, "--------------------------------------- \n")
 end
 
 
@@ -111,7 +110,8 @@ end
 function get_move(ml::Movelist)
     # purely for debugging, show the
     if ml.ply_move_index[ml.ply_n] > length(ml.moves[ml.ply_n]) ||
-        ml.ply_move_index[ml.ply_n] < 1
+        ml.ply_move_index[ml.ply_n] < 1 ||
+        ml.ply_n > length(ml.moves)
         @show ml.ply_n
         @show ml.ply_move_index
         @show length(ml.moves[ml.ply_n])
@@ -165,8 +165,11 @@ function record_attacked_squares(ml::Movelist)
     end
 end
 
-function clear_attacked_squares!(ml::Movelist)
+function clear_current_movelist!(ml::Movelist)
+    # clear_attacked_squares
     fill!(ml.attacked_squares, UInt64(0))
+    # reset current ply_move_index
+    ml.ply_move_index[ml.ply_n] = 1
 end
 
 function is_square_attacked(ml::Movelist, test_square)

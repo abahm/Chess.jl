@@ -196,7 +196,7 @@ end
 
 "Generate all legal moves on the board"
 function generate_moves(b::Board; no_checking_for_pins=false)
-    clear_attacked_squares!(b.game_movelist)
+    clear_current_movelist!(b.game_movelist)
 
     # create a list of moves by all pieces (both black and white)
     for square_index in 1:64
