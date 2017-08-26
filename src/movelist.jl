@@ -1,13 +1,13 @@
 # movelist.jl
 
 const MAX_MOVES_PER_TURN = 100
-const MAX_PLYS_CAN_LOOK = 100
+const MAX_MOVES_PER_GAME = 1000
 
 # TODO: create my own iteration structure to make the transition easier
 type Movelist
     # TODO: make this a solid matrix, not a ragged list, for efficiency
-    moves::Array{Array{Move, 1}, 1}  # (MAX_PLYS_CAN_LOOK x MAX_MOVES_PER_TURN)
-    ply_n::Int8                      # index i into moves
+    moves::Array{Array{Move, 1}, 1}  # (MAX_MOVES_PER_GAME x MAX_MOVES_PER_TURN)
+    ply_n::UInt16                      # index i into moves
     ply_move_index::Array{Int8, 1}   # ith index j into moves
 
     attacking_moves::Array{Move, 1}
@@ -16,10 +16,10 @@ type Movelist
 end
 
 function Movelist()
-    ply_move_index = zeros(UInt8, MAX_PLYS_CAN_LOOK)
+    ply_move_index = zeros(UInt8, MAX_MOVES_PER_GAME)
     ply_move_index[1] = 1
     moves = Array{Move, 1}[]
-    for i in 1:MAX_PLYS_CAN_LOOK
+    for i in 1:MAX_MOVES_PER_GAME
         push!(moves, Array{Move}(MAX_MOVES_PER_TURN))
         for j in 1:MAX_MOVES_PER_TURN
             moves[i][j] = Move(NONE, NONE, UInt64(0), UInt64(0))
@@ -38,28 +38,55 @@ end
 
 
 function Base.show(io::IO, ml::Movelist)
-    print(io, "--------------------------------------- \n")
+    print_with_color(:blue, io, "+---------+---------+---------+---------+---------+---------+---------+---------\n")
 
-    print(io, "MAX_MOVES_PER_TURN $MAX_MOVES_PER_TURN\n")
-    print(io, "MAX_PLYS_CAN_LOOK  $MAX_PLYS_CAN_LOOK\n")
-    print(io, "\n")
-
-    print(io, "ply_n $(ml.ply_n) \n")
-    print(io, "ply_move_index $(ml.ply_move_index) \n")
-    print(io, "\n")
-
-    #print(io, "moves[] []\n")
-    for j in 1:3 # TODO set back to MAX_PLYS_CAN_LOOK
-        print(io, "$(ml.moves[j]) \n")
+#=
+:normal, :default, :bold, :black, :blue, :cyan, :green, :light_black, :light_blue, :light_cyan, :light_green, :light_magenta, :light_red, :light_yellow, :magenta, :nothing, :red, :underline, :white, or :yellow
+=#
+    for j in 1:MAX_MOVES_PER_GAME
+        color = (ml.ply_n==j) ? :yellow : :gray
+        if ml.moves[j][1].piece_moving != NONE
+            print_with_color(color, io, "$j ")
+            for i in 1:MAX_MOVES_PER_TURN
+                if ml.ply_move_index[j] == i
+                    color = :red
+                end
+                if ml.moves[j][i].piece_moving != NONE
+                    print_with_color(color, io, "$(ml.moves[j][i]) ")
+                end
+            end
+            print(io, "\n")
+        end
     end
-
     print(io, "\n")
 
-    print(io, "attacking_moves $(ml.attacking_moves) \n")
-    print(io, "attacked_squares $(square_name(ml.attacked_squares)) \n")
-    print(io, "attack_move_n $(ml.attack_move_n) \n")
+    print(io, "attacking_moves \n")
+    for i in 1:MAX_MOVES_PER_TURN
+        color = (ml.attack_move_n==i) ? :yellow : :gray
+        if ml.attacking_moves[i].piece_moving != NONE
+            print_with_color(color, io, "$(ml.attacking_moves[i]) ")
+            if i%10==0
+                print(io, "\n")
+            end
+        end
+    end
+    print(io, "\n")
+    print(io, "\n")
 
-    print(io, "--------------------------------------- \n")
+    print(io, "attacked_squares \n")
+    for i in 1:length(ml.attacked_squares)
+        color = (ml.attack_move_n==i) ? :yellow : :gray
+        if ml.attacked_squares[i] != 0
+            print_with_color(color, io, "$(square_name(ml.attacked_squares[i])) ")
+            if i%20==0
+                print(io, "\n")
+            end
+        end
+    end
+    print(io, "\n")
+    print(io, "\n")
+
+    print_with_color(:blue, io, "+---------+---------+---------+---------+---------+---------+---------+---------\n")
 end
 
 
@@ -90,9 +117,9 @@ function decrement_ply_count(ml::Movelist)
 end
 
 function reset_movelist(ml::Movelist)
-    ml.ply_move_index = zeros(UInt8, MAX_PLYS_CAN_LOOK)
+    ml.ply_move_index = zeros(UInt8, MAX_MOVES_PER_GAME)
     ml.moves = Array{Move, 1}[]
-    for i in 1:MAX_PLYS_CAN_LOOK
+    for i in 1:MAX_MOVES_PER_GAME
         push!(ml.moves, Array(Move, MAX_MOVES_PER_TURN))
         for j in 1:MAX_MOVES_PER_TURN
             ml.moves[i][j] = Move(NONE, NONE, UInt64(0), UInt64(0))
@@ -137,13 +164,12 @@ function filter_illegal_moves_out!(ml::Movelist, illegal_moves)
     if length(illegal_moves) == 0
         return
     end
-
-    #@show ml
-    @show illegal_moves
-
+@show illegal_moves
     i = 1
     while i <= MAX_MOVES_PER_TURN
         if ml.moves[ml.ply_n][i] ∈ illegal_moves
+            @show i
+            @show ml.moves[ml.ply_n][i]
             # copy all moves above this move down one slot
             for j in i+1:MAX_MOVES_PER_TURN
                 ml.moves[ml.ply_n][j-1] = ml.moves[ml.ply_n][j]

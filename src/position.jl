@@ -632,7 +632,7 @@ function make_move!(b::Board, m::Move)
 
     board_validation_checks(b)
 
-    increment_ply_count(b.game_movelist)
+                                    increment_ply_count(b.game_movelist)
 
     nothing
 end

@@ -12,7 +12,7 @@ module Chess
 #  4 ... at big picture level, experiment with larger ideas easily
 #
 
-const version = "Julia Chess, v0.54"
+const version = "Julia Chess, v0.55"
 const author = "Alan Bahm"
 
 
@@ -66,6 +66,21 @@ end
 
 #test_refactor()
 
+function test_movelist()
+    b = new_game()
+
+    m = generate_moves(b)
+    println( b.game_movelist )
+
+    r = rand(1:number_of_moves(b.game_movelist))
+    make_move!(b, m[1])
+
+    println( b.game_movelist )
+    #m = generate_moves(b)
+    #println( b.game_movelist )
+end
+
+test_movelist()
 
 export WHITE, BLACK
 export KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN
