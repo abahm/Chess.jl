@@ -512,8 +512,8 @@ end
 function make_move!(b::Board, m::Move)
     #println("make_move($m)")
 
-    assert(m.sqr_src > 0)
-    assert(m.sqr_dest > 0)
+    @assert(m.sqr_src > 0)
+    @assert(m.sqr_dest > 0)
 
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest
@@ -675,10 +675,10 @@ end
 function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_pawn_double_push)
     #println("unmake_move($m)")
 
-    assert(m.sqr_src > 0)
-    assert(m.sqr_dest > 0)
-    assert(piece_type_on_sqr(b, m.sqr_src)==NONE)
-    assert(piece_color_on_sqr(b, m.sqr_src)==NONE)
+    @assert(m.sqr_src > 0)
+    @assert(m.sqr_dest > 0)
+    @assert(piece_type_on_sqr(b, m.sqr_src)==NONE)
+    @assert(piece_color_on_sqr(b, m.sqr_src)==NONE)
 
     decrement_ply_count(b.game_movelist)
 

@@ -79,5 +79,5 @@ end
 # TODO: replace this with the built in - count_ones()
 "Counts the ones in a bit representation of the UInt64"
 @inline function Base.count(bit_mask::UInt64)
-    count(i->i=='1', bits(bit_mask))
+    count(i->i=='1', bitstring(bit_mask))
 end

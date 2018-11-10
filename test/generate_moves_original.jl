@@ -32,7 +32,7 @@ function test_perft_runs()
             end
             tic()
             engine_count = perft(b, levels)
-            kilonodes_per_sec = round((engine_count/1000)/toq(), 3)
+            kilonodes_per_sec = round((engine_count/1000)/toq(); digits=3)
             print("$count\t $engine_count nodes\t $kilonodes_per_sec kN/sec\t ")
             if count!=engine_count
                 print_with_color(:red, "FAIL\n")

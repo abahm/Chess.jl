@@ -98,7 +98,7 @@ end
 
 
 function quiescence(board, α, β)
-    score = (board.side_to_move==WHITE?1:-1)*evaluate(board)
+    score = (board.side_to_move==WHITE ? 1 : -1)*evaluate(board)
     if score >= β
         return β
     end

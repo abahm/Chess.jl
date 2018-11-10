@@ -186,8 +186,8 @@ function repl_loop()
         if startswith(movestr,"analysis") || startswith(movestr,"a ") || startswith(movestr,"a\n")
             function search_and_print(ply)
                 score,move,pv,nnodes,time_s = best_move_search(board, ply)
-                #println("$ply\t$(round(nnodes/(time_s*1000),2)) kn/s")
-                print("$ply\t$(round(nnodes/(time_s*1000),2)) kn/s\t $(round(score,3))\t $(round(time_s,2))\t $nnodes\t $move\t ")
+                #println("$ply\t$(round(nnodes/(time_s*1000); digits=2)) kn/s")
+                print("$ply\t$(round(nnodes/(time_s*1000); digits=2)) kn/s\t $(round(score; digits=3))\t $(round(time_s; digits=2))\t $nnodes\t $move\t ")
             end
             d = depth
             if length(split(movestr))>1

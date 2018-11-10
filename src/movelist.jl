@@ -4,7 +4,7 @@ const MAX_MOVES_PER_TURN = 100
 const MAX_MOVES_PER_GAME = 1000
 
 # TODO: create my own iteration structure to make the transition easier
-type Movelist
+mutable struct Movelist
     # TODO: make this a solid matrix, not a ragged list, for efficiency
     moves::Array{Array{Move, 1}, 1}  # (MAX_MOVES_PER_GAME x MAX_MOVES_PER_TURN)
     ply_n::UInt16                      # index i into moves
@@ -20,13 +20,13 @@ function Movelist()
     ply_move_index[1] = 1
     moves = Array{Move, 1}[]
     for i in 1:MAX_MOVES_PER_GAME
-        push!(moves, Array{Move}(MAX_MOVES_PER_TURN))
+        push!(moves, Array{Move}(undef, MAX_MOVES_PER_TURN))
         for j in 1:MAX_MOVES_PER_TURN
             moves[i][j] = Move(NONE, NONE, UInt64(0), UInt64(0))
         end
     end
     ply_n = UInt8(1)
-    attacking_moves = Array{Move}(MAX_MOVES_PER_TURN)
+    attacking_moves = Array{Move}(undef, MAX_MOVES_PER_TURN)
     for j in 1:MAX_MOVES_PER_TURN
         attacking_moves[j] = Move(NONE, NONE, UInt64(0), UInt64(0))
     end
@@ -38,7 +38,7 @@ end
 
 
 function Base.show(io::IO, ml::Movelist)
-    print_with_color(:blue, io, "+---------+---------+---------+---------+---------+---------+---------+---------\n")
+    printstyled(io, "+---------+---------+---------+---------+---------+---------+---------+---------\n"; color=:blue)
 
 #=
 :normal, :default, :bold, :black, :blue, :cyan, :green, :light_black, :light_blue, :light_cyan, :light_green, :light_magenta, :light_red, :light_yellow, :magenta, :nothing, :red, :underline, :white, or :yellow
@@ -46,13 +46,13 @@ function Base.show(io::IO, ml::Movelist)
     for j in 1:MAX_MOVES_PER_GAME
         color = (ml.ply_n==j) ? :yellow : :gray
         if ml.moves[j][1].piece_moving != NONE
-            print_with_color(color, io, "$j ")
+            printstyled(io, "$j "; color=color)
             for i in 1:MAX_MOVES_PER_TURN
                 if ml.ply_move_index[j] == i
                     color = :red
                 end
                 if ml.moves[j][i].piece_moving != NONE
-                    print_with_color(color, io, "$(ml.moves[j][i]) ")
+                    printstyled(io, "$(ml.moves[j][i]) "; color=color)
                 end
             end
             print(io, "\n")
@@ -64,7 +64,7 @@ function Base.show(io::IO, ml::Movelist)
     for i in 1:MAX_MOVES_PER_TURN
         color = (ml.attack_move_n==i) ? :yellow : :gray
         if ml.attacking_moves[i].piece_moving != NONE
-            print_with_color(color, io, "$(ml.attacking_moves[i]) ")
+            printstyled(io, "$(ml.attacking_moves[i]) "; color=color)
             if i%10==0
                 print(io, "\n")
             end
@@ -77,7 +77,7 @@ function Base.show(io::IO, ml::Movelist)
     for i in 1:length(ml.attacked_squares)
         color = (ml.attack_move_n==i) ? :yellow : :gray
         if ml.attacked_squares[i] != 0
-            print_with_color(color, io, "$(square_name(ml.attacked_squares[i])) ")
+            printstyled(io, "$(square_name(ml.attacked_squares[i])) "; color=color)
             if i%20==0
                 print(io, "\n")
             end
@@ -86,7 +86,7 @@ function Base.show(io::IO, ml::Movelist)
     print(io, "\n")
     print(io, "\n")
 
-    print_with_color(:blue, io, "+---------+---------+---------+---------+---------+---------+---------+---------\n")
+    printstyled(io, "+---------+---------+---------+---------+---------+---------+---------+---------\n"; color=:blue)
 end
 
 

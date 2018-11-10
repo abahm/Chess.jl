@@ -42,7 +42,7 @@ end
 "Called only by best_move_negamax (no quiescence evaluation)"
 function negaMax(board, depth)
     if depth == 0
-        return (board.side_to_move==WHITE?1:-1)*evaluate(board), Move[], 1
+        return (board.side_to_move==WHITE ? 1 : -1)*evaluate(board), Move[], 1
     end
     max_value = -Inf
     max_move = nothing
@@ -154,7 +154,7 @@ end
 
 
 function quiescence(board, α, β)
-    score = (board.side_to_move==WHITE?1:-1)*evaluate(board)
+    score = (board.side_to_move==WHITE ? 1 : -1)*evaluate(board)
     if score >= β
         return β
     end

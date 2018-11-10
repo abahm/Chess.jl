@@ -1,6 +1,8 @@
 # zobrist.jl
 
-immutable ZobristHash
+using Random
+
+struct ZobristHash
 	hashtable::Array{UInt64,2}  # 12 pieces by 64 squares
 	# TODO: add castling_rights
 	# TODO: add enpassant option

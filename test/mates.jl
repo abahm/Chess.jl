@@ -18,7 +18,7 @@ function mates()
         printbd(b)
         score, move, pv, number_nodes_visited, time_s = best_move_search(b, ply)
         println("$score $(algebraic_format(move)) $(algebraic_format(pv))")
-        println("$ply   $number_nodes_visited nodes  $(round(time_s,4)) s  $(round(number_nodes_visited/(time_s*1000),2)) kn/s")
+        println("$ply   $number_nodes_visited nodes  $(round(time_s; digits=4)) s  $(round(number_nodes_visited/(time_s*1000); digits=2)) kn/s")
         @assert long_algebraic_format(move)==winning_move "Should be $winning_move"
         println()
     end

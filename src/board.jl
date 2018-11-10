@@ -1,7 +1,7 @@
 # board.jl
 
 
-type Board   # known as "dense Board representation"
+mutable struct Board   # known as "dense Board representation"
     white_pieces::UInt64
     black_pieces::UInt64
     kings::UInt64
@@ -46,7 +46,7 @@ function Base.show(io::IO, b::Board)
     for r in 8:-1:1
         for c in 1:8
             sqr = square(c,r)
-            print(io, "$((b.white_pieces & sqr)>0?1:0) ")
+            print(io, "$((b.white_pieces & sqr)>0 ? 1 : 0) ")
         end
         print(io, "\n")
     end
@@ -56,7 +56,7 @@ function Base.show(io::IO, b::Board)
     for r in 8:-1:1
         for c in 1:8
             sqr = square(c,r)
-            print(io, "$((b.black_pieces & sqr)>0?1:0) ")
+            print(io, "$((b.black_pieces & sqr)>0 ? 1 : 0) ")
         end
         print(io, "\n")
     end
@@ -66,7 +66,7 @@ function Base.show(io::IO, b::Board)
     for r in 8:-1:1
         for c in 1:8
             sqr = square(c,r)
-            print(io, "$((b.kings & sqr)>0?1:0) ")
+            print(io, "$((b.kings & sqr)>0 ? 1 : 0) ")
         end
         print(io, "\n")
     end
@@ -76,7 +76,7 @@ function Base.show(io::IO, b::Board)
     for r in 8:-1:1
         for c in 1:8
             sqr = square(c,r)
-            print(io, "$((b.queens & sqr)>0?1:0) ")
+            print(io, "$((b.queens & sqr)>0 ? 1 : 0) ")
         end
         print(io, "\n")
     end
@@ -87,7 +87,7 @@ function Base.show(io::IO, b::Board)
     for r in 8:-1:1
         for c in 1:8
             sqr = square(c,r)
-            print(io, "$((b.rooks & sqr)>0?1:0) ")
+            print(io, "$((b.rooks & sqr)>0 ? 1 : 0) ")
         end
         print(io, "\n")
     end
@@ -97,7 +97,7 @@ function Base.show(io::IO, b::Board)
     for r in 8:-1:1
         for c in 1:8
             sqr = square(c,r)
-            print(io, "$((b.bishops & sqr)>0?1:0) ")
+            print(io, "$((b.bishops & sqr)>0 ? 1 : 0) ")
         end
         print(io, "\n")
     end
@@ -107,7 +107,7 @@ function Base.show(io::IO, b::Board)
     for r in 8:-1:1
         for c in 1:8
             sqr = square(c,r)
-            print(io, "$((b.knights & sqr)>0?1:0) ")
+            print(io, "$((b.knights & sqr)>0 ? 1 : 0) ")
         end
         print(io, "\n")
     end
@@ -117,7 +117,7 @@ function Base.show(io::IO, b::Board)
     for r in 8:-1:1
         for c in 1:8
             sqr = square(c,r)
-            print(io, "$((b.pawns & sqr)>0?1:0) ")
+            print(io, "$((b.pawns & sqr)>0 ? 1 : 0) ")
         end
         print(io, "\n")
     end
@@ -180,7 +180,7 @@ function new_game_960()
     bishop_color_a_file = rand(1:8)
     set!(b, WHITE, BISHOP, bishop_color_a_file, 1)
     set!(b, BLACK, BISHOP, bishop_color_a_file, 8)
-    bishop_color_b_file = 2*rand(1:4) - (bishop_color_a_file%2==0?1:0)
+    bishop_color_b_file = 2*rand(1:4) - (bishop_color_a_file%2==0 ? 1 : 0)
     set!(b, WHITE, BISHOP, bishop_color_b_file, 1)
     set!(b, BLACK, BISHOP, bishop_color_b_file, 8)
     filter!(e->e≠bishop_color_a_file,open_files)
@@ -240,7 +240,7 @@ end
 function printbd(b::Board, io=STDOUT, moves=nothing)
     println("$(version)")
     println("FEN $(write_fen(b))")
-    println("   hash $(hex(compute_hash(b)))")
+    println("   hash $(string(compute_hash(b), base=16))")
     print(io, "       ")
     if b.castling_rights & CASTLING_RIGHTS_BLACK_QUEENSIDE > 0
         print(io, CHARACTER_CASTLING_AVAILABLE)
@@ -296,7 +296,7 @@ function printbd(b::Board, io=STDOUT, moves=nothing)
     #println("    𝖠 𝖡 𝖢 𝖣 𝖤 𝖥 𝖦 𝖧")
     #println("    𝕒 𝕓 𝕔 𝕕 𝕖 𝕗 𝕘 𝕙")
     print(io, "    𝖺 𝖻 𝖼 𝖽 𝖾 𝖿 𝗀 𝗁")
-    print(io, "   Score $(round(evaluate(b),2)) pawns\n")
+    print(io, "   Score $(round(evaluate(b); digits=2)) pawns\n")
 end
 
 "Given a square name, e4, return the UInt64 value"
@@ -327,7 +327,7 @@ function read_fen(fen::String)
         elseif t=='b' set!(b, BLACK, BISHOP,   file, row)
         elseif t=='n' set!(b, BLACK, KNIGHT,   file, row)
         elseif t=='p' set!(b, BLACK, PAWN,   file, row)
-        elseif isnumber(t) file += parse(Integer,t)-1
+        elseif isnumeric(t) file += parse(Integer,t)-1
         elseif t=='/'
             row -= 1
             file = 0

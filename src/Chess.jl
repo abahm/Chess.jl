@@ -12,7 +12,7 @@ module Chess
 #  4 ... at big picture level, experiment with larger ideas easily
 #
 
-const version = "Julia Chess, v0.55"
+const version = "Julia Chess, v0.70"
 const author = "Alan Bahm"
 
 
@@ -22,13 +22,13 @@ include("util.jl")
 include("move.jl")
 include("movelist.jl")
 include("board.jl")
-#include("position_original.jl")
-include("position.jl")
+include("position_original.jl")
+#include("position.jl")
 include("evaluation.jl")
-#include("search_original.jl")
-include("search.jl")
-#include("play_original.jl")
-include("play.jl")
+include("search_original.jl")
+#include("search.jl")
+include("play_original.jl")
+#include("play.jl")
 include("protocols/xboard.jl")
 include("protocols/uci.jl")
 
@@ -72,6 +72,7 @@ function test_movelist()
     m = generate_moves(b)
     println( b.game_movelist )
 
+@assert number_of_moves(b.game_movelist)
     r = rand(1:number_of_moves(b.game_movelist))
     make_move!(b, m[1])
 
