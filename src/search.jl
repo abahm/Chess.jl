@@ -13,7 +13,7 @@ end
 
 "Find best move by alpha-beta algorithm"
 function best_move_alphabeta(board, depth)
-    tic()
+    time_start_ns = time_ns()
     moves = generate_moves(board)
 
     best_value = -Inf
@@ -41,7 +41,7 @@ function best_move_alphabeta(board, depth)
     end
 
     reverse!(principal_variation)
-    best_value, best_move, principal_variation, number_nodes_visited, toq()
+    best_value, best_move, principal_variation, number_nodes_visited, (time_ns() - time_start_ns)*1e-9
 end
 
 "Called only by best_move_alphabeta"

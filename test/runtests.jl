@@ -9,7 +9,7 @@
 using Chess
 using Base.Test
 
-tic()
+time_start_ns = time_ns()
 
 function print_algebraic(m::Move)
     println(algebraic_format(m) * " ")
@@ -32,4 +32,5 @@ include("search.jl")
 include("mates.jl")
 
 println("Tests complete!")
-toc()
+time_s = (time_ns() - time_start_ns)*1e-9
+println("$time_s seconds")

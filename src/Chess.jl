@@ -63,25 +63,27 @@ function test_refactor()
 
     printbd(b)
 end
-
 #test_refactor()
 
 function test_movelist()
     b = new_game()
+    @show b
 
     m = generate_moves(b)
-    println( b.game_movelist )
+    @show m
 
-@assert number_of_moves(b.game_movelist)
-    r = rand(1:number_of_moves(b.game_movelist))
+    #println( b.game_movelist )
+    #@assert number_of_moves(b.game_movelist) > 0
+    #r = rand(1:number_of_moves(b.game_movelist))
+
     make_move!(b, m[1])
 
     println( b.game_movelist )
     #m = generate_moves(b)
     #println( b.game_movelist )
 end
+#test_movelist()
 
-test_movelist()
 
 export WHITE, BLACK
 export KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN

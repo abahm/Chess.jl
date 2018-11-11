@@ -243,18 +243,18 @@ function repl_loop()
 
         # make answering move
         score, move, pv, nodes, time_s = best_move_search(board, depth)
-#=
-moves = generate_moves(board)
-if length(moves)==0
-    if is_king_in_check(board)
-        println("Checkmate!")
-    else
-        println("Drawn game.")
-    end
-    break
-end
-move = moves[rand(1:number_of_moves(board.game_movelist))]
-=#
+        #=
+        moves = generate_moves(board)
+        if length(moves)==0
+            if is_king_in_check(board)
+                println("Checkmate!")
+            else
+                println("Drawn game.")
+            end
+            break
+        end
+        move = moves[rand(1:number_of_moves(board.game_movelist))]
+        =#
         push!(game_history, (deepcopy(move), deepcopy(board)))
         make_move!(board, move)
     end   # while true
