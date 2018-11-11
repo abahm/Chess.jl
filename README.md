@@ -37,10 +37,13 @@ In windows:
 ## Developers
 As it is during development, to load the module, you will have to add the path to your
 .juliarc.jl in your home directory:
-`] add "<path-to-local-repo>/Chess.jl")`
+
+`] add "<path-to-local-repo>/Chess.jl"`
 
 Start julia (v0.7 or higher), then execute
+
 `using Chess`
+
 `Chess.play()`
 
 
