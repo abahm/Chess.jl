@@ -97,11 +97,11 @@ function xboard_loop()
         end
 
         if "time" ∈ tokens
-            my_time = parse(tokens[2])
+            my_time = Meta.parse(tokens[2])
         end
 
         if "otim" ∈ tokens
-            opp_time = parse(tokens[2])
+            opp_time = Meta.parse(tokens[2])
         end
 
         if "force" ∈ tokens
@@ -144,7 +144,7 @@ function xboard_loop()
 
         if "option" ∈ tokens
             if startswith(tokens[2], "Depth=")
-                ply = parse(tokens[2][7:end])
+                ply = Meta.parse(tokens[2][7:end])
             end
         end
     end
