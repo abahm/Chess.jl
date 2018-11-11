@@ -301,7 +301,7 @@ end
 
 "Given a square name, e4, return the UInt64 value"
 function square(square_name::String)
-    assert(length(square_name)==2)
+    @assert length(square_name) == 2
     file = parse(Integer, square_name[1]-48)
     row = parse(Integer, square_name[2])
     square(file, row)
@@ -429,7 +429,7 @@ function board_validation_checks(b::Board)
     return
 
     # check no overlap - each square can have one and only one piece
-    assert(b.side_to_move!=NONE)
+    @assert b.side_to_move != NONE
 
     for i in 0:63
         sqr = UInt64(1) << i

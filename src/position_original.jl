@@ -441,9 +441,9 @@ function make_move!(b::Board, m::Move)
     sqr_move = sqr_src | sqr_dest
 
     color = piece_color_on_sqr(b,sqr_src)
-    #assert(color!=NONE)
+    #@assert color != NONE
     moving_piece = piece_type_on_sqr(b,sqr_src)
-    #assert(moving_piece!=NONE)
+    #@assert moving_piece != NONE
     taken_piece = piece_type_on_sqr(b,sqr_dest)
 
     # remove any piece on destination square

@@ -6,7 +6,7 @@ function test_pinned_pieces_still_attack_enemy_king()
     printbd(b)
     moves = generate_moves(b)
     print_algebraic(moves)
-    assert(length(moves)==43)
+    @assert length(moves) == 43
 end
 
 function test_pins()
@@ -29,7 +29,7 @@ function test_pins()
 
     moves = generate_moves(b)
     print_algebraic(moves)
-    assert(length(moves)==5)
+    @assert length(moves) == 5
 end
 
 

@@ -37,7 +37,7 @@ function test_perft_runs()
             print("$count\t $engine_count nodes\t $kilonodes_per_sec kN/sec\t ")
             if count!=engine_count
                 printstyled("FAIL\n"; color=:red)
-                assert(false)
+                @assert false
                 break
             end
             printstyled("pass\n"; color=:green)
@@ -60,9 +60,9 @@ function test_no_castling_in_check()
 
     moves = generate_moves(b)
     print_algebraic(moves)
-    @show number_of_moves(b.game_movelist)
+    #@show number_of_moves(b.game_movelist)
     #@show b.game_movelist
-    assert(number_of_moves(b.game_movelist)==4)
+    @assert length(moves) == 4
 end
 
 test_perft_runs()
