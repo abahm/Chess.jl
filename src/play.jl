@@ -162,7 +162,7 @@ function repl_loop()
         end
 
         if startswith(movestr, "divide")
-            levels = Meta.parse(split(movestr)[2]) - 1
+            levels = Base.parse(split(movestr)[2]) - 1
             total_count = 0
             for (i,move) in enumerate(moves)
                 if i > number_of_moves(board.game_movelist)
@@ -186,7 +186,7 @@ function repl_loop()
         end
 
         if startswith(movestr, "depth")
-            depth = Meta.parse(split(movestr)[2])
+            depth = Base.parse(split(movestr)[2])
             println("Depth set to: $depth")
             println("Press <enter> to continue...")
             readline()
@@ -201,7 +201,7 @@ function repl_loop()
             end
             d = depth
             if length(split(movestr))>1
-                d = Meta.parse(split(movestr)[2])
+                d = Base.parse(split(movestr)[2])
             end
             for analysis_depth in 0:d
                 @time search_and_print(analysis_depth)
