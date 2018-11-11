@@ -97,11 +97,11 @@ function xboard_loop()
         end
 
         if "time" ∈ tokens
-            my_time = Base.parse(tokens[2])
+            my_time = Base.parse(Int8, tokens[2])
         end
 
         if "otim" ∈ tokens
-            opp_time = Base.parse(tokens[2])
+            opp_time = Base.parse(Int8, tokens[2])
         end
 
         if "force" ∈ tokens
@@ -144,7 +144,7 @@ function xboard_loop()
 
         if "option" ∈ tokens
             if startswith(tokens[2], "Depth=")
-                ply = Base.parse(tokens[2][7:end])
+                ply = Base.parse(Int8, tokens[2][7:end])
             end
         end
     end

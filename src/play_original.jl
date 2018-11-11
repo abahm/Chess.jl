@@ -155,7 +155,7 @@ function repl_loop()
         end
 
         if startswith(movestr, "divide")
-            levels = Base.parse(split(movestr)[2]) - 1
+            levels = Base.parse(Int8, split(movestr)[2]) - 1
             total_count = 0
             for move in moves
                 prior_castling_rights = board.castling_rights
@@ -176,7 +176,7 @@ function repl_loop()
         end
 
         if startswith(movestr, "depth")
-            depth = Base.parse(split(movestr)[2])
+            depth = Base.parse(Int8, split(movestr)[2])
             println("Depth set to: $depth")
             println("Press <enter> to continue...")
             readline()
@@ -193,7 +193,7 @@ function repl_loop()
             @show depth
             if length(split(movestr)) > 1
                 @show movestr
-                d = Base.parse(split(movestr)[2])
+                d = Base.parse(Int8, split(movestr)[2])
                 @show d
             end
             for analysis_depth in 0:d
