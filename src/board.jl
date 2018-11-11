@@ -302,8 +302,8 @@ end
 "Given a square name, e4, return the UInt64 value"
 function square(square_name::String)
     @assert length(square_name) == 2
-    file = Base.parse(Int8, square_name[1]-48)
-    row = Base.parse(Int8, square_name[2])
+    file = parse(Int8, square_name[1]-48)
+    row = parse(Int8, square_name[2])
     square(file, row)
 end
 
@@ -327,7 +327,7 @@ function read_fen(fen::String)
         elseif t=='b' set!(b, BLACK, BISHOP,   file, row)
         elseif t=='n' set!(b, BLACK, KNIGHT,   file, row)
         elseif t=='p' set!(b, BLACK, PAWN,   file, row)
-        elseif isnumeric(t) file += Base.parse(Int8, t)-1
+        elseif isnumeric(t) file += parse(Int8, t)-1
         elseif t=='/'
             row -= 1
             file = 0

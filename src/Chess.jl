@@ -2,6 +2,8 @@
 
 module Chess
 
+#TODO add random play from new960 boards - there is some crash in update_hash()
+
 # Why use Julia for a chess engine?
 #
 # advantages of Julia:
