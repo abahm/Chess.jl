@@ -4,7 +4,7 @@ using Random
 
 function test_undo_move()
     print("Testing undo move: ")
-    seed!(0)
+    Random.seed!(0)
     ngames = 500
     max_number_of_moves_per_game = 100
     for i in 1:ngames
