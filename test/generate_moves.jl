@@ -36,11 +36,11 @@ function test_perft_runs()
             kilonodes_per_sec = round((engine_count/1000)/time_s; digits=3)
             print("$count\t $engine_count nodes\t $kilonodes_per_sec kN/sec\t ")
             if count!=engine_count
-                print_with_color(:red, "FAIL\n")
+                printstyled("FAIL\n"; color=:red)
                 assert(false)
                 break
             end
-            print_with_color(:green, "pass\n")
+            printstyled("pass\n"; color=:green)
         end
         println()
         println()
