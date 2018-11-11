@@ -190,8 +190,11 @@ function repl_loop()
                 print("$ply\t$(round(nnodes/(time_s*1000); digits=2)) kn/s\t $(round(score; digits=3))\t $(round(time_s; digits=2))\t $nnodes\t $move\t ")
             end
             d = depth
-            if length(split(movestr))>1
+            @show depth
+            if length(split(movestr)) > 1
+                @show movestr
                 d = Base.parse(split(movestr)[2])
+                @show d
             end
             for analysis_depth in 0:d
                 @time search_and_print(analysis_depth)
