@@ -12,7 +12,7 @@
 
 [Julia](http://julialang.org/) module which can play chess and [chess960](https://en.wikipedia.org/wiki/Chess960).   
 
-The goal is to create a reasonably performant chess engine, that can generate legal moves, and play with minimal interface (i.e. in the REPL).   Bitboards are used to represent the state.   This code is a learning exercise in both engine building, and performant Julia code.
+The goal is to create a reasonably performant chess engine, that can generate legal moves, and play with minimal interface (i.e. in the REPL).   Bitboards are used to represent the state.   This code is a learning exercise in both engine building, and performant Julia code, and is still "in progress".
 
 
 
@@ -37,11 +37,11 @@ In windows:
 ## Developers
 As it is during development, to load the module, you will have to add the path to your
 .juliarc.jl in your home directory:
-`push!(LOAD_PATH, "~/Chess.jl/src")`
+`] add "<path-to-local-repo>/Chess.jl")`
 
-Start julia, then execute
+Start julia (v0.7 or higher), then execute
 `using Chess`
-`play()`
+`Chess.play()`
 
 
 ## Resources
