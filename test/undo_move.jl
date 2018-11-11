@@ -1,11 +1,12 @@
 # undo_move.jl
 
 function test_undo_move()
+    print("Testing undo move: ")
     srand(0)
     ngames = 500
     max_number_of_moves_per_game = 100
     for i in 1:ngames
-        print("game $i    ")
+        print("$i ")
         b = new_game()
         for j in 1:max_number_of_moves_per_game
             moves = generate_moves(b)
@@ -25,11 +26,12 @@ function test_undo_move()
                 break
             end
             m = moves[rand(1:length(moves))]
-            print(algebraic_format(m) * " ")
+            #print(algebraic_format(m) * " ")
             make_move!(b, m)
         end
-        println()
+        #println()
     end
+    println()
 end
 
 test_undo_move()

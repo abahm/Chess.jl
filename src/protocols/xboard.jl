@@ -13,8 +13,8 @@ end
 
 "Writes string to STDOUT"
 function xboard_writeline(msg::String)
-    nchar = write(STDOUT, String(msg*"\n"))
-    flush(STDOUT)
+    nchar = write(stdout, String(msg*"\n"))
+    flush(stdout)
     #=
     io = open("Chess.writeline.txt", "a")
     print(io, "$nchar\t$msg\n")

@@ -237,7 +237,7 @@ end
 end
 
 "Pretty print the chess board in the REPL"
-function printbd(b::Board, io=STDOUT, moves=nothing)
+function printbd(b::Board, io=stdout, moves=nothing)
     println("$(version)")
     println("FEN $(write_fen(b))")
     println("   hash $(string(compute_hash(b), base=16))")

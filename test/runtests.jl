@@ -7,7 +7,7 @@
 
 # load the Chess.jl module for testing
 using Chess
-using Base.Test
+using Test
 
 time_start_ns = time_ns()
 

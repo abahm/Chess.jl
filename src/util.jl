@@ -3,7 +3,7 @@
 "Clears the REPL terminal, and sets cursor at top"
 function clear_repl()
     print("\033[2J")  # clear screen
-    height = displaysize(STDOUT)[1]
+    height = displaysize(stdout)[1]
     print("\033[$(height)A") # set cursor at the top of the display
 end
 
