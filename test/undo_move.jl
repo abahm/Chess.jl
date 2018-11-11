@@ -1,5 +1,7 @@
 # undo_move.jl
 
+using Random
+
 function test_undo_move()
     print("Testing undo move: ")
     srand(0)
