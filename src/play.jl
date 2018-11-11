@@ -1,5 +1,6 @@
 # play.jl
 
+using Random
 
 "Count number of legal moves to a given depth"
 function perft(board::Board, levels::Integer)
@@ -39,7 +40,7 @@ end
 
 "Play a random chess game in REPL"
 function random_play_both_sides(seed, show_move_history, delay=0.001, board=new_game(), max_number_of_moves=1000)
-    srand(seed)
+    Random.seed!(seed)
     moves_made = Move[]
     for i in 1:max_number_of_moves
         if show_move_history

@@ -25,6 +25,7 @@ function print_algebraic(moves::Array{Move,1})
     println()
 end
 
+#include("chess960.jl") # exposes bug
 include("generate_moves.jl")
 include("undo_move.jl")
 include("pinned.jl")
