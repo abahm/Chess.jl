@@ -1,13 +1,18 @@
 # xboard.jl - protocol
 
+using Dates
+
+debug_xboard_protocol = true
+debug_xboard_protocol_filename = "protocols/xboard.log.txt"
+
 "Reads string from STDIN"
 function xboard_readline()
     r = readline()
-    #=
-    io = open("Chess.readline.txt", "a")
-    print(io, r)
-    close(io)
-    =#
+    if debug_xboard_protocol == true
+        io = open(debug_xboard_protocol_filename, "a")
+        print(io, r*"\n")
+        close(io)
+    end
     r
 end
 
@@ -15,15 +20,19 @@ end
 function xboard_writeline(msg::String)
     nchar = write(stdout, String(msg*"\n"))
     flush(stdout)
-    #=
-    io = open("Chess.writeline.txt", "a")
-    print(io, "$nchar\t$msg\n")
-    close(io)
-    =#
+    if debug_xboard_protocol == true
+        io = open(debug_xboard_protocol_filename, "a")
+        print(io, "\t\t $nchar \t $msg \n")
+        close(io)
+    end
 end
 
 "Plays a game over xboard protocol"
 function xboard_loop()
+    io = open(debug_xboard_protocol_filename, "a")
+    print(io, "\n\n\n------------  $(now())  ------------\n")
+    close(io)
+
     chess_engine_debug_mode = true
     chess_engine_show_thinking = true
     opponent_is_computer = false
@@ -77,7 +86,7 @@ function xboard_loop()
         end
 
         if "quit" ∈ tokens
-            quit() # the julia REPL
+            exit() # the julia REPL
         end
 
         if "post" ∈ tokens
@@ -97,11 +106,11 @@ function xboard_loop()
         end
 
         if "time" ∈ tokens
-            my_time = parse(Int8, tokens[2])
+            my_time = parse(Int64, tokens[2])
         end
 
         if "otim" ∈ tokens
-            opp_time = parse(Int8, tokens[2])
+            opp_time = parse(Int64, tokens[2])
         end
 
         if "force" ∈ tokens
@@ -144,7 +153,7 @@ function xboard_loop()
 
         if "option" ∈ tokens
             if startswith(tokens[2], "Depth=")
-                ply = parse(Int8, tokens[2][7:end])
+                ply = parse(Int16, tokens[2][7:end])
             end
         end
     end
