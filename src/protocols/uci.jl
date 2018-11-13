@@ -2,6 +2,7 @@
 
 "Plays a game over UCI protocol"
 function uci_loop()
+    chess_engine_debug_mode = false
     board = new_game()
     while true
         tokens = split(readline())
