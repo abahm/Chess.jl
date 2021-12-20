@@ -11,6 +11,7 @@ mutable struct Move
     sqr_ep::UInt64
     promotion_to::UInt8
 
+    #TODO: compress structure?
     #details::UInt64  # could compress this
     # move_type
     #   bits 0-2 : type of piece moving

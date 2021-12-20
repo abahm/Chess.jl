@@ -1,5 +1,7 @@
 # position.jl
 
+#TODO: check if @inline actually is needed - by looking at the compiled code
+
 "Return piece type KING, PAWN on square, or NONE if empty"
 @inline function piece_type_on_sqr(b::Board, sqr::UInt64)
     if (b.kings   & sqr)>0  return KING    end
