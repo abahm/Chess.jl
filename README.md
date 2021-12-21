@@ -19,7 +19,7 @@ The goal is to create a reasonably performant chess engine, that can generate le
 ## Playing a game in the REPL
 `julia Chess.jl -repl`
 
-The chess board and move history is printed every move in the  [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop).  Enter moves as "e2e4" or "h7h8q".  Type "?" to see a full list of commands.
+The chess board and move history is printed every move in the  [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop).  Enter moves as "e2e4" or "h7h8q".  Type "?" to see a full list of commands.  (Note active directory must be src.)
 
 
 
@@ -32,7 +32,7 @@ In Linux/Max OSX:
 In windows:
 `winboard.exe /debug /fcp="julia Chess.jl -xboard"`
 
-
+(Note active directory must be src.)
 
 ## Developers
 As it is during development, to load the module, you will have to add the path to your
