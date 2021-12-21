@@ -220,7 +220,7 @@ function repl_loop()
             end
         end
 
-        if users_move==nothing
+        if users_move===nothing
             println(" type your moves like 'e2e4' or 'h7h8q'")
             println(" type 'list' or 'l' to list legal moves")
             println(" type 'go' or <enter> to have computer move")

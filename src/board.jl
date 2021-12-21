@@ -230,6 +230,7 @@ end
 		end
 
 		color = piece_color_on_sqr(board, sqr)
+        #@assert color==1 || color==2
 
 		hash = update_hash(board.game_zobrist, hash, piece*color, UInt8(square_index))
 	end
@@ -265,7 +266,7 @@ function printbd(b::Board, io=stdout, moves=nothing)
             piece = piece_type_on_sqr(b, sqr)
             color = piece_color_on_sqr(b, sqr)
             s = character_for_piece(color, piece)
-            if moves!=nothing
+            if moves!==nothing
                 for m in moves
                     if (m.sqr_dest & sqr)>0
                         if s != CHARACTER_SQUARE_EMPTY && s != CHARACTER_SQUARE_ATTACKED
@@ -426,7 +427,7 @@ end
 
 "Debugging validation checks for internal consistancy of the board"
 function board_validation_checks(b::Board)
-    return
+    #return
 
     # check no overlap - each square can have one and only one piece
     @assert b.side_to_move != NONE
@@ -447,22 +448,22 @@ function board_validation_checks(b::Board)
 
         # a piece must have a color
         if sqr & b.pawns > 0
-            @assert (sqr & b.pawns & b.white_pieces > 0) || (sqr & b.pawns & b.black_pieces > 0) "$b\n colorless pawn at $(square_name(sqr))"
+            @assert (sqr & b.pawns & b.white_pieces > 0) || (sqr & b.pawns & b.black_pieces > 0) "colorless pawn at $(square_name(sqr))"
         end
         if sqr & b.knights > 0
-            @assert (sqr & b.knights & b.white_pieces > 0) || (sqr & b.knights & b.black_pieces > 0) "$b\n colorless knight at $(square_name(sqr))"
+            @assert (sqr & b.knights & b.white_pieces > 0) || (sqr & b.knights & b.black_pieces > 0) "colorless knight at $(square_name(sqr))"
         end
         if sqr & b.bishops > 0
-            @assert (sqr & b.bishops & b.white_pieces > 0) || (sqr & b.bishops & b.black_pieces > 0) "$b\n colorless bishop at $(square_name(sqr))"
+            @assert (sqr & b.bishops & b.white_pieces > 0) || (sqr & b.bishops & b.black_pieces > 0) "colorless bishop at $(square_name(sqr))"
         end
         if sqr & b.rooks > 0
-            @assert (sqr & b.rooks & b.white_pieces > 0) || (sqr & b.rooks & b.black_pieces > 0) "$b\n colorless rook at $(square_name(sqr))"
+            @assert (sqr & b.rooks & b.white_pieces > 0) || (sqr & b.rooks & b.black_pieces > 0) "colorless rook at $(square_name(sqr))"
         end
         if sqr & b.queens > 0
-            @assert (sqr & b.queens & b.white_pieces > 0) || (sqr & b.queens & b.black_pieces > 0) "$b\n colorless queen at $(square_name(sqr))"
+            @assert (sqr & b.queens & b.white_pieces > 0) || (sqr & b.queens & b.black_pieces > 0) "colorless queen at $(square_name(sqr))"
         end
         if sqr & b.kings > 0
-            @assert (sqr & b.kings & b.white_pieces > 0) || (sqr & b.kings & b.black_pieces > 0) "$b\n colorless king at $(square_name(sqr))"
+            @assert (sqr & b.kings & b.white_pieces > 0) || (sqr & b.kings & b.black_pieces > 0) "colorless king at $(square_name(sqr))"
         end
     end
 

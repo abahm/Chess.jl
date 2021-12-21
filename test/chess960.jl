@@ -39,3 +39,10 @@ function chess960()
 end
 
 chess960()
+
+function move_error()
+    # error discovered in random play, pawn move leaves a invalid square piece color
+    b = Chess.read_fen("r2krnb1/1pq1pppp/3p4/p1p1n3/4PP2/3NN2P/P1PP1BP1/RBQKR3 b KQkq -")
+    Chess.make_move!(b, "g2g3")
+    printbd(b)
+end

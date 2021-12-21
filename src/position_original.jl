@@ -436,6 +436,8 @@ end
 
 "Make move on board"
 function make_move!(b::Board, m::Move)
+    board_validation_checks(b)
+
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest
     sqr_move = sqr_src | sqr_dest
@@ -556,6 +558,7 @@ function make_move!(b::Board, m::Move)
     nothing
 end
 
+#=
 "Return true if side to move's king is in check"
 function is_king_in_check_original(b::Board)
     # generate enemies attacking moves
@@ -572,6 +575,7 @@ function is_king_in_check_original(b::Board)
     end
     return false
 end
+=#
 
 "Return true if side to move's king is in check"
 function is_king_in_check(b::Board)
@@ -592,6 +596,13 @@ end
 
 "Undo move on board"
 function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_pawn_double_push)
+    board_validation_checks(b)
+
+    @show write_fen(b)
+    @show m
+    @show prior_castling_rights
+    @show prior_last_move_pawn_double_push
+
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest
     color = m.color_moving
@@ -601,9 +612,9 @@ function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_
     # undo any pawn promotion
     if m.promotion_to != NONE
         b.pawns = b.pawns | sqr_dest
-        if m.promotion_to == QUEEN       b.queens = b.queens & ~sqr_dest
+        if m.promotion_to == QUEEN       b.queens  = b.queens  & ~sqr_dest
         elseif m.promotion_to == KNIGHT  b.knights = b.knights & ~sqr_dest
-        elseif m.promotion_to == ROOK    b.rooks = b.rooks & ~sqr_dest
+        elseif m.promotion_to == ROOK    b.rooks   = b.rooks   & ~sqr_dest
         elseif m.promotion_to == BISHOP  b.bishops = b.bishops & ~sqr_dest
         end
         #if color == WHITE      b.white_pieces = b.white_pieces & ~sqr_dest
@@ -612,12 +623,12 @@ function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_
     end
 
     # move the moving piece (remove from dest, add to src)
-    if moving_piece == KING         b.kings =   (b.kings & ~sqr_dest) | sqr_src
-    elseif moving_piece == QUEEN    b.queens =  (b.queens & ~sqr_dest) | sqr_src
-    elseif moving_piece == ROOK     b.rooks =   (b.rooks & ~sqr_dest) | sqr_src
+    if moving_piece == KING         b.kings =   (b.kings   & ~sqr_dest) | sqr_src
+    elseif moving_piece == QUEEN    b.queens =  (b.queens  & ~sqr_dest) | sqr_src
+    elseif moving_piece == ROOK     b.rooks =   (b.rooks   & ~sqr_dest) | sqr_src
     elseif moving_piece == BISHOP   b.bishops = (b.bishops & ~sqr_dest) | sqr_src
     elseif moving_piece == KNIGHT   b.knights = (b.knights & ~sqr_dest) | sqr_src
-    elseif moving_piece == PAWN     b.pawns =   (b.pawns & ~sqr_dest) | sqr_src
+    elseif moving_piece == PAWN     b.pawns =   (b.pawns   & ~sqr_dest) | sqr_src
     end
     # update the moving color (remove from dest, add to src)
     if color==WHITE

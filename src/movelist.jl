@@ -120,13 +120,13 @@ function reset_movelist(ml::Movelist)
     ml.ply_move_index = zeros(UInt8, MAX_MOVES_PER_GAME)
     ml.moves = Array{Move, 1}[]
     for i in 1:MAX_MOVES_PER_GAME
-        push!(ml.moves, Array(Move, MAX_MOVES_PER_TURN))
+        push!(ml.moves, Vector{Move}(undef, MAX_MOVES_PER_TURN))
         for j in 1:MAX_MOVES_PER_TURN
             ml.moves[i][j] = Move(NONE, NONE, UInt64(0), UInt64(0))
         end
     end
     ml.ply_n = UInt8(1)
-    ml.attacking_moves = Array(Move, MAX_MOVES_PER_TURN)
+    ml.attacking_moves = Vector{Move}(undef, MAX_MOVES_PER_TURN)
     for j in 1:MAX_MOVES_PER_TURN
         ml.attacking_moves[j] = Move(NONE, NONE, UInt64(0), UInt64(0))
     end

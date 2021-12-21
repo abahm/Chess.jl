@@ -1,6 +1,6 @@
 ## Resources
 
-* [Chess programming wiki](https://chessprogramming.wikispaces.com/)
+* [Chess programming wiki](https://www.chessprogramming.org/Main_Page)
 * Open source code: [Stockfish - excellent](https://github.com/official-stockfish/Stockfish), [Ethereal](https://github.com/AndyGrant/Ethereal)
 * [Book - How Computers Play Chess (1991) - David Levy](https://www.amazon.com/Computers-Play-Chess-David-Levy/dp/4871878015/ref=sr_1_1?ie=UTF8&qid=1476596099&sr=8-1&keywords=david+levy+how+computers)
 * [Book - Computer Chess Compendium (1988) - David Levy](https://www.amazon.com/Computer-Chess-Compendium-David-N-L/dp/487187804X/ref=sr_1_7?ie=UTF8&qid=1476457271&sr=8-7&keywords=computer+chess)

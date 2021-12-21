@@ -63,7 +63,7 @@ function negaMax(board, depth)
         number_nodes_visited += nnodes
     end
 
-    if max_move == nothing
+    if max_move === nothing
         # no moves available - it is either a draw or a mate
         if is_king_in_check(board)
             max_value = MATE_SCORE + depth  # add depth to define mate in N moves
@@ -138,7 +138,7 @@ function αβSearch(board, α, β, depth)
         number_nodes_visited += nnodes
     end
 
-    if max_move == nothing
+    if max_move === nothing
         # no legal moves available - it is either a draw or a mate
         if is_king_in_check(board)
             α = MATE_SCORE + depth  # add depth to define mate in N moves

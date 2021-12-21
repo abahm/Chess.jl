@@ -639,6 +639,7 @@ function make_move!(b::Board, m::Move)
     nothing
 end
 
+#=
 "Return true if side to move's king is in check"
 function is_king_in_check_original(b::Board)
     # generate enemies attacking moves
@@ -655,6 +656,8 @@ function is_king_in_check_original(b::Board)
     end
     return false
 end
+=#
+
 
 "Return true if side to move's king is in check"
 function is_king_in_check(b::Board)

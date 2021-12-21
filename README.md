@@ -40,7 +40,7 @@ As it is during development, to load the module, you will have to add the path t
 
 `] add "<path-to-local-repo>/Chess.jl"`
 
-Start julia (v0.7 or higher), then execute
+Start julia (v1.7 or higher), then execute
 
 `using Chess`
 

@@ -125,7 +125,7 @@ function xboard_loop()
                 score = evaluate(board)
                 xboard_writeline("\t $ply\t $score\t $time_s\t $nodes\t $(long_algebraic_format(pv))")
             end
-            if move!=nothing
+            if move!==nothing
                 bestmovestr = long_algebraic_format(move)
                 xboard_writeline("move $bestmovestr")
                 make_move!(board, move)
@@ -143,7 +143,7 @@ function xboard_loop()
                 if chess_engine_show_thinking
                     xboard_writeline("\t $ply\t $score\t $time_s\t $nodes\t $(long_algebraic_format(pv))")
                 end
-                if move!=nothing
+                if move===nothing
                     bestmovestr = long_algebraic_format(move)
                     xboard_writeline("move $bestmovestr")
                     make_move!(board, move)

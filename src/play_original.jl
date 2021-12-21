@@ -34,13 +34,14 @@ function print_move_history(moves::Array{Move,1})
 end
 
 "Play a random chess game in REPL"
-function random_play_both_sides(seed, show_move_history, delay=0.001, board=new_game(), max_number_of_moves=1000)
+function random_play_both_sides(seed, show_move_history; delay=0.001, board=new_game(), max_number_of_moves=1000)
+    println("seed = $seed")
     Random.seed!(seed)
     moves_made = Move[]
     for i in 1:max_number_of_moves
-        if show_move_history
+        #if show_move_history
             clear_repl()
-        end
+        #end
         println()
         printbd(board)
 
@@ -61,12 +62,20 @@ function random_play_both_sides(seed, show_move_history, delay=0.001, board=new_
 
         sleep(delay)
     end
+    printbd(board)
 end
 
 "Play N random chess games in REPL"
 function random_play_both_sides(ngames)
     for random_seed in 1:ngames
-        random_play_both_sides(random_seed, true, 0.1)
+        random_play_both_sides(random_seed, true, delay=0.1)
+    end
+end
+
+"Play N random chess games in REPL"
+function random_play960_both_sides(ngames)
+    for random_seed in 1:ngames
+        random_play_both_sides(random_seed, false, delay=0, board=new_game_960())
     end
 end
 
@@ -117,7 +126,7 @@ function repl_loop()
 
         if startswith(movestr,"go") || movestr==""
             score, move, pv, number_nodes_visited, time_s = best_move_search(board, depth)
-            push!(game_history, (move, deepcopy(board)))
+            push!(game_history, (move, Base.deepcopy(board)))
             make_move!(board, move)
             continue
         end
@@ -213,7 +222,7 @@ function repl_loop()
             end
         end
 
-        if users_move==nothing
+        if users_move===nothing
             println(" type your moves like 'e2e4' or 'h7h8q'")
             println(" type 'list' or 'l' to list legal moves")
             println(" type 'go' or <enter> to have computer move")
@@ -232,12 +241,12 @@ function repl_loop()
             continue
         end
 
-        push!(game_history, (users_move,deepcopy(board)))
+        push!(game_history, (users_move, Base.deepcopy(board)))
         make_move!(board, users_move)
 
         # make answering move
         score, move, pv, nodes, time_s = best_move_search(board, depth)
-        push!(game_history, (move,deepcopy(board)))
+        push!(game_history, (move, Base.deepcopy(board)))
         make_move!(board, move)
     end   # while true
 end
