@@ -14,7 +14,7 @@ module Chess
 #  4 ... at big picture level, experiment with larger ideas easily
 #
 
-const version = "Julia Chess, v0.73"
+const version = "Julia Chess, v0.74"
 const author = "Alan Bahm"
 
 

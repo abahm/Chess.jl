@@ -428,6 +428,9 @@ end
 "Debugging validation checks for internal consistancy of the board"
 function board_validation_checks(b::Board)
     #return
+    println("")
+    println("")
+    println(b)
 
     # check no overlap - each square can have one and only one piece
     @assert b.side_to_move != NONE
@@ -443,7 +446,7 @@ function board_validation_checks(b::Board)
             @assert (sqr & (b.pawns | b.knights | b.bishops | b.rooks | b.queens | b.kings) > 0) "$b\n black nothing at $(square_name(sqr))"
         end
 
-        # square can't hold both a black and a white piece simultaneously
+        # square can't hold both a black and a white colored piece simultaneously
         @assert sqr & b.white_pieces & b.black_pieces == 0  "$b\n over occupied at $(square_name(sqr))"
 
         # a piece must have a color
@@ -467,8 +470,8 @@ function board_validation_checks(b::Board)
         end
     end
 
-    # s
-    @assert b.kings & b.queens & b.rooks & b.bishops & b.knights & b.pawns == 0  "$b"
+    # no square is occupied by two pieces
+    @assert b.kings & b.queens & b.rooks & b.bishops & b.knights & b.pawns == 0  "two pieces on same square"
 
     # check counts
     n_white_pieces = count(b.white_pieces)
@@ -483,5 +486,5 @@ function board_validation_checks(b::Board)
 
     t1 = n_white_pieces + n_black_pieces
     t2 = n_kings + n_queens + n_rooks + n_bishops + n_knights + n_pawns
-    @assert t1==t2  "$b"
+    @assert t1==t2  "pieces count on board doesn't sum up"
 end
