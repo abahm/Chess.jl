@@ -14,7 +14,7 @@ module Chess
 #  4 ... at big picture level, experiment with larger ideas easily
 #
 
-const version = "Julia Chess, v0.74"
+const version = "Julia Chess, v0.75"
 const author = "Alan Bahm"
 
 
@@ -85,15 +85,6 @@ function test_movelist()
     #println( b.game_movelist )
 end
 #test_movelist()
-
-function test_chess960castling()
-    b = Chess.read_fen("r2krnb1/1pq1pppp/3p4/p1p1n3/4PP2/3NN2P/P1PP1BP1/RBQKR3 b KQkq -")
-    printbd(b)
-    Chess.make_move!(b, "g2g3")
-    # should be no asserts / warnings
-    board_validation_checks(b)
-end
-test_chess960castling()
 
 
 export WHITE, BLACK

@@ -39,7 +39,7 @@ Base.deepcopy(b::Board) = Board(b.white_pieces, b.black_pieces,
 
 function Base.show(io::IO, b::Board)
     print(io, "\n")
-    printbd(b, io)
+    #printbd(b, io)
 
     print(io, "\n")
     print(io, "white pieces\n")
@@ -428,9 +428,6 @@ end
 "Debugging validation checks for internal consistancy of the board"
 function board_validation_checks(b::Board)
     #return
-    println("")
-    println("")
-    println(b)
 
     # check no overlap - each square can have one and only one piece
     @assert b.side_to_move != NONE

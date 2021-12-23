@@ -210,7 +210,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
         if king > 0
             add_king_moves!(moves, sqr, b, my_color)
 
-            # castling kingside (allows for chess960 castling too)
+            # king and rooks moves castling kingside (allows for chess960 castling too)
             if !king_in_check && !only_attacking_moves
                 kings_travel_sqrs = []
                 rooks_travel_sqrs = []
@@ -219,7 +219,7 @@ function generate_moves(b::Board; only_attacking_moves=false)
                 castling_type = (my_color == WHITE ? CASTLING_RIGHTS_WHITE_KINGSIDE : CASTLING_RIGHTS_BLACK_KINGSIDE)
                 if b.castling_rights & castling_type > 0
                     r = (my_color == WHITE ? 1 : 8)
-                    # to accomodate chess960, we check the games setup
+                    # to accomodate chess960, we check the games setup, instead of assuming starting column
                     c1 = min(b.game_kings_starting_column, G)
                     c2 = max(b.game_kings_starting_column, G)
                     rng = c1:c2
@@ -598,11 +598,6 @@ end
 function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_pawn_double_push)
     board_validation_checks(b)
 
-    @show write_fen(b)
-    @show m
-    @show prior_castling_rights
-    @show prior_last_move_pawn_double_push
-
     sqr_src = m.sqr_src
     sqr_dest = m.sqr_dest
     color = m.color_moving
@@ -631,7 +626,7 @@ function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_
     elseif moving_piece == PAWN     b.pawns =   (b.pawns   & ~sqr_dest) | sqr_src
     end
     # update the moving color (remove from dest, add to src)
-    if color==WHITE
+    if color == WHITE
         b.white_pieces = (b.white_pieces & ~sqr_dest) | sqr_src
     else
         b.black_pieces = (b.black_pieces & ~sqr_dest) | sqr_src
@@ -645,7 +640,7 @@ function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_
         if taken_piece == BISHOP  b.bishops = b.bishops | sqr_dest  end
         if taken_piece == KNIGHT  b.knights = b.knights | sqr_dest  end
         if taken_piece == PAWN && m.sqr_ep == 0  b.pawns = b.pawns | sqr_dest  end
-        if color==WHITE           b.black_pieces = b.black_pieces | sqr_dest
+        if color == WHITE         b.black_pieces = b.black_pieces | sqr_dest
         else                      b.white_pieces = b.white_pieces | sqr_dest
         end
     end
@@ -662,23 +657,36 @@ function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_
     end
 
     # castling - move rook in addition to the king
+    #  (but fix in chess960 that the king on G or C isn't cleared)
     if m.castling > 0
         if sqr_dest == SQUARE_C1
             rook_sqr_src = square(b.game_queen_rook_starting_column, 1)
             b.rooks = (b.rooks | rook_sqr_src) & ~SQUARE_D1
-            b.white_pieces = (b.white_pieces | rook_sqr_src) & ~SQUARE_D1
+            b.white_pieces = b.white_pieces | rook_sqr_src
+            if sqr_src != SQUARE_D1
+                b.white_pieces = b.white_pieces & ~SQUARE_D1
+            end
         elseif sqr_dest == SQUARE_G1
             rook_sqr_src = square(b.game_king_rook_starting_column, 1)
             b.rooks = (b.rooks | rook_sqr_src) & ~SQUARE_F1
-            b.white_pieces = (b.white_pieces | rook_sqr_src) & ~SQUARE_F1
+            b.white_pieces = b.white_pieces | rook_sqr_src
+            if sqr_src != SQUARE_F1
+                b.white_pieces = b.white_pieces & ~SQUARE_F1
+            end
         elseif sqr_dest == SQUARE_C8
             rook_sqr_src = square(b.game_queen_rook_starting_column, 8)
             b.rooks = (b.rooks | rook_sqr_src) & ~SQUARE_D8
-            b.black_pieces = (b.black_pieces | rook_sqr_src) & ~SQUARE_D8
+            b.black_pieces = b.black_pieces | rook_sqr_src
+            if sqr_src != SQUARE_D8
+                b.black_pieces = b.black_pieces & ~SQUARE_D8
+            end
         elseif sqr_dest == SQUARE_G8
             rook_sqr_src = square(b.game_king_rook_starting_column, 8)
             b.rooks = (b.rooks | rook_sqr_src) & ~SQUARE_F8
-            b.black_pieces = (b.black_pieces | rook_sqr_src) & ~SQUARE_F8
+            b.black_pieces = b.black_pieces | rook_sqr_src
+            if sqr_src != SQUARE_F8
+                b.black_pieces = b.black_pieces & ~SQUARE_F8
+            end
         end
     end
 

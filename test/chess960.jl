@@ -46,3 +46,29 @@ function move_error()
     Chess.make_move!(b, "g2g3")
     printbd(b)
 end
+
+function test_chess960castling()
+    # in this Chess960, the king has started on the final square the castled rook lands
+    #b = Chess.read_fen("r2k4/8/8/8/8/8/8/3K5 b kq -")
+    b = Chess.read_fen("r2krnb1/1pq1pppp/3p4/p1p1n3/4PP2/3NN2P/P1PP1BP1/RBQKR3 b KQkq -")
+    prior_castling_rights = b.castling_rights
+    prior_last_move_pawn_double_push = b.last_move_pawn_double_push
+    printbd(b)
+
+    mv = Move(BLACK, KING, square(D,8), square(C,8), castling=CASTLING_RIGHTS_BLACK_QUEENSIDE) 
+    println(mv)
+    Chess.make_move!(b, mv)
+    printbd(b)
+
+    Chess.unmake_move!(b, mv, prior_castling_rights, prior_last_move_pawn_double_push)
+    println(b)
+
+    #mvs = generate_moves(b)
+    #println(algebraic_format(mvs))
+
+    #Chess.make_move!(b, "g2g3")
+    # should be no asserts / warnings
+    #board_validation_checks(b)
+end
+test_chess960castling()
+
