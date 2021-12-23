@@ -39,7 +39,7 @@ Base.deepcopy(b::Board) = Board(b.white_pieces, b.black_pieces,
 
 function Base.show(io::IO, b::Board)
     print(io, "\n")
-    #printbd(b, io)
+    printbd(b, io)
 
     print(io, "\n")
     print(io, "white pieces\n")
@@ -230,7 +230,7 @@ end
 		end
 
 		color = piece_color_on_sqr(board, sqr)
-        #@assert color==1 || color==2
+        @assert color==WHITE || color==BLACK
 
 		hash = update_hash(board.game_zobrist, hash, piece*color, UInt8(square_index))
 	end
