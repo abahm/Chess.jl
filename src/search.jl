@@ -1,5 +1,9 @@
 # search.jl
 
+# difference between search.jl and search_original.jl is that 
+#  - negamax function is removed 
+#  - quiecence() considers only captures (for effeciency)
+
 """
 Find best move, returns:
     score, best move, principal variation,
@@ -8,7 +12,6 @@ Find best move, returns:
 function best_move_search(board, depth)
     best_move_alphabeta(board, depth)
 end
-
 
 
 "Find best move by alpha-beta algorithm"

@@ -1,5 +1,12 @@
 # position.jl
 
+# difference between position.jl and position_original.jl is that 
+#  - add_move!() identifies moves from board.game_movelist, rather than allocating new memory
+#  - generate_moves() works with pre-alloc board.game_movelist
+#  - 
+#  - 
+
+
 #TODO: check if @inline actually is needed - by looking at the compiled code
 
 "Return piece type KING, PAWN on square, or NONE if empty"
@@ -748,23 +755,36 @@ function unmake_move!(b::Board, m::Move, prior_castling_rights, prior_last_move_
     end
 
     # castling - move rook in addition to the king
+    #  (but fix in chess960 that the king on G or C isn't cleared)
     if m.castling > 0
         if sqr_dest == SQUARE_C1
             rook_sqr_src = square(b.game_queen_rook_starting_column, 1)
             b.rooks = (b.rooks | rook_sqr_src) & ~SQUARE_D1
-            b.white_pieces = (b.white_pieces | rook_sqr_src) & ~SQUARE_D1
+            b.white_pieces = b.white_pieces | rook_sqr_src
+            if sqr_src != SQUARE_D1
+                b.white_pieces = b.white_pieces & ~SQUARE_D1
+            end
         elseif sqr_dest == SQUARE_G1
             rook_sqr_src = square(b.game_king_rook_starting_column, 1)
             b.rooks = (b.rooks | rook_sqr_src) & ~SQUARE_F1
-            b.white_pieces = (b.white_pieces | rook_sqr_src) & ~SQUARE_F1
+            b.white_pieces = b.white_pieces | rook_sqr_src
+            if sqr_src != SQUARE_F1
+                b.white_pieces = b.white_pieces & ~SQUARE_F1
+            end
         elseif sqr_dest == SQUARE_C8
             rook_sqr_src = square(b.game_queen_rook_starting_column, 8)
             b.rooks = (b.rooks | rook_sqr_src) & ~SQUARE_D8
-            b.black_pieces = (b.black_pieces | rook_sqr_src) & ~SQUARE_D8
+            b.black_pieces = b.black_pieces | rook_sqr_src
+            if sqr_src != SQUARE_D8
+                b.black_pieces = b.black_pieces & ~SQUARE_D8
+            end
         elseif sqr_dest == SQUARE_G8
             rook_sqr_src = square(b.game_king_rook_starting_column, 8)
             b.rooks = (b.rooks | rook_sqr_src) & ~SQUARE_F8
-            b.black_pieces = (b.black_pieces | rook_sqr_src) & ~SQUARE_F8
+            b.black_pieces = b.black_pieces | rook_sqr_src
+            if sqr_src != SQUARE_F8
+                b.black_pieces = b.black_pieces & ~SQUARE_F8
+            end
         end
     end
 

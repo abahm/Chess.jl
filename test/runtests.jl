@@ -25,12 +25,12 @@ function print_algebraic(moves::Array{Move,1})
     println()
 end
 
-#include("chess960.jl") # exposes bug
+include("chess960.jl") # exposes bug
 include("generate_moves.jl")
-include("undo_move.jl")
+include("mates.jl")
 include("pinned.jl")
 include("search.jl")
-include("mates.jl")
+include("undo_move.jl")
 
 println("Tests complete!")
 time_s = (time_ns() - time_start_ns)*1e-9

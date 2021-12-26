@@ -14,7 +14,7 @@ module Chess
 #  4 ... at big picture level, experiment with larger ideas easily
 #
 
-const version = "Julia Chess, v0.75"
+const version = "Julia Chess, v0.76"
 const author = "Alan Bahm"
 
 
@@ -43,48 +43,6 @@ elseif "-xboard" ∈ ARGS
 elseif "-repl" ∈ ARGS
     repl_loop()
 end
-
-
-
-function test_refactor()
-    println()
-    b = new_game()
-    println()
-    printbd(b)
-
-    moves = generate_moves(b)
-    move = moves[2]
-    println(move)
-
-    prior_castling_rights = b.castling_rights
-    prior_last_move_pawn_double_push = b.last_move_pawn_double_push
-    make_move!(b, move)
-
-    unmake_move!(b, move, prior_castling_rights,
-                          prior_last_move_pawn_double_push)
-
-    printbd(b)
-end
-#test_refactor()
-
-function test_movelist()
-    b = new_game()
-    @show b
-
-    m = generate_moves(b)
-    @show m
-
-    #println( b.game_movelist )
-    #@assert number_of_moves(b.game_movelist) > 0
-    #r = rand(1:number_of_moves(b.game_movelist))
-
-    make_move!(b, m[1])
-
-    println( b.game_movelist )
-    #m = generate_moves(b)
-    #println( b.game_movelist )
-end
-#test_movelist()
 
 
 export WHITE, BLACK

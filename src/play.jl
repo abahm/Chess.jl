@@ -1,5 +1,9 @@
 # play.jl
 
+# difference between play.jl and play_original.jl is that 
+#  - work with board.game_movelist instead of a list of moves
+#  - 
+
 using Random
 
 "Count number of legal moves to a given depth"

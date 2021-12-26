@@ -40,9 +40,12 @@ end
 function Base.show(io::IO, ml::Movelist)
     printstyled(io, "+---------+---------+---------+---------+---------+---------+---------+---------\n"; color=:blue)
 
-#=
-:normal, :default, :bold, :black, :blue, :cyan, :green, :light_black, :light_blue, :light_cyan, :light_green, :light_magenta, :light_red, :light_yellow, :magenta, :nothing, :red, :underline, :white, or :yellow
-=#
+    #=
+    :normal, :default, :bold, :black, :blue, :cyan, :green, 
+    :light_black, :light_blue, :light_cyan, :light_green, 
+    :light_magenta, :light_red, :light_yellow, :magenta, 
+    :nothing, :red, :underline, :white, or :yellow
+    =#
     for j in 1:MAX_MOVES_PER_GAME
         color = (ml.ply_n==j) ? :yellow : :gray
         if ml.moves[j][1].piece_moving != NONE
@@ -164,7 +167,7 @@ function filter_illegal_moves_out!(ml::Movelist, illegal_moves)
     if length(illegal_moves) == 0
         return
     end
-@show illegal_moves
+    @show illegal_moves
     i = 1
     while i <= MAX_MOVES_PER_TURN
         if ml.moves[ml.ply_n][i] ∈ illegal_moves
