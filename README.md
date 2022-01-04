@@ -14,6 +14,8 @@
 
 The goal is to create a reasonably performant chess engine, that can generate legal moves, and play with minimal interface (i.e. in the REPL).   Bitboards are used to represent the state.   This code is a learning exercise in both engine building, and performant Julia code, and is still "in progress".
 
+Please note - this is *not* the Chess.jl that is in the packages library!  For Romstad's more complete chess package, see [romstad Chess.jl](https://github.com/romstad/Chess.jl).
+
 
 
 ## Playing a game in the REPL

@@ -17,6 +17,7 @@ module Chess
 const version = "Julia Chess, v0.76"
 const author = "Alan Bahm"
 
+println(version * " by " *  author * " starting...")
 
 include("Zobrist.jl")
 include("constants.jl")

@@ -48,6 +48,7 @@ function move_error()
 end
 
 function test_chess960castling()
+    # error discovered in random play
     # in this Chess960, the king has started on the final square the castled rook lands
     #b = Chess.read_fen("r2k4/8/8/8/8/8/8/3K5 b kq -")
     b = Chess.read_fen("r2krnb1/1pq1pppp/3p4/p1p1n3/4PP2/3NN2P/P1PP1BP1/RBQKR3 b KQkq -")

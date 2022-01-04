@@ -6,8 +6,8 @@ Find best move, returns:
     number of nodes visited, time in seconds
 """
 function best_move_search(board, depth)
-    best_move_alphabeta(board, depth)
-    #best_move_negamax(board, depth)
+    #best_move_alphabeta(board, depth)
+    best_move_negamax(board, depth)
 end
 
 
